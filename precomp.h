@@ -62,6 +62,7 @@
 using namespace std;
 
 #include "surface.h"
+#include "vectors.h"
 #include "template.h"
 
 using namespace AdvancedGraphics;
