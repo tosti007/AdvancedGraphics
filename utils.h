@@ -4,6 +4,8 @@
 #pragma once
 
 #define WINDOW_TITLE	"Advanced Graphics"
+#define SCRWIDTH 1280
+#define SCRHEIGHT 720
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
