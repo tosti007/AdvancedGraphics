@@ -57,10 +57,6 @@
 
 // clang-format off
 
-// "Leak" common namespaces to all compilation units. This is not standard
-// C++ practice but a mere simplification for this small project.
-using namespace std;
-
 #include "surface.h"
 #include "vectors.h"
 #include "template.h"
