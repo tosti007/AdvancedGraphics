@@ -245,10 +245,10 @@ int main( int argc, char **argv )
 				// find other keys here: http://sdl.beuc.net/sdl.wiki/SDLKey
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 					exitapp = 1;
-				game->KeyDown( event.key.keysym.sym );
+				game->KeyDown( event.key.keysym.sym, event.key.repeat );
 				break;
 			case SDL_KEYUP:
-				game->KeyUp( event.key.keysym.sym );
+				game->KeyUp( event.key.keysym.sym, event.key.repeat );
 				break;
 			case SDL_MOUSEMOTION:
 				game->MouseMove( event.motion.x, event.motion.y );
