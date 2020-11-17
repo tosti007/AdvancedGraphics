@@ -3,16 +3,6 @@
 
 #pragma once
 
-#define WINDOW_TITLE	"Advanced Graphics"
-#define SCRWIDTH 1280
-#define SCRHEIGHT 720
-
-typedef unsigned char uchar;
-typedef unsigned char byte;
-typedef int64_t int64;
-typedef uint64_t uint64;
-typedef unsigned int uint;
-
 #define clamp(v,a,b) ((std::min)((b),(std::max)((v),(a))))
 
 #define PI					3.14159265358979323846264338327950288419716939937510582097494459072381640628620899862803482534211706798f
@@ -63,29 +53,5 @@ inline void NotifyUser( const char *s )
 #endif
 	exit( 0 );
 }
-
-struct timer
-{
-	typedef std::chrono::high_resolution_clock Clock;
-	typedef Clock::time_point TimePoint;
-	typedef std::chrono::microseconds MicroSeconds;
-
-	TimePoint start;
-	inline timer() : start( get() ) {}
-
-	/// Returns the elapsed time, in milliseconds.
-	inline float elapsed() const
-	{
-		auto diff = get() - start;
-		auto duration_us = std::chrono::duration_cast<MicroSeconds>( diff );
-		return static_cast<float>( duration_us.count() ) / 1000.0f;
-	}
-	static inline TimePoint get()
-	{
-		return Clock::now();
-	}
-
-	inline void reset() { start = get(); }
-};
 
 }; // namespace AdvancedGraphics

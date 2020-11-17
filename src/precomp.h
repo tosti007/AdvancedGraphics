@@ -33,13 +33,9 @@
 #include <SDL.h>
 
 // C++ headers
-#include <algorithm>
-#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <random>
-#include <vector>
 
 // Namespaced C headers:
 #include <cassert>
@@ -53,13 +49,18 @@
 // See: https://stackoverflow.com/a/11228864/2844473
 #include <immintrin.h>
 
-// clang-format off
+#define WINDOW_TITLE "Advanced Graphics"
+#define SCRWIDTH 1280
+#define SCRHEIGHT 720
 
-#include "surface.h"
-#include "vectors.h"
-#include "utils.h"
+typedef unsigned char uchar;
+typedef unsigned char byte;
+typedef int64_t int64;
+typedef uint64_t uint64;
+typedef unsigned int uint;
 
+// Leak everything so we can easilly use it. 
+// This can be considered bad practice,
+// but since we are using only one namespace it can't hurt too much.
+namespace AdvancedGraphics {};
 using namespace AdvancedGraphics;
-
-#include "game.h"
-// clang-format on

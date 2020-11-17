@@ -2,6 +2,8 @@
 // IGAD/NHTV/UU - Jacco Bikker - 2006-2019
 
 #include "precomp.h"
+#include "surface.h"
+#include "utils.h"
 
 namespace AdvancedGraphics {
 

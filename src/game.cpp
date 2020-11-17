@@ -1,4 +1,5 @@
 #include "precomp.h" // include (only) this in every .cpp file
+#include "game.h"
 
 // -----------------------------------------------------------
 // Initialize the application

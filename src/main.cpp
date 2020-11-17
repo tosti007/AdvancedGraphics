@@ -12,6 +12,8 @@
 #endif
 
 #include "precomp.h"
+#include "timer.h"
+#include "game.h"
 
 using namespace AdvancedGraphics;
 using namespace std;

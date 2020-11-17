@@ -1,5 +1,7 @@
 #pragma once
 
+#include "surface.h"
+
 namespace AdvancedGraphics {
 
 class Game
