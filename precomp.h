@@ -59,7 +59,7 @@
 
 #include "surface.h"
 #include "vectors.h"
-#include "template.h"
+#include "utils.h"
 
 using namespace AdvancedGraphics;
 
