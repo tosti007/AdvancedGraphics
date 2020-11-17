@@ -13,6 +13,10 @@ typedef int64_t int64;
 typedef uint64_t uint64;
 typedef unsigned int uint;
 
+#define clamp(v,a,b) ((std::min)((b),(std::max)((v),(a))))
+
+#define PI					3.14159265358979323846264338327950288419716939937510582097494459072381640628620899862803482534211706798f
+
 #ifdef _MSC_VER
 #define ALIGN( x ) __declspec( align( x ) )
 #define MALLOC64( x ) _aligned_malloc( x, 64 )
@@ -23,10 +27,6 @@ typedef unsigned int uint;
 #define FREE64( x ) free( x )
 #define __inline __attribute__( ( __always_inline__ ) )
 #endif
-
-#define clamp(v,a,b) ((std::min)((b),(std::max)((v),(a))))
-
-#define PI					3.14159265358979323846264338327950288419716939937510582097494459072381640628620899862803482534211706798f
 
 #define PREFETCH(x)			_mm_prefetch((const char*)(x),_MM_HINT_T0)
 #define PREFETCH_ONCE(x)	_mm_prefetch((const char*)(x),_MM_HINT_NTA)
@@ -42,6 +42,8 @@ typedef unsigned int uint;
 #define   likely(expr) __builtin_expect((expr),true )
 #define unlikely(expr) __builtin_expect((expr),false)
 #endif
+
+#define BADFLOAT(x) ((*(uint*)&x & 0x7f000000) == 0x7f000000)
 
 // deterministic rng
 static uint seed = 0x12345678;
@@ -85,7 +87,5 @@ struct timer
 
 	inline void reset() { start = get(); }
 };
-
-#define BADFLOAT(x) ((*(uint*)&x & 0x7f000000) == 0x7f000000)
 
 }; // namespace AdvancedGraphics
