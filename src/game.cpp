@@ -1,5 +1,6 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
+#include "ray.h"
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -26,6 +27,10 @@ static int frame = 0;
 // -----------------------------------------------------------
 void Game::Tick( float deltaTime )
 {
+	// Create a ray to the center of the screen
+	// This is just an example that it works.
+	Ray x = Ray(view->position, view->Center());
+
 	// clear the graphics window
 	screen->Clear( 0 );
 	// print something in the graphics window
