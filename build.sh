@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-set -o
+set -e
 
-cmake -B build
-make -j$(nproc --all) -C build
+cmake -B build > /dev/null
+make -j$(nproc --all) -C build > /dev/null
