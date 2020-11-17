@@ -1,6 +1,7 @@
 #pragma once
 
 #include "surface.h"
+#include "camera.h"
 
 namespace AdvancedGraphics {
 
@@ -11,13 +12,14 @@ public:
 	void Init();
 	void Shutdown();
 	void Tick( float deltaTime );
-	void MouseUp( int button ) { /* implement if you want to detect mouse button presses */ }
-	void MouseDown( int button ) { /* implement if you want to detect mouse button presses */ }
-	void MouseMove( int x, int y ) { /* implement if you want to detect mouse movement */ }
-	void KeyUp( int key, byte repeat ) { /* implement if you want to handle keys */ }
-	void KeyDown( int key, byte repeat ) { /* implement if you want to handle keys */ }
+	void MouseUp( int button ) { view->MouseUp(button); }
+	void MouseDown( int button ) { view->MouseDown(button); }
+	void MouseMove( int x, int y ) { view->MouseMove(x, y); }
+	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
+	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 private:
 	Surface* screen;
+	Camera* view;
 };
 
 }; // namespace AdvancedGraphics

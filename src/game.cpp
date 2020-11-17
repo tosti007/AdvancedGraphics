@@ -6,6 +6,8 @@
 // -----------------------------------------------------------
 void Game::Init()
 {
+	printf("Initializing Game\n");
+	view = new Camera(0, 0, 0);
 }
 
 // -----------------------------------------------------------
@@ -13,6 +15,7 @@ void Game::Init()
 // -----------------------------------------------------------
 void Game::Shutdown()
 {
+	printf("Shutting down Game\n");
 }
 
 static Sprite rotatingGun( new Surface( "assets/aagun.tga" ), 36 );
@@ -27,8 +30,6 @@ void Game::Tick( float deltaTime )
 	screen->Clear( 0 );
 	// print something in the graphics window
 	screen->Print( "hello world", 2, 2, 0xffffff );
-	// print something to the text window
-	printf( "this goes to the console window.\n" );
 	// draw a sprite
 	rotatingGun.SetFrame( frame );
 	rotatingGun.Draw( screen, 100, 100 );
