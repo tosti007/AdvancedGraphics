@@ -49,6 +49,17 @@ inline float Rand( float range ) { return RandomFloat() * range; }
 
 namespace AdvancedGraphics {
 
+inline void NotifyUser( const char *s )
+{
+#ifdef _WIN32
+	HWND hApp = FindWindow( NULL, WINDOW_TITLE );
+	MessageBox( hApp, s, "ERROR", MB_OK );
+#else
+	std::cout << "ERROR: " << s << std::endl;
+#endif
+	exit( 0 );
+}
+
 struct timer
 {
 	typedef std::chrono::high_resolution_clock Clock;

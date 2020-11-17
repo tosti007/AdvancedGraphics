@@ -13,21 +13,6 @@
 
 #include "precomp.h"
 
-namespace AdvancedGraphics {
-
-void NotifyUser( const char *s )
-{
-#ifdef _WIN32
-	HWND hApp = FindWindow( NULL, WINDOW_TITLE );
-	MessageBox( hApp, s, "ERROR", MB_OK );
-#else
-	std::cout << "ERROR: " << s << std::endl;
-#endif
-	exit( 0 );
-}
-
-}
-
 using namespace AdvancedGraphics;
 using namespace std;
 
