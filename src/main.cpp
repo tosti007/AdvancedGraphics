@@ -200,7 +200,7 @@ int main( int argc, char **argv )
 	{
 	#ifdef ADVANCEDGL
 		swap();
-		surface->SetBuffer( (Pixel*)framedata );
+		surface->SetBuffer( (Color*)framedata );
 	#else
 		void* target = 0;
 		int pitch;
