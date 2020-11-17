@@ -11,7 +11,7 @@ find_package(SDL2 REQUIRED)
 find_package(FreeImage REQUIRED)
 
 # Compile all "*.cpp" files in the root directory:
-file(GLOB SOURCES "*.cpp")
+file(GLOB SOURCES "src/*.cpp")
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Add warning flags

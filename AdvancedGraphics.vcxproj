@@ -117,17 +117,17 @@
   </ItemDefinitionGroup>
   <!-- END Custom section -->
   <ItemGroup>
-    <ClCompile Include="game.cpp" />
-    <ClCompile Include="surface.cpp" />
-    <ClCompile Include="template.cpp">
+    <ClCompile Include="src/game.cpp" />
+    <ClCompile Include="src/surface.cpp" />
+    <ClCompile Include="src/template.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="game.h" />
-    <ClInclude Include="precomp.h" />
-    <ClInclude Include="surface.h" />
-    <ClInclude Include="template.h" />
+    <ClInclude Include="src/game.h" />
+    <ClInclude Include="src/precomp.h" />
+    <ClInclude Include="src/surface.h" />
+    <ClInclude Include="src/template.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />
