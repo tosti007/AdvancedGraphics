@@ -18,7 +18,7 @@ namespace AdvancedGraphics {
 void NotifyUser( const char *s )
 {
 #ifdef _WIN32
-	HWND hApp = FindWindow( NULL, TEMPLATE_VERSION );
+	HWND hApp = FindWindow( NULL, WINDOW_TITLE );
 	MessageBox( hApp, s, "ERROR", MB_OK );
 #else
 	std::cout << "ERROR: " << s << std::endl;
@@ -181,9 +181,9 @@ int main( int argc, char **argv )
 #ifdef ADVANCEDGL
 
 #ifdef FULLSCREEN
-	window = SDL_CreateWindow( TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN|SDL_WINDOW_OPENGL );
+	window = SDL_CreateWindow( WINDOW_TITLE, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN|SDL_WINDOW_OPENGL );
 #else
-	window = SDL_CreateWindow( TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL );
+	window = SDL_CreateWindow( WINDOW_TITLE, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL );
 #endif
 	SDL_GLContext glContext = SDL_GL_CreateContext( window);
 	init();
@@ -192,9 +192,9 @@ int main( int argc, char **argv )
 #else
 
 #ifdef FULLSCREEN
-	window = SDL_CreateWindow( TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN );
+	window = SDL_CreateWindow( WINDOW_TITLE, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN );
 #else
-	window = SDL_CreateWindow( TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN );
+	window = SDL_CreateWindow( WINDOW_TITLE, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN );
 #endif
 	surface = new Surface( SCRWIDTH, SCRHEIGHT );
 	surface->Clear( 0 );

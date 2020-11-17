@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define TEMPLATE_VERSION	"Template_v2019.01"
+#define WINDOW_TITLE	"Advanced Graphics"
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
