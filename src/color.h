@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "vectors.h"
+#include "utils.h"
+
 namespace AdvancedGraphics {
 
 #define REDMASK	(0xff0000)
@@ -41,5 +44,25 @@ inline Pixel ScalePixel( Pixel c, int s )
 	const unsigned int g = (((c & GREENMASK) * s) >> 5) & GREENMASK;
 	return rb + g;
 }
+
+typedef vec3 Color;
+
+inline Pixel ColorToPixel( Color c )
+{
+	int r = clamp( (int)( c.x * 255.0f ), 0, 255 );
+	int g = clamp( (int)( c.y * 255.0f ), 0, 255 );
+	int b = clamp( (int)( c.z * 255.0f ), 0, 255 );
+
+	return ( b << 24 ) + ( g << 16 ) + (r << 8);
+}
+
+inline Color PixelToColor( Pixel p )
+{
+	float r = ((p | REDMASK) >> 24) / 255.0f;
+	float g = ((p | GREENMASK) >> 16) / 255.0f;
+	float b = ((p | BLUEMASK) >> 8) / 255.0f;
+	return Color(r, g, b);
+}
+
 
 }; // namespace AdvancedGraphics

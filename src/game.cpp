@@ -45,15 +45,6 @@ void Game::Shutdown()
 	printf("Shutting down Game\n");
 }
 
-uint Convert( vec3 color )
-{
-	int r = min( (int)( color.x * 255.0f ), 255 );
-	int g = min( (int)( color.y * 255.0f ), 255 );
-	int b = min( (int)( color.z * 255.0f ), 255 );
-
-	return ( b << 16 ) + ( g << 8 ) + r;
-}
-
 bool Game::Intersect( Ray* r )
 {
 	bool i = false;
