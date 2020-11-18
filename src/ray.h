@@ -8,7 +8,7 @@ namespace AdvancedGraphics {
 struct Ray
 {
 	vec3 origin, direction;
-    Pixel color;
+    Color color;
     float t;
 
     Ray( vec3 o, vec3 d );

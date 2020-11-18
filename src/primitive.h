@@ -9,9 +9,9 @@
 class Primitive
 {
     public:
-    Pixel color;
+    Color color;
 
-    inline Primitive( Pixel c) : color(c) {}
+    inline Primitive( Pixel c) : color(PixelToColor(c)) {}
     virtual bool Intersect(Ray* r) = 0;
 };
 
