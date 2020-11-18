@@ -107,10 +107,6 @@ void Game::Tick( float deltaTime )
 
 		Color color = Trace( &r, 1 );
 
-		//sphere->Intersect(&r);
-		//floor->Intersect(&r);
-		//trian->Intersect(&r);
-
 		*buf = color;
 		buf++;
 	}

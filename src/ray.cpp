@@ -8,6 +8,6 @@ Ray::Ray( vec3 o, vec3 d ) :
     origin(o), 
     direction(d),
     color(0x000000),
-    t(FLT_MAX)
+    t(INFINITY)
 {
 }
