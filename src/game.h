@@ -2,6 +2,7 @@
 
 #include "surface.h"
 #include "camera.h"
+#include "primitive.h"
 
 namespace AdvancedGraphics {
 
@@ -20,6 +21,7 @@ public:
 private:
 	Surface* screen;
 	Camera* view;
+	Sphere* sphere;
 };
 
 }; // namespace AdvancedGraphics

@@ -50,8 +50,8 @@
 #include <immintrin.h>
 
 #define WINDOW_TITLE "Advanced Graphics"
-#define SCRWIDTH 1280
-#define SCRHEIGHT 720
+#define SCRWIDTH 512
+#define SCRHEIGHT 512
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
