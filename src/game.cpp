@@ -48,4 +48,12 @@ void Game::Tick( float deltaTime )
 		*buf = r.color;
 		buf++;
 	}
+
+	// Write debug output
+	char buffer [32];
+	sprintf (buffer, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
+	screen->Print(buffer, 2, 2, 0xffff00);
+
+	sprintf (buffer, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
+	screen->Print(buffer, 2, 9, 0xffff00);
 }
