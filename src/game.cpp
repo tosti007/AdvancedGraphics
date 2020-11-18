@@ -1,7 +1,6 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
 #include "ray.h"
-#include <chrono>
 
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
@@ -96,7 +95,6 @@ Color Trace(Ray* r, int depth)
 // -----------------------------------------------------------
 void Game::Tick( float deltaTime )
 {
-	auto start = chrono::steady_clock::now();
 	printf("Game Tick\n");
 
 	vec3 p0 = view->TopLeft();
@@ -122,8 +120,6 @@ void Game::Tick( float deltaTime )
 		buf++;
 	}
 
-	chrono::duration<double> elapsed_seconds = chrono::steady_clock::now() - start;
-
 	// Write debug output
 	char buffer [32];
 	sprintf (buffer, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
@@ -133,6 +129,6 @@ void Game::Tick( float deltaTime )
 	screen->Print(buffer, 2, 9, 0xffff00);
 
 	// Timer
-	sprintf( buffer, "FPS: %f", 1 / elapsed_seconds.count());
+	sprintf( buffer, "FPS: %f", 1 / deltaTime);
 	screen->Print( buffer, 2, 16, 0xffff00 );
 }
