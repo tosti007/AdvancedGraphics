@@ -25,9 +25,8 @@ public:
 private:
 	Surface* screen;
 	Camera* view;
-	Sphere* sphere;
-	Plane* floor;
-	Triangle* trian;
+	Primitive** objects;
+	uint nr_objects;
 };
 
 }; // namespace AdvancedGraphics

@@ -14,9 +14,13 @@ void Game::Init()
 {
 	printf("Initializing Game\n");
 	view = new Camera(0, 0, 0);
-	sphere = new Sphere(vec3(0, 0, 10), 3, 0xff0000);
-	floor = new Plane(vec3(0, 1, 0), 2, 0xffffff);
-	trian = new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff);
+
+	nr_objects = 3;
+	objects = new Primitive*[nr_objects] {
+		new Sphere(vec3(0, 0, 10), 3, 0xff0000),
+		new Plane(vec3(0, 1, 0), 2, 0xffffff),
+		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff)
+	};
 
 	// load model
 	using namespace std;
@@ -47,13 +51,15 @@ void Game::Shutdown()
 
 bool Game::Intersect( Ray* r )
 {
-	bool i = false;
+	bool found = false;
 	// TODO: replace this with an iteration over all primitives.
 
-	i |= sphere->Intersect(r);
-	i |= floor->Intersect(r);
-	i |= trian->Intersect(r);
-	return i;
+	for (uint i = 0; i < nr_objects; i++)
+	{
+		found |= objects[i]->Intersect(r);
+	}
+
+	return found;
 }
 
 Color Game::Trace(Ray* r, uint depth)
