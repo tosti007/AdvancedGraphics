@@ -6,7 +6,9 @@
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
+
 using namespace std;
+
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
@@ -34,7 +36,6 @@ void Game::Init()
 		cerr << err << endl;
 	if ( !ret )
 		exit( 1 );
-
 }
 
 // -----------------------------------------------------------
@@ -43,6 +44,51 @@ void Game::Init()
 void Game::Shutdown()
 {
 	printf("Shutting down Game\n");
+}
+
+uint Convert( vec3 color )
+{
+	int r = min( (int)( color.x * 255.0f ), 255 );
+	int g = min( (int)( color.y * 255.0f ), 255 );
+	int b = min( (int)( color.z * 255.0f ), 255 );
+
+	return ( b << 16 ) + ( g << 8 ) + r;
+}
+
+Color Trace(Ray* r, int depth)
+{
+	// intersection point
+	vec3 I;
+
+	// normal (not used yet)
+	vec3 N;
+	// Material mat
+	if ( nearestIntersection( r, I, N ) )
+		return Convert( I );
+	else
+		return 0x000000; // maybe add skydome here
+}
+
+float Distance(vec3 p1, vec3 p2)
+{
+	return sqrt( pow( p2.x - p1.x, 2 ) + pow( p2.y - p1.y, 2 ) + pow( p2.z - p1.z, 2 ) );
+}
+
+bool nearestIntersection(Ray* r, vec3 I, vec3 N)
+{
+	bool ret = false;
+	float nearest = INFINITY;
+	vec3 intersection;
+	// loop through all meshes
+	// loop through all vertices (this will be sped up with BVH)
+	// dummy triangle
+	Triangle tri = Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff );
+	if (tri.Intersect(r) && r->t < nearest)
+	{
+		nearest = r->t;
+		ret = true;
+	}
+	return ret;
 }
 
 // -----------------------------------------------------------
@@ -59,12 +105,15 @@ void Game::Tick( float deltaTime )
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		float ux = (float)x / screen->GetWidth();
-		float uy = (float)y / screen->GetHeight();
-		vec3 dir = p0 + ux * view->right + uy * view->down;
+		float u = (float)x / screen->GetWidth();
+		float v = (float)y / screen->GetHeight();
+		vec3 dir = p0 + u * view->right + v * view->down;
 		dir.normalize();
 
 		Ray r = Ray(view->position, dir);
+
+		//Color color = Trace( &r, 1 );
+
 		sphere->Intersect(&r);
 		floor->Intersect(&r);
 		trian->Intersect(&r);

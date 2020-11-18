@@ -62,7 +62,7 @@ bool Triangle::Intersect(Ray* r)
 
     // ray and triangle are parallel if det is close to 0
     // This should probaby be something smaller, but for now it will do
-    if (fabs(det) < 0.001) return false;
+	if ( fabs( det ) < 0.0000001 ) return false;
 
     float invDet = 1 / det;
 
