@@ -54,11 +54,6 @@ uint Convert( vec3 color )
 	return ( b << 16 ) + ( g << 8 ) + r;
 }
 
-float Distance(vec3 p1, vec3 p2)
-{
-	return sqrt( pow( p2.x - p1.x, 2 ) + pow( p2.y - p1.y, 2 ) + pow( p2.z - p1.z, 2 ) );
-}
-
 bool nearestIntersection(Ray* r, vec3& I, vec3& N)
 {
 	bool ret = false;
