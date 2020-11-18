@@ -48,7 +48,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>lib\glew-2.1.0\include;lib\SDL2-2.0.10\include;lib\FreeImage\include</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -119,15 +119,23 @@
   <ItemGroup>
     <ClCompile Include="src/game.cpp" />
     <ClCompile Include="src/surface.cpp" />
-    <ClCompile Include="src/template.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\primitive.cpp" />
+    <ClCompile Include="src\ray.cpp" />
+    <ClCompile Include="src\vectors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/game.h" />
     <ClInclude Include="src/precomp.h" />
     <ClInclude Include="src/surface.h" />
-    <ClInclude Include="src/template.h" />
+    <ClInclude Include="src\camera.h" />
+    <ClInclude Include="src\color.h" />
+    <ClInclude Include="src\primitive.h" />
+    <ClInclude Include="src\ray.h" />
+    <ClInclude Include="src\timer.h" />
+    <ClInclude Include="src\utils.h" />
+    <ClInclude Include="src\vectors.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />
