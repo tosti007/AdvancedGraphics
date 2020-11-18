@@ -65,7 +65,7 @@ bool Game::Intersect( Ray* r )
 	return i;
 }
 
-Color Game::Trace(Ray* r, uint depth)
+Pixel Game::Trace(Ray* r, uint depth)
 {
 	// TODO: handle depth value.
 
@@ -90,7 +90,7 @@ void Game::Tick( float deltaTime )
 	printf("Game Tick\n");
 
 	vec3 p0 = view->TopLeft();
-	Color* buf = screen->GetBuffer();
+	Pixel* buf = screen->GetBuffer();
 
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
@@ -102,7 +102,7 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 
-		Color color = Trace( &r, 1 );
+		Pixel color = Trace( &r, 1 );
 
 		*buf = color;
 		buf++;

@@ -12,13 +12,13 @@ class Surface
 	enum { OWNER = 1 };
 public:
 	// constructor / destructor
-	Surface( int a_Width, int a_Height, Color* a_Buffer, int a_Pitch );
+	Surface( int a_Width, int a_Height, Pixel* a_Buffer, int a_Pitch );
 	Surface( int a_Width, int a_Height );
 	Surface( const char *a_File );
 	~Surface();
 	// member data access
-	Color* GetBuffer() { return m_Buffer; }
-	void SetBuffer( Color* a_Buffer ) { m_Buffer = a_Buffer; }
+	Pixel* GetBuffer() { return m_Buffer; }
+	void SetBuffer( Pixel* a_Buffer ) { m_Buffer = a_Buffer; }
 	int GetWidth() { return m_Width; }
 	int GetHeight() { return m_Height; }
 	int GetPitch() { return m_Pitch; }
@@ -26,21 +26,21 @@ public:
 	// Special operations
 	void InitCharset();
 	void SetChar( int c, const char *c1, const char *c2, const char *c3, const char *c4, const char *c5 );
-	void Centre( const char *a_String, int y1, Color color );
-	void Print( const char *a_String, int x1, int y1, Color color );
-	void Clear( Color a_Color );
-	void Line( float x1, float y1, float x2, float y2, Color color );
-	void Plot( int x, int y, Color c );
+	void Centre( const char *a_String, int y1, Pixel color );
+	void Print( const char *a_String, int x1, int y1, Pixel color );
+	void Clear( Pixel a_Pixel );
+	void Line( float x1, float y1, float x2, float y2, Pixel color );
+	void Plot( int x, int y, Pixel c );
 	void LoadImage( const char *a_File );
 	void CopyTo( Surface* a_Dst, int a_X, int a_Y );
 	void BlendCopyTo( Surface* a_Dst, int a_X, int a_Y );
-	void ScaleColor( unsigned int a_Scale );
-	void Box( int x1, int y1, int x2, int y2, Color color );
-	void Bar( int x1, int y1, int x2, int y2, Color color );
+	void ScalePixel( unsigned int a_Scale );
+	void Box( int x1, int y1, int x2, int y2, Pixel color );
+	void Bar( int x1, int y1, int x2, int y2, Pixel color );
 	void Resize( Surface* a_Orig );
 private:
 	// Attributes
-	Color* m_Buffer;
+	Pixel* m_Buffer;
 	int m_Width, m_Height;
 	int m_Pitch;
 	int m_Flags;
@@ -79,7 +79,7 @@ public:
 	unsigned int GetFlags() const { return m_Flags; }
 	int GetWidth() { return m_Width; }
 	int GetHeight() { return m_Height; }
-	Color* GetBuffer() { return m_Surface->GetBuffer(); }
+	Pixel* GetBuffer() { return m_Surface->GetBuffer(); }
 	unsigned int Frames() { return m_NumFrames; }
 	Surface* GetSurface() { return m_Surface; }
 	void InitializeStartData();

@@ -3,7 +3,7 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "primitive.h"
 
-Plane::Plane( vec3 n, float d, Color c ) :
+Plane::Plane( vec3 n, float d, Pixel c ) :
     Primitive(c),
     normal(n.normalized()),
     dist(d)
@@ -20,7 +20,7 @@ bool Plane::Intersect(Ray* r)
     return true;
 }
 
-Sphere::Sphere( vec3 p, float r, Color c ) :
+Sphere::Sphere( vec3 p, float r, Pixel c ) :
     Primitive(c),
     position(p),
     radius(r)
@@ -43,7 +43,7 @@ bool Sphere::Intersect(Ray* r)
     return true;
 }
 
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Color c) :
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c) :
     Primitive(c),
     p0(v0),
     p1(v1),

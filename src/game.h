@@ -21,7 +21,7 @@ public:
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
 	bool Intersect( Ray* r );
-	Color Trace( Ray* r, uint depth );
+	Pixel Trace( Ray* r, uint depth );
 private:
 	Surface* screen;
 	Camera* view;

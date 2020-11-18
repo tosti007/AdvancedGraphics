@@ -9,9 +9,9 @@
 class Primitive
 {
     public:
-    Color color;
+    Pixel color;
 
-    inline Primitive( Color c) : color(c) {}
+    inline Primitive( Pixel c) : color(c) {}
     virtual bool Intersect(Ray* r) = 0;
 };
 
@@ -21,7 +21,7 @@ class Plane : Primitive
     vec3 normal;
     float dist;
 
-    Plane(vec3 n, float d, Color c);
+    Plane(vec3 n, float d, Pixel c);
     bool Intersect(Ray* r);
 };
 
@@ -31,7 +31,7 @@ class Sphere : Primitive
     vec3 position;
     float radius;
 
-    Sphere( vec3 p, float r, Color c );
+    Sphere( vec3 p, float r, Pixel c );
     bool Intersect(Ray* r);
 };
 
@@ -40,6 +40,6 @@ class Triangle : Primitive
     public:
     vec3 p0, p1, p2;
 
-    Triangle( vec3 v0, vec3 v1, vec3 v2, Color c);
+    Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c);
     bool Intersect(Ray* r);
 };
