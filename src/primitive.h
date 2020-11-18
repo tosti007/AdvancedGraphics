@@ -15,7 +15,7 @@ class Primitive
     virtual bool Intersect(Ray* r) = 0;
 };
 
-class Plane : Primitive
+class Plane : public Primitive
 { // Normally a plane has a d value, but let's just assume that's always 0
     public:
     vec3 normal;
@@ -25,7 +25,7 @@ class Plane : Primitive
     bool Intersect(Ray* r);
 };
 
-class Sphere : Primitive
+class Sphere : public Primitive
 {
     public:
     vec3 position;
@@ -35,7 +35,7 @@ class Sphere : Primitive
     bool Intersect(Ray* r);
 };
 
-class Triangle : Primitive
+class Triangle : public Primitive
 {
     public:
     vec3 p0, p1, p2;
