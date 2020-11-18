@@ -11,6 +11,7 @@ void Game::Init()
 	view = new Camera(0, 0, 0);
 	sphere = new Sphere(vec3(0, 0, 10), 3, 0xff0000);
 	floor = new Plane(vec3(0, 1, 0), 2, 0xffffff);
+	trian = new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff);
 }
 
 // -----------------------------------------------------------
@@ -42,6 +43,7 @@ void Game::Tick( float deltaTime )
 		Ray r = Ray(view->position, dir);
 		sphere->Intersect(&r);
 		floor->Intersect(&r);
+		trian->Intersect(&r);
 
 		*buf = r.color;
 		buf++;

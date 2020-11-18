@@ -23,6 +23,7 @@ private:
 	Camera* view;
 	Sphere* sphere;
 	Plane* floor;
+	Triangle* trian;
 };
 
 }; // namespace AdvancedGraphics
