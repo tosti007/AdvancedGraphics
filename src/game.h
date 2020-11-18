@@ -13,11 +13,15 @@ public:
 	void Init();
 	void Shutdown();
 	void Tick( float deltaTime );
+	
 	void MouseUp( int button ) { view->MouseUp(button); }
 	void MouseDown( int button ) { view->MouseDown(button); }
 	void MouseMove( int x, int y ) { view->MouseMove(x, y); }
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
+
+	bool Intersect( Ray* r );
+	Color Trace( Ray* r, uint depth );
 private:
 	Surface* screen;
 	Camera* view;

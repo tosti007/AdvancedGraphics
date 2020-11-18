@@ -54,35 +54,32 @@ uint Convert( vec3 color )
 	return ( b << 16 ) + ( g << 8 ) + r;
 }
 
-bool nearestIntersection(Ray* r, vec3& I, vec3& N)
+bool Game::Intersect( Ray* r )
 {
-	bool ret = false;
-	float nearest = INFINITY;
-	vec3 intersection;
-	// loop through all meshes
-	// loop through all vertices (this will be sped up with BVH)
-	// dummy triangle
-	Triangle tri = Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff );
-	if (tri.Intersect(r) && r->t < nearest)
-	{
-		nearest = r->t;
-		ret = true;
-	}
-	return ret;
+	bool i = false;
+	// TODO: replace this with an iteration over all primitives.
+
+	i |= sphere->Intersect(r);
+	i |= floor->Intersect(r);
+	i |= trian->Intersect(r);
+	return i;
 }
 
-Color Trace(Ray* r, int depth)
+Color Game::Trace(Ray* r, uint depth)
 {
-	// intersection point
-	vec3 I;
+	// TODO: handle depth value.
 
-	// normal (not used yet)
-	vec3 N;
-	// Material mat
-	if ( nearestIntersection( r, I, N ) )
-		return Convert( I );
-	else
+	if (Intersect(r))
+	{
+		// intersection point
+		// vec3 I = r->origin + r->t * r->direction;
+
+		// normal, depends on shape
+		// vec3 N;
+		return r->color;
+	} else {
 		return 0x000000; // maybe add skydome here
+	}
 }
 
 // -----------------------------------------------------------
