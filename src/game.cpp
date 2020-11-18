@@ -69,7 +69,7 @@ Color Game::Trace(Ray* r, uint depth)
 		// vec3 N;
 		return r->color;
 	} else {
-		return 0x000000; // maybe add skydome here
+		return Color(0); // maybe add skydome here
 	}
 }
 
