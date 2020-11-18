@@ -67,7 +67,7 @@ Color Game::Trace(Ray* r, uint depth)
 
 		// normal, depends on shape
 		// vec3 N;
-		return r->color;
+		return r->obj->color;
 	} else {
 		return Color(0); // maybe add skydome here
 	}

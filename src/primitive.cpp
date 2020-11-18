@@ -16,7 +16,7 @@ bool Plane::Intersect(Ray* r)
 
     if (t >= r->t || t <= 0) return false;
     r->t = t;
-    r->color = color;
+    r->obj = this;
     return true;
 }
 
@@ -39,7 +39,7 @@ bool Sphere::Intersect(Ray* r)
     
     if (t >= r->t || t <= 0) return false;
     r->t = t;
-    r->color = color;
+    r->obj = this;
     return true;
 }
 
@@ -78,6 +78,6 @@ bool Triangle::Intersect(Ray* r)
 
     if (t >= r->t || t <= 0) return false;
     r->t = t;
-    r->color = color;
+    r->obj = this;
     return true;
 }
