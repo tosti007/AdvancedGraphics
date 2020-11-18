@@ -60,7 +60,7 @@ float Distance(vec3 p1, vec3 p2)
 	return sqrt( pow( p2.x - p1.x, 2 ) + pow( p2.y - p1.y, 2 ) + pow( p2.z - p1.z, 2 ) );
 }
 
-bool nearestIntersection(Ray* r, vec3 I, vec3 N)
+bool nearestIntersection(Ray* r, vec3& I, vec3& N)
 {
 	bool ret = false;
 	float nearest = INFINITY;
@@ -112,13 +112,13 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 
-		//Color color = Trace( &r, 1 );
+		Color color = Trace( &r, 1 );
 
-		sphere->Intersect(&r);
-		floor->Intersect(&r);
-		trian->Intersect(&r);
+		//sphere->Intersect(&r);
+		//floor->Intersect(&r);
+		//trian->Intersect(&r);
 
-		*buf = r.color;
+		*buf = color;
 		buf++;
 	}
 
