@@ -134,6 +134,7 @@
     <ClInclude Include="src\primitive.h" />
     <ClInclude Include="src\ray.h" />
     <ClInclude Include="src\timer.h" />
+    <ClInclude Include="src\tiny_obj_loader.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\vectors.h" />
   </ItemGroup>

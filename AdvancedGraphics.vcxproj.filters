@@ -54,6 +54,9 @@
     <ClInclude Include="src/surface.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\tiny_obj_loader.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />
