@@ -55,20 +55,6 @@ uint Convert( vec3 color )
 	return ( b << 16 ) + ( g << 8 ) + r;
 }
 
-Color Trace(Ray* r, int depth)
-{
-	// intersection point
-	vec3 I;
-
-	// normal (not used yet)
-	vec3 N;
-	// Material mat
-	if ( nearestIntersection( r, I, N ) )
-		return Convert( I );
-	else
-		return 0x000000; // maybe add skydome here
-}
-
 float Distance(vec3 p1, vec3 p2)
 {
 	return sqrt( pow( p2.x - p1.x, 2 ) + pow( p2.y - p1.y, 2 ) + pow( p2.z - p1.z, 2 ) );
@@ -89,6 +75,20 @@ bool nearestIntersection(Ray* r, vec3 I, vec3 N)
 		ret = true;
 	}
 	return ret;
+}
+
+Color Trace(Ray* r, int depth)
+{
+	// intersection point
+	vec3 I;
+
+	// normal (not used yet)
+	vec3 N;
+	// Material mat
+	if ( nearestIntersection( r, I, N ) )
+		return Convert( I );
+	else
+		return 0x000000; // maybe add skydome here
 }
 
 // -----------------------------------------------------------
