@@ -7,14 +7,13 @@ namespace AdvancedGraphics {
 struct Camera
 {
 	vec3 position, direction;
-    vec3 left, up;
+	// right and down define the whole "border" of the screen in that direction.
+    vec3 right, down;
     float fov;
 
     Camera( float px, float py, float pz );
 	vec3 Center();
     vec3 TopLeft();
-    vec3 TopRight();
-    vec3 BottomLeft();
 	void MouseUp( int button ) { /* implement if you want to detect mouse button presses */ }
 	void MouseDown( int button ) { /* implement if you want to detect mouse button presses */ }
 	void MouseMove( int x, int y ) { /* implement if you want to detect mouse movement */ }
