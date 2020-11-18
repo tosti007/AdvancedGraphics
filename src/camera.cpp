@@ -19,3 +19,31 @@ vec3 Camera::TopLeft()
 {
     return Center() - 0.5 * (right + down);
 }
+
+void Camera::KeyDown( int key, byte repeat )
+{
+    float speed = 0.01;
+    switch (key)
+    {
+        case SDLK_w:
+            position += speed * direction;
+            break;
+        case SDLK_a:
+            position -= speed * right;
+            break;
+        case SDLK_s:
+            position -= speed * direction;
+            break;
+        case SDLK_d:
+            position += speed * right;
+            break;
+        case SDLK_SPACE:
+            position -= speed * down;
+            break;
+        // These do not re-trigger once pressed.
+        case SDLK_LSHIFT:
+        case SDLK_RSHIFT:
+            position += speed * down;
+            break;
+    }
+}
