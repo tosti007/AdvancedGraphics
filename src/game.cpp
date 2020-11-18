@@ -6,7 +6,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
-using namespace std;
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -20,6 +19,7 @@ void Game::Init()
 	trian = new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff);
 
 	// load model
+	using namespace std;
 	string inputfile = "assets/cube.obj";
 	tinyobj::attrib_t attrib;
 	vector<tinyobj::shape_t> shapes;
