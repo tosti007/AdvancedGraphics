@@ -36,7 +36,8 @@ void Game::Tick( float deltaTime )
 		float ux = (float)x / screen->GetWidth();
 		float uy = (float)y / screen->GetHeight();
 		vec3 dir = p0 + ux * view->right + uy * view->down;
-		
+		dir.normalize();
+
 		Ray r = Ray(view->position, dir);
 		sphere->Intersect(&r);
 

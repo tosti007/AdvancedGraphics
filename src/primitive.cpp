@@ -4,9 +4,9 @@
 #include "primitive.h"
 
 Sphere::Sphere( vec3 p, float r, Color c ) :
+    Primitive(c),
     position(p),
-    radius(r),
-    color(c)
+    radius(r)
 {
 }
 
@@ -19,6 +19,7 @@ bool Sphere::Intersect(Ray* r)
     float r2 = radius * radius;
     if (p2 > r2) return false;
     t -= sqrt(r2 - p2);
+    
     if (t >= r->t || t <= 0) return false;
     r->t = t;
     r->color = color;
