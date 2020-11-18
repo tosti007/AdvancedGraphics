@@ -15,6 +15,16 @@ class Primitive
     virtual bool Intersect(Ray* r) = 0;
 };
 
+class Plane : Primitive
+{ // Normally a plane has a d value, but let's just assume that's always 0
+    public:
+    vec3 normal;
+    float dist;
+
+    Plane(vec3 n, float d, Color c);
+    bool Intersect(Ray* r);
+};
+
 class Sphere : Primitive
 {
     public:

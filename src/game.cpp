@@ -9,7 +9,8 @@ void Game::Init()
 {
 	printf("Initializing Game\n");
 	view = new Camera(0, 0, 0);
-	sphere = new Sphere(vec3(0, 0, 3), 1, 0xff0000);
+	sphere = new Sphere(vec3(0, 0, 10), 3, 0xff0000);
+	floor = new Plane(vec3(0, 1, 0), 2, 0xffffff);
 }
 
 // -----------------------------------------------------------
@@ -40,6 +41,7 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 		sphere->Intersect(&r);
+		floor->Intersect(&r);
 
 		*buf = r.color;
 		buf++;

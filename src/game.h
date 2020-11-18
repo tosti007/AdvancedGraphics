@@ -22,6 +22,7 @@ private:
 	Surface* screen;
 	Camera* view;
 	Sphere* sphere;
+	Plane* floor;
 };
 
 }; // namespace AdvancedGraphics
