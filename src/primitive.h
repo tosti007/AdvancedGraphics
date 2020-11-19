@@ -37,6 +37,7 @@ class Triangle : public Primitive
 {
     public:
     vec3 p0, p1, p2;
+    vec3 normal;
 
     Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c);
     bool Intersect(Ray* r);
