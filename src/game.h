@@ -3,6 +3,7 @@
 #include "surface.h"
 #include "camera.h"
 #include "primitive.h"
+#include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
 
@@ -27,6 +28,10 @@ private:
 	Camera* view;
 	Primitive** objects;
 	uint nr_objects;
+	tinyobj::attrib_t* attrib;
+	tinyobj::shape_t* shapes;
+	tinyobj::material_t* materials;
+
 };
 
 }; // namespace AdvancedGraphics

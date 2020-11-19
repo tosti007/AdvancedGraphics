@@ -21,17 +21,18 @@ void Game::Init()
 		new Plane(vec3(0, 1, 0), 2, 0xffffff),
 		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff)
 	};
+	//shapes = new std::vector<tinyobj::shape_t>();
 
 	// load model
 	using namespace std;
-	string inputfile = "assets/cube.obj";
-	tinyobj::attrib_t attrib;
-	vector<tinyobj::shape_t> shapes;
-	vector<tinyobj::material_t> materials;
+	string inputfile = "basic_box.obj";
+	//tinyobj::attrib_t attrib;
+	//vector<tinyobj::shape_t> shapes;
+	//vector<tinyobj::material_t> materials;
 	string warn;
 	string err;
 
-	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, inputfile.c_str() );
+	bool ret = tinyobj::LoadObj( &attrib, shapes, &materials, &warn, &err, inputfile.c_str() );
 
 	if ( !warn.empty() )
 		cout << warn << endl;
@@ -73,7 +74,7 @@ Color Game::Trace(Ray* r, uint depth)
 
 		// normal, depends on shape
 		// vec3 N;
-		return r->obj->color;
+		return (1 / (r->t / 5)) * r->obj->color;
 	} else {
 		return Color(0); // maybe add skydome here
 	}
