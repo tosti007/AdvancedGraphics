@@ -21,15 +21,12 @@ void Game::Init()
 		new Plane(vec3(0, 1, 0), 2, 0xffffff),
 		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff)
 	};
-	//shapes = new std::vector<tinyobj::shape_t>();
 
 	// load model
 	std::string inputfile = "basic_box.obj";
 	std::string warn;
 	std::string err;
-
-	bool ret = tinyobj::LoadObj( attrib, shapes, materials, &warn, &err, inputfile.c_str() );
-
+	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, inputfile.c_str() );
 	if ( !warn.empty() )
 		std::cout << warn << std::endl;
 	if ( !err.empty() )
@@ -44,6 +41,79 @@ void Game::Init()
 void Game::Shutdown()
 {
 	printf("Shutting down Game\n");
+}
+bool Game::RayTriIntersect( Ray* r, float v0, float v1, float v2)
+{
+	const float epsilon = 0.0000001;
+
+	vec3 v0v1 = v1 - v0;
+	vec3 v0v2 = v2 - v0;
+	vec3 pvec = r->direction.cross( v0v2 );
+	float det = v0v1.dot( pvec );
+
+	// ray and triangle are parallel if det is close to 0
+	// This should probaby be something smaller, but for now it will do
+	if ( fabs( det ) < epsilon ) return false;
+
+	float invDet = 1 / det;
+
+	vec3 tvec = r->origin - v0;
+	float u = tvec.dot( pvec ) * invDet;
+	if ( u < 0 || u > 1 ) return false;
+
+	vec3 qvec = tvec.cross( v0v1 );
+	float v = r->direction.dot( qvec ) * invDet;
+	if ( v < 0 || u + v > 1 ) return false;
+
+	float t = v0v2.dot( qvec ) * invDet;
+
+	if ( t >= r->t || t <= 0 ) return false;
+	r->t = t;
+	// TODO save triangle to ray?
+	//r->obj = this;
+	return true;
+}
+
+struct Material
+{
+	Color color;
+};
+
+bool Game::NearestIntersect( Ray *r, tinyobj::index_t nearestIdx )
+{
+	float nearest = INFINITY;
+	bool ret = false;
+	// Loop over shapes
+	for ( size_t s = 0; s < shapes.size(); s++ )
+	{
+		// Loop over faces(polygon)
+		size_t index_offset = 0;
+		for ( size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++ )
+		{
+			int fv = shapes[s].mesh.num_face_vertices[f];
+
+			// Loop over vertices in the face.
+			for ( size_t v = 0; v < fv; v++ )
+			{
+				// access to vertex
+				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+				tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
+				tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
+				tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
+				if (RayTriIntersect(r, vx, vy, vz) && r->t < nearest)
+				{
+					ret = true;
+					nearest = r->t;
+					nearestIdx = idx;
+				}
+			}
+			index_offset += fv;
+
+			// per-face material
+			shapes[s].mesh.material_ids[f];
+		}
+	}
+	return ret;
 }
 
 bool Game::Intersect( Ray* r )
@@ -62,15 +132,29 @@ bool Game::Intersect( Ray* r )
 Color Game::Trace(Ray* r, uint depth)
 {
 	// TODO: handle depth value.
+	vec3 interPoint;
 
-	if (Intersect(r))
+	// Save triangle index to retrieve normals, texcoords, colors
+	tinyobj::index_t nearestIdx = tinyobj::index_t();
+
+	if ( NearestIntersect( r, nearestIdx ) )
 	{
 		// intersection point
-		// vec3 I = r->origin + r->t * r->direction;
+		vec3 interPoint = r->origin + r->t * r->direction;
+		// vertex normals
+		//tinyobj::real_t nx = attrib.normals[3 * nearestIdx.normal_index + 0];
+		//tinyobj::real_t ny = attrib.normals[3 * nearestIdx.normal_index + 1];
+		//tinyobj::real_t nz = attrib.normals[3 * nearestIdx.normal_index + 2];
+		// tex coords
+		//tinyobj::real_t tx = attrib.texcoords[2 * nearestIdx.texcoord_index + 0];
+		//tinyobj::real_t ty = attrib.texcoords[2 * nearestIdx.texcoord_index + 1];
+		// vertex colors
+		tinyobj::real_t red = attrib.colors[3 * nearestIdx.vertex_index + 0];
+		tinyobj::real_t green = attrib.colors[3 * nearestIdx.vertex_index + 1];
+		tinyobj::real_t blue = attrib.colors[3 * nearestIdx.vertex_index + 2];
 
-		// normal, depends on shape
-		// vec3 N;
-		return (1 / (r->t / 5)) * r->obj->color;
+		//return ( 1 / ( r->t * r->t ) ) * Color( red, green, blue );
+		return Color(red, green, blue);
 	} else {
 		return Color(0); // maybe add skydome here
 	}

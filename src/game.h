@@ -21,16 +21,19 @@ public:
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
+	bool RayTriIntersect( Ray *r, float v0, float v1, float v2 );
+	bool NearestIntersect( Ray *r, tinyobj::index_t nearestIdx );
 	bool Intersect( Ray* r );
 	Color Trace( Ray* r, uint depth );
-private:
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+
+  private:
 	Surface* screen;
 	Camera* view;
 	Primitive** objects;
 	uint nr_objects;
-	tinyobj::attrib_t* attrib;
-	std::vector<tinyobj::shape_t>* shapes;
-	std::vector<tinyobj::material_t>* materials;
 };
 
 }; // namespace AdvancedGraphics
