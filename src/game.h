@@ -29,9 +29,8 @@ private:
 	Primitive** objects;
 	uint nr_objects;
 	tinyobj::attrib_t* attrib;
-	tinyobj::shape_t* shapes;
-	tinyobj::material_t* materials;
-
+	std::vector<tinyobj::shape_t>* shapes;
+	std::vector<tinyobj::material_t>* materials;
 };
 
 }; // namespace AdvancedGraphics

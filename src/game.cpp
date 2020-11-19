@@ -25,13 +25,10 @@ void Game::Init()
 
 	// load model
 	std::string inputfile = "basic_box.obj";
-	//tinyobj::attrib_t attrib;
-	//vector<tinyobj::shape_t> shapes;
-	//vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
 
-	bool ret = tinyobj::LoadObj( &attrib, shapes, &materials, &warn, &err, inputfile.c_str() );
+	bool ret = tinyobj::LoadObj( attrib, shapes, materials, &warn, &err, inputfile.c_str() );
 
 	if ( !warn.empty() )
 		std::cout << warn << std::endl;
