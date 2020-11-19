@@ -52,6 +52,15 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c) :
 {
 }
 
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c) :
+    Primitive(c),
+    p0(v0),
+    p1(v1),
+    p2(v2),
+    normal(n)
+{
+}
+
 bool Triangle::Intersect(Ray* r)
 {
     // Implementation from:
@@ -83,6 +92,50 @@ bool Triangle::Intersect(Ray* r)
     return true;
 }
 
+vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
+{
+    return cross(v1 - v0, v2 - v0);
+}
+
+vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
+    assert(idx >= 0);
+    // I think there are better ways than to use "at", but im lazy for now.
+	tinyobj::real_t vx = values->at(3 * idx + 0);
+	tinyobj::real_t vy = values->at(3 * idx + 1);
+	tinyobj::real_t vz = values->at(3 * idx + 2);
+    return vec3(vx, vy, vz);
+}
+
+Triangle Triangle::FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f )
+{
+    tinyobj::index_t idx0 = mesh->indices[3 * f + 0];
+    tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
+    tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
+
+    /* Just an example of how to retrieve material id and values.
+    vec3 diffuse(0);
+    int current_material_id = mesh->material_ids[f];
+    for (size_t i = 0; i < 3; i++) {
+        diffuse[i] = materials[current_material_id].diffuse[i];
+    }
+    */
+
+    vec3 v0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
+    vec3 v1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
+    vec3 v2 = TinyObjGetVector(idx2.vertex_index, &attrib->vertices);
+
+    // I think colors are defined on a per-vertex base.
+    // Since we need only the full face normal let's just compute it ourselves.
+    vec3 n = ComputeNormal(v0, v1, v2);
+
+    // I think colors are defined on a per-vertex base, hence I don't currently know how to handle this. 
+    // Color c = (Color)TinyObjGetVector(idx.vertex_index, &attrib.colors);
+    // Let's just use white.
+    Color c(0.0f, 1.0f, 0.0f);
+
+    return Triangle(v0, v1, v2, n, c);
+}
+
 TriangleSoup::TriangleSoup(Triangle* fs, uint nfs, Pixel c) :
     Primitive(c),
     nr_faces(nfs),
@@ -100,4 +153,17 @@ bool TriangleSoup::Intersect(Ray* r)
         found |= faces[i].Intersect(r);
     }
     return found;
+}
+
+void TriangleSoup::FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh)
+{
+    soup->nr_faces = mesh->indices.size() / 3;
+    soup->faces = new Triangle[soup->nr_faces];
+    for (size_t f = 0; f < soup->nr_faces; f++)
+    {
+        // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
+        assert(mesh->num_face_vertices[f] == 3);
+        // I think this will work and not result in NULL pointers later on.
+        soup->faces[f] = Triangle::FromTinyObj(attrib, mesh, f);
+    }
 }
