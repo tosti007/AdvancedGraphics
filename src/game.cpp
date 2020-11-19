@@ -24,20 +24,19 @@ void Game::Init()
 	//shapes = new std::vector<tinyobj::shape_t>();
 
 	// load model
-	using namespace std;
-	string inputfile = "basic_box.obj";
+	std::string inputfile = "basic_box.obj";
 	//tinyobj::attrib_t attrib;
 	//vector<tinyobj::shape_t> shapes;
 	//vector<tinyobj::material_t> materials;
-	string warn;
-	string err;
+	std::string warn;
+	std::string err;
 
 	bool ret = tinyobj::LoadObj( &attrib, shapes, &materials, &warn, &err, inputfile.c_str() );
 
 	if ( !warn.empty() )
-		cout << warn << endl;
+		std::cout << warn << std::endl;
 	if ( !err.empty() )
-		cerr << err << endl;
+		std::cerr << err << std::endl;
 	if ( !ret )
 		exit( 1 );
 }
