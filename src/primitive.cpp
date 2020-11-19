@@ -81,3 +81,22 @@ bool Triangle::Intersect(Ray* r)
     r->obj = this;
     return true;
 }
+
+TriangleSoup::TriangleSoup(Triangle* fs, uint nfs, Pixel c) :
+    Primitive(c),
+    nr_faces(nfs),
+    faces(fs)
+{
+}
+
+bool TriangleSoup::Intersect(Ray* r)
+{
+    // TODO: do some AABB intersection here first.
+
+    bool found = false;
+    for (uint i = 0; i < nr_faces; i++)
+    {
+        found |= faces[i].Intersect(r);
+    }
+    return found;
+}

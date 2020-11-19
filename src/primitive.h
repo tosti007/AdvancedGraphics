@@ -4,8 +4,6 @@
 #include "ray.h"
 #include "color.h"
 
-// TODO: Add some abstract class
-
 class Primitive
 {
     public:
@@ -41,5 +39,15 @@ class Triangle : public Primitive
     vec3 p0, p1, p2;
 
     Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c);
+    bool Intersect(Ray* r);
+};
+
+class TriangleSoup : public Primitive
+{
+    public:
+    uint nr_faces;
+    Triangle* faces;
+
+    TriangleSoup(Triangle* fs, uint nfs, Pixel c);
     bool Intersect(Ray* r);
 };
