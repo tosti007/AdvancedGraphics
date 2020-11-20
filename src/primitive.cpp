@@ -9,6 +9,13 @@ Plane::Plane( vec3 n, float d, Pixel c ) :
     dist(d)
 {
 }
+Plane::Plane( vec3 n, float d, Pixel c, Material m ) :
+    Primitive( c ),
+	normal( n.normalized() ),
+	dist( d ),
+	material( m )
+{
+}
 
 bool Plane::Intersect(Ray* r) 
 {
@@ -30,10 +37,18 @@ vec3 Sphere::NormalAt( vec3 point )
 	return point - position;
 }
 
-	Sphere::Sphere( vec3 p, float r, Pixel c ) :
-    Primitive(c),
-    position(p),
-    radius(r)
+Sphere::Sphere( vec3 p, float r, Pixel c ) :
+    Primitive( c ),
+    position( p ),
+    radius( r )
+{
+}
+
+Sphere::Sphere( vec3 p, float r, Pixel c, Material m ) :
+    Primitive( c ),
+	position( p ),
+	radius( r ),
+    material( m )
 {
 }
 
@@ -61,6 +76,15 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c) :
     normal(cross(v1 - v0, v2 - v0))
 {
 }
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material m ) :
+    Primitive( c ),
+	p0( v0 ),
+	p1( v1 ),
+	p2( v2 ),
+	normal( cross( v1 - v0, v2 - v0 ) ),
+    material(m)
+{
+}
 
 Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c) :
     Primitive(c),
@@ -68,6 +92,16 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c) :
     p1(v1),
     p2(v2),
     normal(n)
+{
+}
+
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material m ) :
+    Primitive( c ),
+	p0( v0 ),
+	p1( v1 ),
+	p2( v2 ),
+	normal( n ),
+	material( m )
 {
 }
 

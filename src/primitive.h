@@ -5,10 +5,17 @@
 #include "color.h"
 #include "tiny_obj_loader.h"
 
+struct Material
+{
+	float reflective;
+	float speculative;
+};
+
 class Primitive
 {
     public:
     Color color;
+    Material material;
 
     inline Primitive() = default;
     inline Primitive( Pixel c) : color(PixelToColor(c)) {}
@@ -22,8 +29,10 @@ class Plane : public Primitive
     public:
     vec3 normal;
     float dist;
+	Material material;
 
-    Plane(vec3 n, float d, Pixel c);
+    Plane( vec3 n, float d, Pixel c );
+	Plane( vec3 n, float d, Pixel c, Material m );
     bool Intersect(Ray* r);
 	vec3 NormalAt( vec3 point );
 };
@@ -33,9 +42,10 @@ class Sphere : public Primitive
     public:
     vec3 position;
     float radius;
-
+    Material material;
 
 	Sphere( vec3 p, float r, Pixel c );
+	Sphere( vec3 p, float r, Pixel c, Material m );
     bool Intersect(Ray* r);
     vec3 NormalAt( vec3 point );
 };
@@ -45,10 +55,13 @@ class Triangle : public Primitive
     public:
     vec3 p0, p1, p2;
     vec3 normal;
+	Material material;
 
     Triangle() = default;;
     Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c);
-    Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c);
+	Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material m );
+	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c );
+	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material m);
     bool Intersect(Ray* r);
 
 	vec3 NormalAt( vec3 point );
@@ -62,6 +75,7 @@ class TriangleSoup : public Primitive
     public:
     uint nr_faces;
     Triangle* faces;
+	Material material;
 
     TriangleSoup(Triangle* fs, uint nfs, Pixel c);
     bool Intersect(Ray* r);

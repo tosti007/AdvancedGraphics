@@ -28,11 +28,16 @@ void Game::Init(int argc, char **argv)
 	switch (argc)
 	{
 		case 1: // No arguments
+			// TODO: refactor maybe?
+			Material diffuse, mirror;
+			diffuse.reflective = 0.0;
+			mirror.reflective = 1.0;
+
 			nr_objects = 3;
 			objects = new Primitive*[nr_objects] {
-				new Sphere(vec3(0, 0, 10), 3, 0xff0000),
-				new Plane(vec3(0, 1, 0), 2, 0xffffff),
-				new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff)
+				new Sphere(vec3(0, 0, 10), 3, 0xff0000, diffuse),
+				new Plane(vec3(0, 1, 0), 2, 0xffffff, mirror),
+				new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, diffuse)
 			};
 			break;
 		case 2: {// An obj file
@@ -58,7 +63,7 @@ void Game::Init(int argc, char **argv)
 			}
 			} break;
 		default:
-			std::cout << argc << " arguments is not accepted!" << std::endl;
+			std::cout << argc << " arguments not accepted!" << std::endl;
 			exit(1);
 			break;
 	}
@@ -71,11 +76,6 @@ void Game::Shutdown()
 {
 	printf("Shutting down Game\n");
 }
-
-struct Material
-{
-	Color color;
-};
 
 bool Game::Intersect( Ray* r )
 {
@@ -132,16 +132,23 @@ Color Game::Trace(Ray* r, uint depth)
 
 	if ( Intersect( r ) )
 	{
-		// TODO switch to determine wat material it is (diffuse, reflective, glass)
 		// intersection point
-		// TODO: get normal from r->obj
 		vec3 interPoint = r->origin + r->t * r->direction;
 		vec3 interNormal = r->obj->NormalAt( interPoint );
+		
+		if (r->obj->material.reflective != 1.0)
+		{
+			// diffuse
+			vec3 ill = DirectIllumination( interPoint, interNormal );
 
-		vec3 ill = DirectIllumination( interPoint, interNormal );
-		ill *= 1 / ( pow( r->t, 2 ) );
-		// distance attenuation: return ( 1 / ( r->t * r->t ) ) * Color( red, green, blue );
-		return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
+			// distance attenuation
+			ill *= 1 / ( pow( r->t, 2 ) );
+
+			return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
+		} else {
+			return NULL;		
+		}
+
 	} else {
 		return Color(0); // maybe add skydome here
 	}
