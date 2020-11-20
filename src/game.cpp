@@ -155,21 +155,28 @@ Color Game::Trace(Ray* r, uint depth)
 		if (r->obj->material != NULL)
 			m = r->obj->material;
 
-		if (m->reflective != 1.0)
-		{
-			// diffuse
+		// Volledig mirror
+		if (m->IsFullMirror()) {
+			// TODO implement this
+			return PixelToColor(0x888888);
+		}
+
+		if (m->IsFullDiffuse()) {
 			vec3 ill = DirectIllumination( interPoint, interNormal );
 
 			// distance attenuation
 			ill *= 1 / ( pow( r->t, 2 ) );
 
 			return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
-		} else {
-			return PixelToColor(0x888888);		
 		}
 
+		// TODO speculative combinations
+
+		return PixelToColor(0xffff00);
+
 	} else {
-		return Color(0); // maybe add skydome here
+		// TODO add skydome
+		return Color(0);
 	}
 }
 

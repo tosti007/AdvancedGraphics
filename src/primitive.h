@@ -12,6 +12,9 @@ struct Material
     float diffuse;
 
     inline Material(float r, float s, float d) : reflective(r), speculative(s), diffuse(d) {}
+
+    inline bool IsFullMirror() { return reflective == 1.0; }
+    inline bool IsFullDiffuse() { return reflective == 0.0; }
 };
 
 class Primitive
