@@ -24,7 +24,7 @@ public:
 
 	bool Intersect( Ray* r );
 	vec3 DirectIllumination( vec3 interPoint, vec3 normal );
-	Color Trace( Ray* r, uint depth );
+	Color Trace( Ray r, uint depth );
 
   private:
 	Surface* screen;

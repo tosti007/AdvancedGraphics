@@ -145,29 +145,29 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return total;
 }
 
-Color Game::Trace(Ray* r, uint depth)
+Color Game::Trace(Ray r, uint depth)
 {
 	// TODO: handle depth value.
 
-	if ( Intersect( r ) )
+	if ( Intersect( &r ) )
 	{
 		// intersection point
-		vec3 interPoint = r->origin + r->t * r->direction;
-		vec3 interNormal = r->obj->NormalAt( interPoint );
+		vec3 interPoint = r.origin + r.t * r.direction;
+		vec3 interNormal = r.obj->NormalAt( interPoint );
 		
 		Material* m = materials[0]; // Default diffuse
-		if (r->obj->material != NULL)
-			m = r->obj->material;
+		if (r.obj->material != NULL)
+			m = r.obj->material;
 
 		if (m->IsFullMirror()) {
-			r->direction -= 2 * dot(r->direction, interNormal) * interNormal;
-			r->origin = interPoint;
+			r.direction -= 2 * dot(r.direction, interNormal) * interNormal;
+			r.origin = interPoint;
 			return Trace(r, depth - 1);
 		}
 
 		if (m->IsFullDiffuse()) {
 			vec3 ill = DirectIllumination( interPoint, interNormal ) ;
-			return ill * r->obj->color;
+			return ill * r.obj->color;
 		}
 
 		// TODO speculative combinations
@@ -200,7 +200,7 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 
-		Color color = Trace( &r, 1 );
+		Color color = Trace( r, 1 );
 
 		*buf = ColorToPixel(color);
 		buf++;
