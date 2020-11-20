@@ -23,12 +23,25 @@ void Game::InitFromTinyObj( char* filename )
 	if ( !ret )
 		exit( 1 );
 
-	nr_objects = shapes.size();
+	nr_objects = 0;
+    for (size_t s = 0; s < shapes.size(); s++)
+		nr_objects += shapes[s].mesh.indices.size() / 3;
+
 	objects = new Primitive*[nr_objects];
-	for (size_t s = 0; s < nr_objects; s++) {
-		TriangleSoup* soup = new TriangleSoup(NULL, 0, 0x00ff00);
-		TriangleSoup::FromTinyObj(soup, &attrib, &shapes[s].mesh);
-		objects[s] = soup;
+	Primitive** current = objects;
+
+	for (size_t s = 0; s < shapes.size(); s++)
+	{
+		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
+		{
+			Triangle* tri = new Triangle();
+			tri->color = PixelToColor(0x00ff00);
+
+			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f);
+
+			*current = tri;
+			current++;
+		}
 	}
 }
 
