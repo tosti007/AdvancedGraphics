@@ -53,7 +53,7 @@ class Triangle : public Primitive
 
 	vec3 NormalAt( vec3 point );
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
-    static Triangle FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f );
+    static void FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f );
 };
 
 class TriangleSoup : public Primitive

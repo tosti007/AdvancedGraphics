@@ -121,8 +121,11 @@ vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
     return vec3(vx, vy, vz);
 }
 
-Triangle Triangle::FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f )
+void Triangle::FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f )
 {
+    // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
+    assert(mesh->num_face_vertices[f] == 3);
+
     tinyobj::index_t idx0 = mesh->indices[3 * f + 0];
     tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
@@ -135,20 +138,16 @@ Triangle Triangle::FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh
     }
     */
 
-    vec3 v0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
-    vec3 v1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
-    vec3 v2 = TinyObjGetVector(idx2.vertex_index, &attrib->vertices);
+    tri->p0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
+    tri->p1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
+    tri->p2 = TinyObjGetVector(idx2.vertex_index, &attrib->vertices);
 
     // I think colors are defined on a per-vertex base.
     // Since we need only the full face normal let's just compute it ourselves.
-    vec3 n = ComputeNormal(v0, v1, v2);
+    tri->normal = ComputeNormal(tri->p0, tri->p1, tri->p2);
 
     // I think colors are defined on a per-vertex base, hence I don't currently know how to handle this. 
     // Color c = (Color)TinyObjGetVector(idx.vertex_index, &attrib.colors);
-    // Let's just use white.
-    Color c(0.0f, 1.0f, 0.0f);
-
-    return Triangle(v0, v1, v2, n, c);
 }
 
 TriangleSoup::TriangleSoup(Triangle* fs, uint nfs, Pixel c) :
@@ -181,9 +180,8 @@ void TriangleSoup::FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, t
     soup->faces = new Triangle[soup->nr_faces];
     for (size_t f = 0; f < soup->nr_faces; f++)
     {
-        // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
-        assert(mesh->num_face_vertices[f] == 3);
         // I think this will work and not result in NULL pointers later on.
-        soup->faces[f] = Triangle::FromTinyObj(attrib, mesh, f);
+        soup->faces[f].color = soup->color;
+        Triangle::FromTinyObj(&soup->faces[f], attrib, mesh, f);
     }
 }
