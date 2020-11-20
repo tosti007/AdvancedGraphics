@@ -108,6 +108,9 @@ vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
 
 Triangle Triangle::FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f )
 {
+    // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
+    assert(mesh->num_face_vertices[f] == 3);
+
     tinyobj::index_t idx0 = mesh->indices[3 * f + 0];
     tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
@@ -161,8 +164,6 @@ void TriangleSoup::FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, t
     soup->faces = new Triangle[soup->nr_faces];
     for (size_t f = 0; f < soup->nr_faces; f++)
     {
-        // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
-        assert(mesh->num_face_vertices[f] == 3);
         // I think this will work and not result in NULL pointers later on.
         soup->faces[f] = Triangle::FromTinyObj(attrib, mesh, f);
     }
