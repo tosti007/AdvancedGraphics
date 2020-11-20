@@ -1,11 +1,13 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "camera.h"
 
-Camera::Camera( float px, float py, float pz ) :
-    position(px, py, pz), 
-    direction(0, 0, 1),
-    right(1, 0, 0),
-    down(0, -1, 0),
+#define REALDOWN vec3(0, -1, 0)
+
+Camera::Camera( vec3 p, vec3 d ) :
+    position(p),
+    direction(d),
+    right(cross(d, REALDOWN)),
+    down(cross(right, d)),
     fov(1)
 {
 }

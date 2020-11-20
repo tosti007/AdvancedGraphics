@@ -60,7 +60,7 @@ void Game::InitFromTinyObj( char* filename )
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
-	view = new Camera(0, 0, 0);
+	view = new Camera(vec3(0, 0, 0), vec3(0, 0, 1));
 
 	// load materials
 	nr_materials = 3;

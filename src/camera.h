@@ -11,7 +11,7 @@ struct Camera
     vec3 right, down;
     float fov;
 
-    Camera( float px, float py, float pz );
+    Camera( vec3 p, vec3 d );
 	vec3 Center();
     vec3 TopLeft();
 
