@@ -71,11 +71,9 @@ void Game::Init(int argc, char **argv)
 	};
 
 	// load lights
-	nr_lights = 3;
+	nr_lights = 1;
 	lights = new Light*[nr_lights] {
-		new Light( { 0, 10, 0 }, { 0.05, 0.05, 0.05 } ),
-		new Light( { 0, 10, 5 }, { 0.05, 0.05, 0.05 } ),
-		new Light( { 0, 10, -5 }, { 0, 0.05, 0 } )
+		new Light( vec3( 0, 5, 0 ), vec3( 10, 10, 10 ) ),
 	};
 
 	// load model
