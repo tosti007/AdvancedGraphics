@@ -39,12 +39,11 @@ void Camera::KeyDown( int key, byte repeat )
         case SDLK_d:
             position += speed * right;
             break;
-        case SDLK_SPACE:
+        case SDLK_e:
             position -= speed * down;
             break;
         // These do not re-trigger once pressed.
-        case SDLK_LSHIFT:
-        case SDLK_RSHIFT:
+        case SDLK_q:
             position += speed * down;
             break;
     }
