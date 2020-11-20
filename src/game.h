@@ -23,9 +23,6 @@ public:
 
 	bool Intersect( Ray* r );
 	Color Trace( Ray* r, uint depth );
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
 
   private:
 	Surface* screen;

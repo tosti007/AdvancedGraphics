@@ -17,6 +17,9 @@ void Game::Init(int argc, char **argv)
 
 	// load model
 	std::string inputfile = "cube.obj";
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
 	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, inputfile.c_str() );
