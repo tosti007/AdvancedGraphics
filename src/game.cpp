@@ -1,6 +1,7 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
 #include "ray.h"
+#include "light.h"
 
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
@@ -14,6 +15,11 @@ void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
 	view = new Camera(0, 0, 0);
+
+	// load lights
+	lights = new Light *[nr_lights] {
+		new Light( { 1, 1, 20 }, { 255, 255, 255 } )
+	};
 
 	// load model
 	switch (argc)

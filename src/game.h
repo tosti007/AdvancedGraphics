@@ -3,6 +3,7 @@
 #include "surface.h"
 #include "camera.h"
 #include "primitive.h"
+#include "light.h"
 #include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
@@ -27,6 +28,8 @@ public:
   private:
 	Surface* screen;
 	Camera* view;
+	Light** lights;
+	uint nr_lights;
 	Primitive** objects;
 	uint nr_objects;
 };

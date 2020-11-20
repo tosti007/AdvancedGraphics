@@ -22,6 +22,9 @@
     <ClCompile Include="src/surface.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\light.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h">
@@ -55,6 +58,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\tiny_obj_loader.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\light.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
