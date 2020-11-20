@@ -23,6 +23,7 @@ public:
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
 	bool Intersect( Ray* r );
+	vec3 DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray* r, uint depth );
 
   private:

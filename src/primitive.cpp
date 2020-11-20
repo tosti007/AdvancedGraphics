@@ -20,7 +20,17 @@ bool Plane::Intersect(Ray* r)
     return true;
 }
 
-Sphere::Sphere( vec3 p, float r, Pixel c ) :
+vec3 Plane::NormalAt( vec3 point )
+{
+	return normal;
+}
+
+vec3 Sphere::NormalAt( vec3 point )
+{
+	return point - position;
+}
+
+	Sphere::Sphere( vec3 p, float r, Pixel c ) :
     Primitive(c),
     position(p),
     radius(r)
@@ -92,6 +102,11 @@ bool Triangle::Intersect(Ray* r)
     return true;
 }
 
+vec3 Triangle::NormalAt( vec3 point )
+{
+	return normal;
+}
+
 vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
 {
     return cross(v1 - v0, v2 - v0);
@@ -153,6 +168,11 @@ bool TriangleSoup::Intersect(Ray* r)
         found |= faces[i].Intersect(r);
     }
     return found;
+}
+
+vec3 TriangleSoup::NormalAt( vec3 point )
+{
+	return NULL;
 }
 
 void TriangleSoup::FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh)

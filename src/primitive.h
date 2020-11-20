@@ -14,6 +14,7 @@ class Primitive
     inline Primitive( Pixel c) : color(PixelToColor(c)) {}
     inline Primitive( Color c) : color(c) {}
     virtual bool Intersect(Ray* r) = 0;
+	virtual vec3 NormalAt( vec3 point ) = 0;
 };
 
 class Plane : public Primitive
@@ -24,6 +25,7 @@ class Plane : public Primitive
 
     Plane(vec3 n, float d, Pixel c);
     bool Intersect(Ray* r);
+	vec3 NormalAt( vec3 point );
 };
 
 class Sphere : public Primitive
@@ -32,8 +34,10 @@ class Sphere : public Primitive
     vec3 position;
     float radius;
 
-    Sphere( vec3 p, float r, Pixel c );
+
+	Sphere( vec3 p, float r, Pixel c );
     bool Intersect(Ray* r);
+    vec3 NormalAt( vec3 point );
 };
 
 class Triangle : public Primitive
@@ -47,6 +51,7 @@ class Triangle : public Primitive
     Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c);
     bool Intersect(Ray* r);
 
+	vec3 NormalAt( vec3 point );
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
     static Triangle FromTinyObj( tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f );
 };
@@ -60,6 +65,7 @@ class TriangleSoup : public Primitive
 
     TriangleSoup(Triangle* fs, uint nfs, Pixel c);
     bool Intersect(Ray* r);
+	vec3 NormalAt( vec3 point );
 
     static void FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh);
 };

@@ -17,9 +17,11 @@ void Game::Init(int argc, char **argv)
 	view = new Camera(0, 0, 0);
 
 	// load lights
-	nr_lights = 1;
+	nr_lights = 3;
 	lights = new Light *[nr_lights] {
-		new Light( { 1, 1, 20 }, { 255, 255, 255 } )
+		new Light( { 0, 10, 0 }, { 0.05, 0.05, 0.05 } ),
+		new Light( { 0, 10, 5 }, { 0.05, 0.05, 0.05 } ),
+		new Light( { 0, 10, -5 }, { 0, 0.05, 0 } )
 	};
 
 	// load model
@@ -88,18 +90,58 @@ bool Game::Intersect( Ray* r )
 	return found;
 }
 
+vec3 Normalize( vec3 v )
+{
+	float invLen = sqrtf( dot( v, v ) );
+	return v * invLen;
+}
+float vDistance( vec3 first, vec3 second )
+{
+	return sqrt( pow( second.x - first.x, 2 ) + pow( second.y - first.y, 2 ) + pow( second.z - first.z, 2 ) * 1.0 );
+}
+
+Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
+{
+	// accumulated color
+	Color tmpColor = { 0, 0, 0 };
+	float fac = 0;
+	// send shadow ray to each light and add its color
+	for ( size_t i = 0; i < nr_lights; i++ )
+	{
+		// compute origin and direction of shadow ray
+		vec3 rayDirection = Normalize( lights[i]->position - interPoint );
+		fac = dot( rayDirection, normal );
+		vec3 rayOrigin = fac < 0 ? interPoint - ( 1e-3 * normal ) : interPoint + ( 1e-3 * normal );
+		Ray shadowRay = Ray( rayOrigin, rayDirection );
+
+		// find intersection of shadow ray, check if it is closest
+		// TODO Intersect function that returns at the first time an intersection is found
+		if ( Intersect( &shadowRay ) && shadowRay.t < vDistance( lights[i]->position, interPoint ) )
+			continue;
+
+		tmpColor.x += std::max( 0.0f, fac ) * lights[i]->color.x;
+		tmpColor.y += std::max( 0.0f, fac ) * lights[i]->color.y;
+		tmpColor.z += std::max( 0.0f, fac ) * lights[i]->color.z;
+	}
+	return tmpColor;
+}
+
 Color Game::Trace(Ray* r, uint depth)
 {
 	// TODO: handle depth value.
 
 	if ( Intersect( r ) )
 	{
+		// TODO switch to determine wat material it is (diffuse, reflective, glass)
 		// intersection point
-		//vec3 interPoint = r->origin + r->t * r->direction;
+		// TODO: get normal from r->obj
+		vec3 interPoint = r->origin + r->t * r->direction;
+		vec3 interNormal = r->obj->NormalAt( interPoint );
 
-		//return ( 1 / ( r->t * r->t ) ) * Color( red, green, blue );
-
-		return r->obj->color;
+		vec3 ill = DirectIllumination( interPoint, interNormal );
+		ill *= 1 / ( pow( r->t, 2 ) );
+		// distance attenuation: return ( 1 / ( r->t * r->t ) ) * Color( red, green, blue );
+		return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
 	} else {
 		return Color(0); // maybe add skydome here
 	}
