@@ -16,30 +16,42 @@ void Game::Init(int argc, char **argv)
 	view = new Camera(0, 0, 0);
 
 	// load model
-	std::string inputfile = "cube.obj";
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn;
-	std::string err;
-	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, inputfile.c_str() );
-	if ( !warn.empty() )
-		std::cout << warn << std::endl;
-	if ( !err.empty() )
-		std::cerr << err << std::endl;
-	if ( !ret )
-		exit( 1 );
-	
-	nr_objects = 3 + shapes.size();
-	objects = new Primitive*[nr_objects];
-	objects[nr_objects - 3] = new Sphere(vec3(0, 0, 10), 3, 0xff0000);
-	objects[nr_objects - 2] = new Plane(vec3(0, 1, 0), 2, 0xffffff);
-	objects[nr_objects - 1] = new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff);
+	switch (argc)
+	{
+		case 1: // No arguments
+			nr_objects = 3;
+			objects = new Primitive*[nr_objects] {
+				new Sphere(vec3(0, 0, 10), 3, 0xff0000),
+				new Plane(vec3(0, 1, 0), 2, 0xffffff),
+				new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff)
+			};
+			break;
+		case 2: {// An obj file
+			tinyobj::attrib_t attrib;
+			std::vector<tinyobj::shape_t> shapes;
+			std::vector<tinyobj::material_t> materials;
+			std::string warn;
+			std::string err;
+			bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, argv[1] );
+			if ( !warn.empty() )
+				std::cout << warn << std::endl;
+			if ( !err.empty() )
+				std::cerr << err << std::endl;
+			if ( !ret )
+				exit( 1 );
 
-	for (size_t s = 0; s < shapes.size(); s++) {
-		TriangleSoup* soup = new TriangleSoup(NULL, 0, 0x00ff00);
-		TriangleSoup::FromTinyObj(soup, &attrib, &shapes[s].mesh);
-		objects[s] = soup;
+			nr_objects = shapes.size();
+			objects = new Primitive*[nr_objects];
+			for (size_t s = 0; s < nr_objects; s++) {
+				TriangleSoup* soup = new TriangleSoup(NULL, 0, 0x00ff00);
+				TriangleSoup::FromTinyObj(soup, &attrib, &shapes[s].mesh);
+				objects[s] = soup;
+			}
+			} break;
+		default:
+			std::cout << argc << " arguments is not accepted!" << std::endl;
+			exit(1);
+			break;
 	}
 }
 
