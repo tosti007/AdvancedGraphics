@@ -166,9 +166,8 @@ Color Game::Trace(Ray* r, uint depth)
 		}
 
 		if (m->IsFullDiffuse()) {
-			vec3 ill = DirectIllumination( interPoint, interNormal );
-
-			return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
+			vec3 ill = DirectIllumination( interPoint, interNormal ) ;
+			return ill * r->obj->color;
 		}
 
 		// TODO speculative combinations
