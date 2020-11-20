@@ -21,8 +21,6 @@ public:
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
-	bool RayTriIntersect( Ray *r, float v0, float v1, float v2 );
-	bool NearestIntersect( Ray *r, tinyobj::index_t nearestIdx );
 	bool Intersect( Ray* r );
 	Color Trace( Ray* r, uint depth );
 	tinyobj::attrib_t attrib;
