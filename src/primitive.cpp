@@ -183,39 +183,3 @@ void Triangle::FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::m
     // I think colors are defined on a per-vertex base, hence I don't currently know how to handle this. 
     // Color c = (Color)TinyObjGetVector(idx.vertex_index, &attrib.colors);
 }
-
-TriangleSoup::TriangleSoup(Triangle* fs, uint nfs, Pixel c) :
-    Primitive(c),
-    nr_faces(nfs),
-    faces(fs)
-{
-}
-
-bool TriangleSoup::Intersect(Ray* r)
-{
-    // TODO: do some AABB intersection here first.
-
-    bool found = false;
-    for (uint i = 0; i < nr_faces; i++)
-    {
-        found |= faces[i].Intersect(r);
-    }
-    return found;
-}
-
-vec3 TriangleSoup::NormalAt( vec3 point )
-{
-	return NULL;
-}
-
-void TriangleSoup::FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh)
-{
-    soup->nr_faces = mesh->indices.size() / 3;
-    soup->faces = new Triangle[soup->nr_faces];
-    for (size_t f = 0; f < soup->nr_faces; f++)
-    {
-        // I think this will work and not result in NULL pointers later on.
-        soup->faces[f].color = soup->color;
-        Triangle::FromTinyObj(&soup->faces[f], attrib, mesh, f);
-    }
-}

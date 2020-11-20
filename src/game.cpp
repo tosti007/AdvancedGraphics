@@ -8,6 +8,43 @@
 #include "tiny_obj_loader.h"
 
 
+void Game::InitFromTinyObj( char* filename )
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn;
+	std::string err;
+	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename );
+	if ( !warn.empty() )
+		std::cout << warn << std::endl;
+	if ( !err.empty() )
+		std::cerr << err << std::endl;
+	if ( !ret )
+		exit( 1 );
+
+	nr_objects = 0;
+    for (size_t s = 0; s < shapes.size(); s++)
+		nr_objects += shapes[s].mesh.indices.size() / 3;
+
+	objects = new Primitive*[nr_objects];
+	Primitive** current = objects;
+
+	for (size_t s = 0; s < shapes.size(); s++)
+	{
+		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
+		{
+			Triangle* tri = new Triangle();
+			tri->color = PixelToColor(0x00ff00);
+
+			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f);
+
+			*current = tri;
+			current++;
+		}
+	}
+}
+
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
@@ -40,28 +77,9 @@ void Game::Init(int argc, char **argv)
 				new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, diffuse)
 			};
 			break;
-		case 2: {// An obj file
-			tinyobj::attrib_t attrib;
-			std::vector<tinyobj::shape_t> shapes;
-			std::vector<tinyobj::material_t> materials;
-			std::string warn;
-			std::string err;
-			bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, argv[1] );
-			if ( !warn.empty() )
-				std::cout << warn << std::endl;
-			if ( !err.empty() )
-				std::cerr << err << std::endl;
-			if ( !ret )
-				exit( 1 );
-
-			nr_objects = shapes.size();
-			objects = new Primitive*[nr_objects];
-			for (size_t s = 0; s < nr_objects; s++) {
-				TriangleSoup* soup = new TriangleSoup(NULL, 0, 0x00ff00);
-				TriangleSoup::FromTinyObj(soup, &attrib, &shapes[s].mesh);
-				objects[s] = soup;
-			}
-			} break;
+		case 2: // An obj file
+			InitFromTinyObj(argv[1]);
+			break;
 		default:
 			std::cout << argc << " arguments not accepted!" << std::endl;
 			exit(1);
