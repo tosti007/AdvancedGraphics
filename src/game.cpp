@@ -7,6 +7,20 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
+void Game::InitDefaultScene()
+{
+	// TODO: refactor maybe?
+	Material diffuse, mirror;
+	diffuse.reflective = 0.0;
+	mirror.reflective = 1.0;
+
+	nr_objects = 3;
+	objects = new Primitive*[nr_objects] {
+		new Sphere(vec3(0, 0, 10), 3, 0xff0000, diffuse),
+		new Plane(vec3(0, 1, 0), 2, 0xffffff, mirror),
+		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, diffuse)
+	};
+}
 
 void Game::InitFromTinyObj( char* filename )
 {
@@ -65,17 +79,7 @@ void Game::Init(int argc, char **argv)
 	switch (argc)
 	{
 		case 1: // No arguments
-			// TODO: refactor maybe?
-			Material diffuse, mirror;
-			diffuse.reflective = 0.0;
-			mirror.reflective = 1.0;
-
-			nr_objects = 3;
-			objects = new Primitive*[nr_objects] {
-				new Sphere(vec3(0, 0, 10), 3, 0xff0000, diffuse),
-				new Plane(vec3(0, 1, 0), 2, 0xffffff, mirror),
-				new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, diffuse)
-			};
+			InitDefaultScene();
 			break;
 		case 2: // An obj file
 			InitFromTinyObj(argv[1]);

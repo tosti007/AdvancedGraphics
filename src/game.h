@@ -34,6 +34,7 @@ public:
 	Primitive** objects;
 	uint nr_objects;
 
+	void InitDefaultScene();
   	void InitFromTinyObj( char* filename );
 };
 
