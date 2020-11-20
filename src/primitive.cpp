@@ -3,17 +3,10 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "primitive.h"
 
-Plane::Plane( vec3 n, float d, Pixel c ) :
-    Primitive(c),
-    normal(n.normalized()),
-    dist(d)
-{
-}
-Plane::Plane( vec3 n, float d, Pixel c, Material m ) :
-    Primitive( c ),
+Plane::Plane( vec3 n, float d, Pixel c, Material* m ) :
+    Primitive( c, m ),
 	normal( n.normalized() ),
-	dist( d ),
-	material( m )
+	dist( d )
 {
 }
 
@@ -37,18 +30,10 @@ vec3 Sphere::NormalAt( vec3 point )
 	return point - position;
 }
 
-Sphere::Sphere( vec3 p, float r, Pixel c ) :
-    Primitive( c ),
-    position( p ),
-    radius( r )
-{
-}
-
-Sphere::Sphere( vec3 p, float r, Pixel c, Material m ) :
-    Primitive( c ),
+Sphere::Sphere( vec3 p, float r, Pixel c, Material* m ) :
+    Primitive( c, m ),
 	position( p ),
-	radius( r ),
-    material( m )
+	radius( r )
 {
 }
 
@@ -68,40 +53,21 @@ bool Sphere::Intersect(Ray* r)
     return true;
 }
 
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c) :
-    Primitive(c),
-    p0(v0),
-    p1(v1),
-    p2(v2),
-    normal(cross(v1 - v0, v2 - v0))
-{
-}
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material m ) :
-    Primitive( c ),
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m ) :
+    Primitive( c, m ),
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
 	normal( cross( v1 - v0, v2 - v0 ) ),
-    material(m)
 {
 }
 
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c) :
-    Primitive(c),
-    p0(v0),
-    p1(v1),
-    p2(v2),
-    normal(n)
-{
-}
-
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material m ) :
-    Primitive( c ),
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
+    Primitive( c, m ),
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
-	normal( n ),
-	material( m )
+	normal( n )
 {
 }
 

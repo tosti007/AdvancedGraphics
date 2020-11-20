@@ -15,11 +15,11 @@ class Primitive
 {
     public:
     Color color;
-    Material material;
+    Material* material;
 
     inline Primitive() = default;
-    inline Primitive( Pixel c) : color(PixelToColor(c)) {}
-    inline Primitive( Color c) : color(c) {}
+    inline Primitive( Pixel c, Material* m) : Primitive(PixelToColor(c), m) {}
+    inline Primitive( Color c, Material* m) : color(c), material(m) {}
     virtual bool Intersect(Ray* r) = 0;
 	virtual vec3 NormalAt( vec3 point ) = 0;
 };
@@ -29,10 +29,9 @@ class Plane : public Primitive
     public:
     vec3 normal;
     float dist;
-	Material material;
 
-    Plane( vec3 n, float d, Pixel c );
-	Plane( vec3 n, float d, Pixel c, Material m );
+    inline Plane( vec3 n, float d, Pixel c ) : Plane(n, d, c, NULL) {}
+	Plane( vec3 n, float d, Pixel c, Material* m );
     bool Intersect(Ray* r);
 	vec3 NormalAt( vec3 point );
 };
@@ -42,10 +41,9 @@ class Sphere : public Primitive
     public:
     vec3 position;
     float radius;
-    Material material;
 
-	Sphere( vec3 p, float r, Pixel c );
-	Sphere( vec3 p, float r, Pixel c, Material m );
+	inline Sphere( vec3 p, float r, Pixel c ) : Sphere(p, r, c, NULL) {}
+	Sphere( vec3 p, float r, Pixel c, Material* m );
     bool Intersect(Ray* r);
     vec3 NormalAt( vec3 point );
 };
@@ -55,13 +53,12 @@ class Triangle : public Primitive
     public:
     vec3 p0, p1, p2;
     vec3 normal;
-	Material material;
 
     Triangle() = default;
-    Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c);
-	Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material m );
-	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c );
-	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material m);
+    inline Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c) : Triangle( v0, v1, v2, c, NULL) {}
+	Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m );
+	inline Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c ) : Triangle( v0, v1, v2, n, c, NULL ) {}
+	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m);
     bool Intersect(Ray* r);
 
 	vec3 NormalAt( vec3 point );
