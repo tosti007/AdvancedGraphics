@@ -29,6 +29,9 @@ public:
   private:
 	Surface* screen;
 	Camera* view;
+
+	Material** materials;
+	uint nr_materials;
 	Light** lights;
 	uint nr_lights;
 	Primitive** objects;

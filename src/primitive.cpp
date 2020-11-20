@@ -58,7 +58,7 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m ) :
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
-	normal( cross( v1 - v0, v2 - v0 ) ),
+	normal( cross( v1 - v0, v2 - v0 ) )
 {
 }
 

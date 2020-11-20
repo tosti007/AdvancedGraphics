@@ -9,16 +9,11 @@
 
 void Game::InitDefaultScene()
 {
-	// TODO: refactor maybe?
-	Material diffuse, mirror;
-	diffuse.reflective = 0.0;
-	mirror.reflective = 1.0;
-
 	nr_objects = 3;
 	objects = new Primitive*[nr_objects] {
-		new Sphere(vec3(0, 0, 10), 3, 0xff0000, diffuse),
-		new Plane(vec3(0, 1, 0), 2, 0xffffff, mirror),
-		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, diffuse)
+		new Sphere(vec3(0, 0, 10), 3, 0xff0000, materials[0]),
+		new Plane(vec3(0, 1, 0), 2, 0xffffff, materials[2]),
+		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, materials[0])
 	};
 }
 
@@ -67,9 +62,17 @@ void Game::Init(int argc, char **argv)
 	printf("Initializing Game\n");
 	view = new Camera(0, 0, 0);
 
+	// load materials
+	nr_materials = 3;
+	materials = new Material*[nr_materials] {
+		new Material(0, 0, 0.5), // Diffuse
+		new Material(0.2, 0.8, 0), // Glass
+		new Material(1, 0, 0) // Mirror
+	};
+
 	// load lights
 	nr_lights = 3;
-	lights = new Light *[nr_lights] {
+	lights = new Light*[nr_lights] {
 		new Light( { 0, 10, 0 }, { 0.05, 0.05, 0.05 } ),
 		new Light( { 0, 10, 5 }, { 0.05, 0.05, 0.05 } ),
 		new Light( { 0, 10, -5 }, { 0, 0.05, 0 } )
@@ -112,16 +115,6 @@ bool Game::Intersect( Ray* r )
 	return found;
 }
 
-vec3 Normalize( vec3 v )
-{
-	float invLen = sqrtf( dot( v, v ) );
-	return v * invLen;
-}
-float vDistance( vec3 first, vec3 second )
-{
-	return sqrt( pow( second.x - first.x, 2 ) + pow( second.y - first.y, 2 ) + pow( second.z - first.z, 2 ) * 1.0 );
-}
-
 Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 {
 	// accumulated color
@@ -131,14 +124,14 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
 		// compute origin and direction of shadow ray
-		vec3 rayDirection = Normalize( lights[i]->position - interPoint );
+		vec3 rayDirection = normalize( lights[i]->position - interPoint );
 		fac = dot( rayDirection, normal );
 		vec3 rayOrigin = fac < 0 ? interPoint - ( 1e-3 * normal ) : interPoint + ( 1e-3 * normal );
 		Ray shadowRay = Ray( rayOrigin, rayDirection );
 
 		// find intersection of shadow ray, check if it is closest
 		// TODO Intersect function that returns at the first time an intersection is found
-		if ( Intersect( &shadowRay ) && shadowRay.t < vDistance( lights[i]->position, interPoint ) )
+		if ( Intersect( &shadowRay ) && shadowRay.t < (lights[i]->position, interPoint).length() )
 			continue;
 
 		tmpColor.x += std::max( 0.0f, fac ) * lights[i]->color.x;
@@ -158,7 +151,11 @@ Color Game::Trace(Ray* r, uint depth)
 		vec3 interPoint = r->origin + r->t * r->direction;
 		vec3 interNormal = r->obj->NormalAt( interPoint );
 		
-		if (r->obj->material.reflective != 1.0)
+		Material* m = materials[0]; // Default diffuse
+		if (r->obj->material != NULL)
+			m = r->obj->material;
+
+		if (m->reflective != 1.0)
 		{
 			// diffuse
 			vec3 ill = DirectIllumination( interPoint, interNormal );
@@ -168,7 +165,7 @@ Color Game::Trace(Ray* r, uint depth)
 
 			return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
 		} else {
-			return NULL;		
+			return PixelToColor(0x888888);		
 		}
 
 	} else {

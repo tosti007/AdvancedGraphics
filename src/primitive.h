@@ -9,6 +9,9 @@ struct Material
 {
 	float reflective;
 	float speculative;
+    float diffuse;
+
+    inline Material(float r, float s, float d) : reflective(r), speculative(s), diffuse(d) {}
 };
 
 class Primitive
