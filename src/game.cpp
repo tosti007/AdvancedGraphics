@@ -73,7 +73,7 @@ void Game::Init(int argc, char **argv)
 	// load lights
 	nr_lights = 1;
 	lights = new Light*[nr_lights] {
-		new Light( vec3( 0, 5, 0 ), vec3( 10, 10, 10 ) ),
+		new Light( vec3( 0, 0, 0 ), vec3( 10, 10, 10 ) ),
 	};
 
 	// load model
@@ -116,27 +116,33 @@ bool Game::Intersect( Ray* r )
 Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 {
 	// accumulated color
-	Color tmpColor = { 0, 0, 0 };
-	float fac = 0;
+	Color total( 0 );
 	// send shadow ray to each light and add its color
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
 		// compute origin and direction of shadow ray
-		vec3 rayDirection = normalize( lights[i]->position - interPoint );
-		fac = dot( rayDirection, normal );
-		vec3 rayOrigin = fac < 0 ? interPoint - ( 1e-3 * normal ) : interPoint + ( 1e-3 * normal );
-		Ray shadowRay = Ray( rayOrigin, rayDirection );
+		vec3 rayDirection = lights[i]->position - interPoint;
+		float lightDistance = rayDirection.length();
+		rayDirection.normalize();
 
-		// find intersection of shadow ray, check if it is closest
+		float fac = dot( rayDirection, normal );
+		vec3 rayOffset = 1e-3 * normal;
+		if (fac < 0) {
+			fac *= -1;
+			rayOffset *= -1;
+		}
+
+		Ray shadowRay = Ray( interPoint + rayOffset, rayDirection );
+
+		// find intersection of shadow ray, check if it is between the light and object
 		// TODO Intersect function that returns at the first time an intersection is found
-		if ( Intersect( &shadowRay ) && shadowRay.t < (lights[i]->position, interPoint).length() )
+		if ( Intersect( &shadowRay ) && shadowRay.t < lightDistance )
 			continue;
 
-		tmpColor.x += std::max( 0.0f, fac ) * lights[i]->color.x;
-		tmpColor.y += std::max( 0.0f, fac ) * lights[i]->color.y;
-		tmpColor.z += std::max( 0.0f, fac ) * lights[i]->color.z;
+		// distance attenuation * angle * color
+		total += (1 / ( lightDistance * lightDistance ) ) * fac * lights[i]->color;
 	}
-	return tmpColor;
+	return total;
 }
 
 Color Game::Trace(Ray* r, uint depth)
@@ -161,9 +167,6 @@ Color Game::Trace(Ray* r, uint depth)
 
 		if (m->IsFullDiffuse()) {
 			vec3 ill = DirectIllumination( interPoint, interNormal );
-
-			// distance attenuation
-			ill *= 1 / ( pow( r->t, 2 ) );
 
 			return { r->obj->color.x * ill.x, r->obj->color.y * ill.y, r->obj->color.z * ill.z };
 		}
