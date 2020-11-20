@@ -159,10 +159,10 @@ Color Game::Trace(Ray* r, uint depth)
 		if (r->obj->material != NULL)
 			m = r->obj->material;
 
-		// Volledig mirror
 		if (m->IsFullMirror()) {
-			// TODO implement this
-			return PixelToColor(0x888888);
+			r->direction -= 2 * dot(r->direction, interNormal) * interNormal;
+			r->origin = interPoint;
+			return Trace(r, depth - 1);
 		}
 
 		if (m->IsFullDiffuse()) {
