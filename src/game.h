@@ -33,6 +33,8 @@ public:
 	uint nr_lights;
 	Primitive** objects;
 	uint nr_objects;
+
+  	void InitFromTinyObj( char* filename );
 };
 
 }; // namespace AdvancedGraphics
