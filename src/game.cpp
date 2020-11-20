@@ -17,6 +17,7 @@ void Game::Init(int argc, char **argv)
 	view = new Camera(0, 0, 0);
 
 	// load lights
+	nr_lights = 1;
 	lights = new Light *[nr_lights] {
 		new Light( { 1, 1, 20 }, { 255, 255, 255 } )
 	};
