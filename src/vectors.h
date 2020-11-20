@@ -181,6 +181,9 @@ struct mat4
 	}
 };
 
+vec3 operator * ( mat4& m, const vec3& v );
+vec4 operator * ( mat4& m, const vec4& v );
+
 struct aabb
 {
 	aabb() = default;

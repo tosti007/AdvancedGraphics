@@ -24,7 +24,8 @@ vec3 Camera::TopLeft()
 
 void Camera::KeyDown( int key, byte repeat )
 {
-    float speed = 0.01;
+    const float speed = 0.01;
+    const float angle = 0.03;
     switch (key)
     {
         case SDLK_w:
@@ -46,5 +47,28 @@ void Camera::KeyDown( int key, byte repeat )
         case SDLK_q:
             position += speed * down;
             break;
+        case SDLK_LEFT:
+            RotateAround(down, angle);
+            break;
+        case SDLK_RIGHT:
+            RotateAround(down, -angle);
+            break;
+        case SDLK_UP:
+            RotateAround(right, -angle);
+            break;
+        case SDLK_DOWN:
+            RotateAround(right, angle);
+            break;
     }
+}
+
+void Camera::RotateAround( vec3 axis, float angle )
+{
+    mat4 m = mat4::rotate(axis, angle);
+    direction = m * direction;
+    right = m * right;
+    down = m * down;
+    direction.normalize();
+    right.normalize();
+    down.normalize();
 }

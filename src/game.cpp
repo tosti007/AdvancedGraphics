@@ -214,7 +214,13 @@ void Game::Tick( float deltaTime )
 	sprintf (buffer, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
 	screen->Print(buffer, 2, 9, 0xffff00);
 
+	sprintf (buffer, "Rgt: %f %f %f", view->right.x, view->right.y, view->right.z);
+	screen->Print(buffer, 2, 16, 0xffff00);
+
+	sprintf (buffer, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
+	screen->Print(buffer, 2, 23, 0xffff00);
+
 	// Timer
 	sprintf( buffer, "FPS: %f", 1 / deltaTime);
-	screen->Print( buffer, 2, 16, 0xffff00 );
+	screen->Print( buffer, 2, 30, 0xffff00 );
 }
