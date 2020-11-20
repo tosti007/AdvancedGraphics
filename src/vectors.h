@@ -5,9 +5,8 @@
 
 namespace AdvancedGraphics {
 
-class vec2 // adapted from https://github.com/dcow/RayTracer
+struct vec2 // adapted from https://github.com/dcow/RayTracer
 {
-public:
 	union { struct { float x, y; }; float cell[2]; };
 	vec2() = default;
 	vec2( float v ) : x( v ), y( v ) {}
@@ -30,9 +29,8 @@ public:
 	float dot( const vec2& operand ) const { return x * operand.x + y * operand.y; }
 };
 
-class vec3
+struct vec3
 {
-public:
 	union { struct { float x, y, z, dummy; }; float cell[4]; };
 	vec3() = default;
 	vec3( float v ) : x( v ), y( v ), z( v ) {}
@@ -59,9 +57,8 @@ public:
 	float dot( const vec3& operand ) const { return x * operand.x + y * operand.y + z * operand.z; }
 };
 
-class vec4
+struct vec4
 {
-public:
 	union { struct { float x, y, z, w; }; vec3 xyz; float cell[4]; };
 	vec4() = default;
 	vec4( float v ) : x( v ), y( v ), z( v ), w( v ) {}
@@ -93,9 +90,8 @@ vec3 operator * ( const vec3& v, const float& s );
 vec4 operator * ( const float& s, const vec4& v );
 vec4 operator * ( const vec4& v, const float& s );
 
-class uint4
+struct uint4
 {
-public:
 	union { struct { uint x, y, z, w; }; uint cell[4]; };
 	uint4() = default;
 	uint4( int v ) : x( v ), y( v ), z( v ), w( v ) {}
@@ -111,9 +107,8 @@ public:
 	uint& operator [] ( const int idx ) { return cell[idx]; }
 };
 
-class int4
+struct int4
 {
-public:
 	union { struct { int x, y, z, w; }; int cell[4]; };
 	int4() = default;
 	int4( int v ) : x( v ), y( v ), z( v ), w( v ) {}
@@ -130,9 +125,8 @@ public:
 	int& operator [] ( const int idx ) { return cell[idx]; }
 };
 
-class mat4
+struct mat4
 {
-public:
 	mat4() { memset( cell, 0, 64 ); cell[0] = cell[5] = cell[10] = cell[15] = 1; }
 	float cell[16];
 	float& operator [] ( const int idx ) { return cell[idx]; }
@@ -187,9 +181,8 @@ public:
 	}
 };
 
-class aabb
+struct aabb
 {
-public:
 	aabb() = default;
 	aabb( __m128 a, __m128 b ) { bmin4 = a, bmax4 = b; bmin[3] = bmax[3] = 0; }
 	aabb( vec3 a, vec3 b ) { bmin[0] = a.x, bmin[1] = a.y, bmin[2] = a.z, bmin[3] = 0, bmax[0] = b.x, bmax[1] = b.y, bmax[2] = b.z, bmax[3] = 0; }
