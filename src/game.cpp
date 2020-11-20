@@ -10,7 +10,7 @@
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
-void Game::Init()
+void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
 	view = new Camera(0, 0, 0);
