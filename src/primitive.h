@@ -55,17 +55,3 @@ class Triangle : public Primitive
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
     static void FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f );
 };
-
-class TriangleSoup : public Primitive
-{
-    // I just realised that a color value is really weird on a triangle soup with each their own color.
-    public:
-    uint nr_faces;
-    Triangle* faces;
-
-    TriangleSoup(Triangle* fs, uint nfs, Pixel c);
-    bool Intersect(Ray* r);
-	vec3 NormalAt( vec3 point );
-
-    static void FromTinyObj( TriangleSoup* soup, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh);
-};
