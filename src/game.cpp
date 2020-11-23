@@ -58,6 +58,9 @@ void Game::InitFromTinyObj( char* filename )
 }
 void Game::InitSkyBox()
 {
+	struct float3{
+		float r, g, b;
+	};
 	printf( "Loading skydome data...\n");
 	float3 *pixels = nullptr;
 	FREE64( skyPixels ); // just in case we're reloading
@@ -128,7 +131,7 @@ void Game::InitSkyBox()
 	for (uint i = 0; i < skyWidth * skyHeight; i++)
 	{
 		float3 c = pixels[i];
-		skyPixels[i] = Color(c.x, c.y, c.z);
+		skyPixels[i] = Color(c.r, c.g, c.b);
 	}
 }
 

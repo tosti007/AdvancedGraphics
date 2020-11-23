@@ -7,10 +7,7 @@
 #include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
-struct float3
-{
-	float x, y, z;
-};
+
 class Game
 {
 public:
