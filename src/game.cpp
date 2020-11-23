@@ -60,14 +60,14 @@ void Game::LoadSkyBox()
 {
 	printf( "Loading skydome data...\n");
 	float3 *pixels = nullptr;
-	FREE64( pixels ); // just in case we're reloading
-	pixels = 0;
-	char t[] = "assets/skybox.hdr", *p;
-	if ( p = strstr( t, ".hdr" ) )
+	FREE64( skyPixels ); // just in case we're reloading
+	char filename[] = "assets/skybox.hdr";
+	char* p;
+	if ( p = strstr( filename, ".hdr" ) )
 	{
 		// attempt to load skydome from binary file
-		memcpy( strstr( t, ".hdr" ), ".bin", 4 );
-		std::ifstream f( t, std::ios::binary );
+		memcpy( strstr( filename, ".hdr" ), ".bin", 4 );
+		std::ifstream f( filename, std::ios::binary );
 		if ( f )
 		{
 			printf( "Loading cached hdr data...\n" );
@@ -77,7 +77,7 @@ void Game::LoadSkyBox()
 			f.read( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
 		}
 		else
-			memcpy( strstr( t, ".bin" ), ".hdr", 4 );
+			memcpy( strstr( filename, ".bin" ), ".hdr", 4 );
 	}
 	else
 	{
@@ -90,9 +90,9 @@ void Game::LoadSkyBox()
 		// load skydome from original .hdr file
 		printf( "Loading original hdr data...\n" );
 		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-		fif = FreeImage_GetFileType( t, 0 );
-		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( t );
-		FIBITMAP *dib = FreeImage_Load( fif, t );
+		fif = FreeImage_GetFileType( filename, 0 );
+		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( filename );
+		FIBITMAP *dib = FreeImage_Load( fif, filename );
 		if ( !dib ) return;
 		skyWidth = FreeImage_GetWidth( dib );
 		skyHeight = FreeImage_GetHeight( dib );
@@ -104,8 +104,8 @@ void Game::LoadSkyBox()
 		}
 		FreeImage_Unload( dib );
 		// save skydome to binary file, .hdr is slow to load
-		memcpy( strstr( t, ".hdr" ), ".bin", 4 );
-		std::ofstream f( t, std::ios::binary );
+		memcpy( strstr( filename, ".hdr" ), ".bin", 4 );
+		std::ofstream f( filename, std::ios::binary );
 		f.write( (char *)&skyWidth, sizeof( skyWidth ) );
 		f.write( (char *)&skyHeight, sizeof( skyHeight ) );
 		f.write( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
