@@ -15,6 +15,7 @@ struct Material
 
     inline bool IsFullMirror() { return reflective == 1.0; }
     inline bool IsFullDiffuse() { return reflective == 0.0; }
+	inline bool IsReflectiveDiffuse() { return reflective > 0.0 && reflective < 1.0; }
 };
 
 class Primitive

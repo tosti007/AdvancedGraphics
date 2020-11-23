@@ -12,7 +12,7 @@ void Game::InitDefaultScene()
 	nr_objects = 3;
 	objects = new Primitive*[nr_objects] {
 		new Sphere(vec3(0, 0, 10), 3, 0xff0000, materials[0]),
-		new Plane(vec3(0, 1, 0), 2, 0xffffff, materials[2]),
+		new Plane(vec3(0, 1, 0), 2, 0xffffff, materials[1]),
 		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, materials[0])
 	};
 }
@@ -65,9 +65,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 3;
 	materials = new Material*[nr_materials] {
-		new Material(0, 0, 0.5), // Diffuse
-		new Material(0.2, 0.8, 0), // Glass
-		new Material(1, 0, 0) // Mirror
+		new Material( 0, 0, 0.5 ),	 // Diffuse
+		new Material( 0.3, 0, 0.7 ), // Diffuse & reflective
+		new Material( 0.2, 0.8, 0 ), // Glass
+		new Material( 1, 0, 0 )		 // Mirror
 	};
 
 	// load lights
@@ -166,12 +167,20 @@ Color Game::Trace(Ray r, uint depth)
 		}
 
 		if (m->IsFullDiffuse()) {
-			vec3 ill = DirectIllumination( interPoint, interNormal ) ;
+			vec3 ill = DirectIllumination( interPoint, interNormal );
 			return ill * r.obj->color;
 		}
 
 		// TODO speculative combinations
-
+		if (m->IsReflectiveDiffuse()) {
+			float s = m->reflective;
+			vec3 ill = DirectIllumination( interPoint, interNormal );
+			r.direction -= 2 * dot( r.direction, interNormal ) * interNormal;
+			r.origin = interPoint;
+			Color reflected = Trace( r, depth - 1 );
+			Color total = s * reflected + ( 1 - s ) * ill;
+			return total;
+		}
 		return PixelToColor(0xffff00);
 
 	} else {
