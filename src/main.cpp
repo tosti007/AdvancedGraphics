@@ -34,7 +34,6 @@ unsigned char* framedata = 0;
 #endif
 
 int ACTWIDTH, ACTHEIGHT;
-static bool firstframe = true;
 
 Surface* surface = 0;
 Game* game = 0;
@@ -193,6 +192,7 @@ int main( int argc, char **argv )
 	int exitapp = 0;
 	game = new Game();
 	game->SetTarget( surface );
+	game->Init(argc, argv);
 	timer t;
 	t.reset();
 
@@ -223,11 +223,6 @@ int main( int argc, char **argv )
 		SDL_RenderPresent( renderer );
 	#endif
 
-		if (firstframe)
-		{
-			game->Init(argc, argv);
-			firstframe = false;
-		}
 		// calculate frame time and pass it to game->Tick
 		game->Tick( t.elapsed() );
 		t.reset();
