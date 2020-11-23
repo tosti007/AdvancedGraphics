@@ -38,6 +38,12 @@ void Camera::KeyDown( int key, byte repeat )
         case SDLK_e:
             position -= speed * down;
             break;
+        case SDLK_r:
+            fov += speed;
+            break;
+        case SDLK_f:
+            fov -= speed;
+            break;
         // These do not re-trigger once pressed.
         case SDLK_q:
             position += speed * down;
