@@ -1,4 +1,8 @@
 ###############################3
+# custom .gitignore
+assets/*.bin
+
+###############################3
 # .gitignore from github
 
 # Prerequisites
