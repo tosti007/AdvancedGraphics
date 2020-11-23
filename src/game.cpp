@@ -73,8 +73,8 @@ void Game::LoadSkyBox()
 			printf( "Loading cached hdr data...\n" );
 			f.read( (char *)&skyWidth, sizeof( skyWidth ) );
 			f.read( (char *)&skyHeight, sizeof( skyHeight ) );
-			pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof( float3 ) );
-			f.read( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
+			pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
+			f.read( (char *)pixels, sizeof( float )*3 * skyWidth * skyHeight );
 		}
 		else
 			memcpy( strstr( filename, ".bin" ), ".hdr", 4 );
@@ -96,11 +96,11 @@ void Game::LoadSkyBox()
 		if ( !dib ) return;
 		skyWidth = FreeImage_GetWidth( dib );
 		skyHeight = FreeImage_GetHeight( dib );
-		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof( float3 ) );
+		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
 		// line by line
 		for ( int y = 0; y < skyHeight; y++ )
 		{
-			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof( float3 ) );
+			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float)*3 );
 		}
 		FreeImage_Unload( dib );
 		// save skydome to binary file, .hdr is slow to load
@@ -108,7 +108,7 @@ void Game::LoadSkyBox()
 		std::ofstream f( filename, std::ios::binary );
 		f.write( (char *)&skyWidth, sizeof( skyWidth ) );
 		f.write( (char *)&skyHeight, sizeof( skyHeight ) );
-		f.write( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
+		f.write( (char *)pixels, sizeof(float)*3 * skyWidth * skyHeight );
 	}
 
 	skyPixels = pixels;
