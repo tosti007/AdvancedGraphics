@@ -98,7 +98,7 @@ void Game::LoadSkyBox()
 		skyHeight = FreeImage_GetHeight( dib );
 		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
 		// line by line
-		for ( int y = 0; y < skyHeight; y++ )
+		for ( uint y = 0; y < skyHeight; y++ )
 		{
 			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float)*3 );
 		}
@@ -263,10 +263,10 @@ Color Game::Trace(Ray r, uint depth)
 		float u = 1 + atan2f( r.direction.x, -r.direction.z ) * INVPI;
 		float v = acosf( r.direction.y ) * INVPI;
 		
-		int xPixel = float( skyWidth ) * 0.5 * u;
-		int yPixel = float( skyHeight ) * v;
-		int pixelIdx = yPixel * skyWidth + xPixel;
-		float3 skyColor = skyPixels[clamp( pixelIdx, 0, skyHeight * skyWidth )];
+		uint xPixel = float( skyWidth ) * 0.5 * u;
+		uint yPixel = float( skyHeight ) * v;
+		uint pixelIdx = yPixel * skyWidth + xPixel;
+		float3 skyColor = skyPixels[std::min( pixelIdx, skyHeight * skyWidth )];
 		return Color(skyColor.x, skyColor.y, skyColor.z);
 		//return Color( 0 );
 	}

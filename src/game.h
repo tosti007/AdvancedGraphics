@@ -38,8 +38,8 @@ public:
 	Camera* view;
 
 	float3* skyPixels;
-	int skyWidth;
-	int skyHeight;
+	uint skyWidth;
+	uint skyHeight;
 
 	Material** materials;
 	uint nr_materials;
