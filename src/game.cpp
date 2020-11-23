@@ -5,6 +5,7 @@
 
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
+#define INVPI 0.31830988618379067153777f
 #include "tiny_obj_loader.h"
 
 void Game::InitDefaultScene()
@@ -53,6 +54,63 @@ void Game::InitFromTinyObj( char* filename )
 		}
 	}
 }
+void Game::LoadSkyBox()
+{
+	printf( "Loading skydome data..." );
+	float3 *pixels = nullptr;
+	FREE64( pixels ); // just in case we're reloading
+	pixels = 0;
+	char t[] = "assets/skybox.hdr", *p;
+	if ( p = strstr( t, ".hdr" ) )
+	{
+		// attempt to load skydome from binary file
+		memcpy( strstr( t, ".hdr" ), ".bin", 4 );
+		std::ifstream f( t, std::ios::binary );
+		if ( f )
+		{
+			printf( "Loading cached hdr data... " );
+			f.read( (char *)&skyWidth, sizeof( skyWidth ) );
+			f.read( (char *)&skyHeight, sizeof( skyHeight ) );
+			pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof( float3 ) );
+			f.read( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
+		}
+		else
+			memcpy( strstr( t, ".bin" ), ".hdr", 4 );
+	}
+	else
+	{
+		printf( "Bad skydome filename.\n" );
+		return;
+	}
+	// if no binary file
+	if ( !pixels )
+	{
+		// load skydome from original .hdr file
+		printf( "Loading original hdr data... " );
+		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+		fif = FreeImage_GetFileType( t, 0 );
+		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( t );
+		FIBITMAP *dib = FreeImage_Load( fif, t );
+		if ( !dib ) return;
+		skyWidth = FreeImage_GetWidth( dib );
+		skyHeight = FreeImage_GetHeight( dib );
+		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof( float3 ) );
+		// line by line
+		for ( int y = 0; y < skyHeight; y++ )
+		{
+			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof( float3 ) );
+		}
+		FreeImage_Unload( dib );
+		// save skydome to binary file, .hdr is slow to load
+		memcpy( strstr( t, ".hdr" ), ".bin", 4 );
+		std::ofstream f( t, std::ios::binary );
+		f.write( (char *)&skyWidth, sizeof( skyWidth ) );
+		f.write( (char *)&skyHeight, sizeof( skyHeight ) );
+		f.write( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
+	}
+
+	skyPixels = pixels;
+}
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -61,6 +119,10 @@ void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
 	view = new Camera(vec3(0, 0, 0), vec3(0, 0, 1));
+
+	// load skybox
+	skyPixels = 0;
+	LoadSkyBox();
 
 	// load materials
 	nr_materials = 3;
@@ -178,14 +240,21 @@ Color Game::Trace(Ray r, uint depth)
 			r.direction -= 2 * dot( r.direction, interNormal ) * interNormal;
 			r.origin = interPoint;
 			Color reflected = Trace( r, depth - 1 );
-			Color total = s * reflected + ( 1 - s ) * ill;
-			return total;
+			return s * reflected + ( 1 - s ) * ill;
 		}
 		return PixelToColor(0xffff00);
 
 	} else {
-		// TODO add skydome
-		return Color(0);
+		// find skydome pixel color
+		float u = 1 + atan2f( r.direction.x, -r.direction.z ) * INVPI;
+		float v = acosf( r.direction.y ) * INVPI;
+		
+		int xPixel = float( skyWidth ) * 0.5 * u;
+		int yPixel = float( skyHeight ) * v;
+		int pixelIdx = yPixel * skyWidth + xPixel;
+		float3 skyColor = skyPixels[clamp( pixelIdx, 0, skyHeight * skyWidth )];
+		return Color(skyColor.x, skyColor.y, skyColor.z);
+		//return Color( 0 );
 	}
 }
 
@@ -216,20 +285,20 @@ void Game::Tick( float deltaTime )
 	}
 
 	// Write debug output
-	char buffer [32];
-	sprintf (buffer, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
-	screen->Print(buffer, 2, 2, 0xffff00);
-
-	sprintf (buffer, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
-	screen->Print(buffer, 2, 9, 0xffff00);
-
-	sprintf (buffer, "Rgt: %f %f %f", view->right.x, view->right.y, view->right.z);
-	screen->Print(buffer, 2, 16, 0xffff00);
-
-	sprintf (buffer, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
-	screen->Print(buffer, 2, 23, 0xffff00);
-
-	// Timer
-	sprintf( buffer, "FPS: %f", 1 / deltaTime);
-	screen->Print( buffer, 2, 30, 0xffff00 );
+	//char buffer [32];
+	//sprintf (buffer, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
+	//screen->Print(buffer, 2, 2, 0xffff00);
+	//
+	//sprintf (buffer, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
+	//screen->Print(buffer, 2, 9, 0xffff00);
+	//
+	//sprintf (buffer, "Rgt: %f %f %f", view->right.x, view->right.y, view->right.z);
+	//screen->Print(buffer, 2, 16, 0xffff00);
+	//
+	//sprintf (buffer, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
+	//screen->Print(buffer, 2, 23, 0xffff00);
+	//
+	//// Timer
+	//sprintf( buffer, "FPS: %f", 1 / deltaTime);
+	//screen->Print( buffer, 2, 30, 0xffff00 );
 }

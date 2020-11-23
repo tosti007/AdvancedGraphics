@@ -7,7 +7,10 @@
 #include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
-
+struct float3
+{
+	float x, y, z;
+};
 class Game
 {
 public:
@@ -22,6 +25,8 @@ public:
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
+	void LoadSkyBox();
+
 	bool Intersect( Ray* r );
 	vec3 DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray r, uint depth );
@@ -29,6 +34,10 @@ public:
   private:
 	Surface* screen;
 	Camera* view;
+
+	float3* skyPixels;
+	int skyWidth;
+	int skyHeight;
 
 	Material** materials;
 	uint nr_materials;
