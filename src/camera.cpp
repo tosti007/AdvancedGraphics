@@ -12,19 +12,14 @@ Camera::Camera( vec3 p, vec3 d ) :
 {
 }
 
-vec3 Camera::Center()
-{
-    return position + fov * direction;
-}
-
 vec3 Camera::TopLeft()
 {
-    return Center() - 0.5 * (right + down);
+    return fov * direction - 0.5 * (right + down);
 }
 
 void Camera::KeyDown( int key, byte repeat )
 {
-    const float speed = 0.01;
+    const float speed = 0.1;
     const float angle = 0.03;
     switch (key)
     {

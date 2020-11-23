@@ -13,7 +13,6 @@ struct Camera
     float fov;
 
     Camera( vec3 p, vec3 d );
-	vec3 Center();
     vec3 TopLeft();
 
 	void MouseUp( int button ) { /* implement if you want to detect mouse button presses */ }
