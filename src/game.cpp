@@ -88,7 +88,7 @@ void Game::LoadSkyBox()
 	if ( !pixels )
 	{
 		// load skydome from original .hdr file
-		printf( "Loading original hdr data... " );
+		printf( "Loading original hdr data...\n" );
 		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 		fif = FreeImage_GetFileType( t, 0 );
 		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( t );
