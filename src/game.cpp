@@ -56,7 +56,7 @@ void Game::InitFromTinyObj( char* filename )
 		}
 	}
 }
-void Game::LoadSkyBox()
+void Game::InitSkyBox()
 {
 	printf( "Loading skydome data...\n");
 	float3 *pixels = nullptr;
@@ -124,7 +124,7 @@ void Game::Init(int argc, char **argv)
 
 	// load skybox
 	skyPixels = 0;
-	LoadSkyBox();
+	InitSkyBox();
 
 	// load materials
 	nr_materials = 4;

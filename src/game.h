@@ -25,8 +25,6 @@ public:
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
-	void LoadSkyBox();
-
 	bool CheckOcclusion( Ray *r );
 	bool Intersect( Ray* r );
 	vec3 DirectIllumination( vec3 interPoint, vec3 normal );
@@ -50,6 +48,7 @@ public:
 
 	void InitDefaultScene();
   	void InitFromTinyObj( char* filename );
+	void InitSkyBox();
 };
 
 }; // namespace AdvancedGraphics
