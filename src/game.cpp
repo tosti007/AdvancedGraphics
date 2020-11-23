@@ -4,10 +4,10 @@
 #include "game.h"
 #include "ray.h"
 #include "light.h"
+#include "utils.h"
 
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-#define INVPI 0.31830988618379067153777f
 #include "tiny_obj_loader.h"
 
 void Game::InitDefaultScene()
