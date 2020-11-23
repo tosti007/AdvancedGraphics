@@ -125,7 +125,7 @@ void Game::Init(int argc, char **argv)
 	LoadSkyBox();
 
 	// load materials
-	nr_materials = 3;
+	nr_materials = 4;
 	materials = new Material*[nr_materials] {
 		new Material( 0, 0, 0.5 ),	 // Diffuse
 		new Material( 0.3, 0, 0.7 ), // Diffuse & reflective
