@@ -58,7 +58,7 @@ void Game::InitFromTinyObj( char* filename )
 }
 void Game::LoadSkyBox()
 {
-	printf( "Loading skydome data..." );
+	printf( "Loading skydome data...\n");
 	float3 *pixels = nullptr;
 	FREE64( pixels ); // just in case we're reloading
 	pixels = 0;
@@ -70,7 +70,7 @@ void Game::LoadSkyBox()
 		std::ifstream f( t, std::ios::binary );
 		if ( f )
 		{
-			printf( "Loading cached hdr data... " );
+			printf( "Loading cached hdr data...\n" );
 			f.read( (char *)&skyWidth, sizeof( skyWidth ) );
 			f.read( (char *)&skyHeight, sizeof( skyHeight ) );
 			pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof( float3 ) );
