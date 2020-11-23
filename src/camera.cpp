@@ -6,8 +6,8 @@
 Camera::Camera( vec3 p, vec3 d ) :
     position(p),
     direction(d.normalized()),
-    right(cross(direction, REALDOWN)),
-    down(cross(right, direction)),
+    right(cross(direction, REALDOWN).normalized()),
+    down(cross(right, direction).normalized()),
     fov(1)
 {
 }
@@ -65,10 +65,14 @@ void Camera::KeyDown( int key, byte repeat )
 void Camera::RotateAround( vec3 axis, float angle )
 {
     mat4 m = mat4::rotate(axis, angle);
-    direction = m * direction;
-    right = m * right;
-    down = m * down;
-    direction.normalize();
-    right.normalize();
-    down.normalize();
+    vec3 newdir = m * direction;
+
+    // Check if we are not looking almost down or up
+    if (std::abs(dot(newdir, REALDOWN)) < 0.9) {
+        // We can choose here to do a cross or a mat4 multiplication
+        // As we need to normalize anyhow doing twice a cross is cheaper
+        direction = newdir;
+        right = cross(direction, REALDOWN).normalized();
+        down = cross(right, direction).normalized();
+    }
 }
