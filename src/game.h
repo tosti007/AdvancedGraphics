@@ -35,7 +35,7 @@ public:
 	Surface* screen;
 	Camera* view;
 
-	float3* skyPixels;
+	Color* skyPixels;
 	uint skyWidth;
 	uint skyHeight;
 

@@ -124,7 +124,12 @@ void Game::InitSkyBox()
 	}
 	f_bin.close();
 
-	skyPixels = pixels;
+	skyPixels = new Color[skyWidth * skyHeight];
+	for (uint i = 0; i < skyWidth * skyHeight; i++)
+	{
+		float3 c = pixels[i];
+		skyPixels[i] = Color(c.x, c.y, c.z);
+	}
 }
 
 // -----------------------------------------------------------
@@ -279,9 +284,7 @@ Color Game::Trace(Ray r, uint depth)
 		uint xPixel = float( skyWidth ) * 0.5 * u;
 		uint yPixel = float( skyHeight ) * v;
 		uint pixelIdx = yPixel * skyWidth + xPixel;
-		float3 skyColor = skyPixels[std::min( pixelIdx, skyHeight * skyWidth )];
-		return Color(skyColor.x, skyColor.y, skyColor.z);
-		//return Color( 0 );
+		return skyPixels[std::min( pixelIdx, skyHeight * skyWidth )];
 	}
 }
 
