@@ -165,6 +165,19 @@ void Game::Shutdown()
 	printf("Shutting down Game\n");
 }
 
+bool Game::CheckOcclusion( Ray* r)
+{
+	bool found = false;
+	for ( uint i = 0; i < nr_objects; i++ )
+	{
+		// if any intersection found, return, don't need to know location
+		if ( found ) break;
+		found |= objects[i]->Intersect( r );
+	}
+
+	return found;
+}
+
 bool Game::Intersect( Ray* r )
 {
 	bool found = false;
@@ -200,8 +213,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		Ray shadowRay = Ray( interPoint + rayOffset, rayDirection );
 
 		// find intersection of shadow ray, check if it is between the light and object
-		// TODO Intersect function that returns at the first time an intersection is found
-		if ( Intersect( &shadowRay ) && shadowRay.t < lightDistance )
+		if ( CheckOcclusion( &shadowRay ) && shadowRay.t < lightDistance )
 			continue;
 
 		// distance attenuation * angle * color
@@ -261,7 +273,7 @@ Color Game::Trace(Ray r, uint depth)
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
-	char buf[buflen];
+	char buf[128];
 	va_list va;
     va_start(va, fmt);
     vsprintf(buf, fmt, va);
