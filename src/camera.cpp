@@ -5,9 +5,9 @@
 
 Camera::Camera( vec3 p, vec3 d ) :
     position(p),
-    direction(d),
-    right(cross(d, REALDOWN)),
-    down(cross(right, d)),
+    direction(d.normalized()),
+    right(cross(direction, REALDOWN)),
+    down(cross(right, direction)),
     fov(1)
 {
 }
