@@ -62,38 +62,48 @@ void Game::InitSkyBox()
 	float3 *pixels = nullptr;
 	FREE64( skyPixels ); // just in case we're reloading
 	char filename[] = "assets/skybox.hdr";
-	char* p;
-	if ( p = strstr( filename, ".hdr" ) )
+	
+	char* ext = strstr( filename, ".hdr" );
+	if ( ext != nullptr )
 	{
-		// attempt to load skydome from binary file
-		memcpy( strstr( filename, ".hdr" ), ".bin", 4 );
-		std::ifstream f( filename, std::ios::binary );
-		if ( f )
-		{
-			printf( "Loading cached hdr data...\n" );
-			f.read( (char *)&skyWidth, sizeof( skyWidth ) );
-			f.read( (char *)&skyHeight, sizeof( skyHeight ) );
-			pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
-			f.read( (char *)pixels, sizeof( float )*3 * skyWidth * skyHeight );
-		}
-		else
-			memcpy( strstr( filename, ".bin" ), ".hdr", 4 );
+		// Let's try the binary file first.
+		memcpy( ext, ".bin", 4 );
+	}
+
+	ext = strstr( filename, ".bin" );
+	if ( ext == nullptr )
+	{
+		std::cerr << "Skydome filename should either be *.hdr or *.bin" << std::endl;
+		exit(1);
+	}
+
+	// attempt to load skydome from binary file
+	std::ifstream f_bin( filename, std::ios::binary );
+	if ( f_bin.good() )
+	{
+		// A correct binary file
+		printf( "Loading cached hdr data...\n" );
+		f_bin.read( (char *)&skyWidth, sizeof( skyWidth ) );
+		f_bin.read( (char *)&skyHeight, sizeof( skyHeight ) );
+		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
+		f_bin.read( (char *)pixels, sizeof( float )*3 * skyWidth * skyHeight );
 	}
 	else
 	{
-		printf( "Bad skydome filename.\n" );
-		return;
-	}
-	// if no binary file
-	if ( !pixels )
-	{
+		// Not a correct binary file, so let's use the HDR
+		memcpy( ext, ".hdr", 4 );
+
 		// load skydome from original .hdr file
 		printf( "Loading original hdr data...\n" );
 		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 		fif = FreeImage_GetFileType( filename, 0 );
 		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( filename );
 		FIBITMAP *dib = FreeImage_Load( fif, filename );
-		if ( !dib ) return;
+		if ( !dib ) {
+			std::cerr << "Could not load image!" << std::endl;
+			exit(1);
+		}
+
 		skyWidth = FreeImage_GetWidth( dib );
 		skyHeight = FreeImage_GetHeight( dib );
 		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
@@ -103,13 +113,16 @@ void Game::InitSkyBox()
 			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float)*3 );
 		}
 		FreeImage_Unload( dib );
+
 		// save skydome to binary file, .hdr is slow to load
-		memcpy( strstr( filename, ".hdr" ), ".bin", 4 );
-		std::ofstream f( filename, std::ios::binary );
-		f.write( (char *)&skyWidth, sizeof( skyWidth ) );
-		f.write( (char *)&skyHeight, sizeof( skyHeight ) );
-		f.write( (char *)pixels, sizeof(float)*3 * skyWidth * skyHeight );
+		memcpy( ext, ".bin", 4 );
+		std::ofstream f_hdr( filename, std::ios::binary );
+		f_hdr.write( (char *)&skyWidth, sizeof( skyWidth ) );
+		f_hdr.write( (char *)&skyHeight, sizeof( skyHeight ) );
+		f_hdr.write( (char *)pixels, sizeof(float)*3 * skyWidth * skyHeight );
+		f_hdr.close();
 	}
+	f_bin.close();
 
 	skyPixels = pixels;
 }
