@@ -1,3 +1,5 @@
+#include <stdarg.h> // For variable number of arguments
+
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
 #include "ray.h"
@@ -258,6 +260,15 @@ Color Game::Trace(Ray r, uint depth)
 	}
 }
 
+void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
+	char buf[buflen];
+	va_list va;
+    va_start(va, fmt);
+    vsprintf(buf, fmt, va);
+    va_end(va);
+	screen->Print(buf, 2, 2 + yline * 7, 0xffff00);
+}
+
 // -----------------------------------------------------------
 // Main application tick function
 // -----------------------------------------------------------
@@ -285,20 +296,13 @@ void Game::Tick( float deltaTime )
 	}
 
 	// Write debug output
-	//char buffer [32];
-	//sprintf (buffer, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
-	//screen->Print(buffer, 2, 2, 0xffff00);
-	//
-	//sprintf (buffer, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
-	//screen->Print(buffer, 2, 9, 0xffff00);
-	//
-	//sprintf (buffer, "Rgt: %f %f %f", view->right.x, view->right.y, view->right.z);
-	//screen->Print(buffer, 2, 16, 0xffff00);
-	//
-	//sprintf (buffer, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
-	//screen->Print(buffer, 2, 23, 0xffff00);
-	//
-	//// Timer
-	//sprintf( buffer, "FPS: %f", 1 / deltaTime);
-	//screen->Print( buffer, 2, 30, 0xffff00 );
+	Print(32, 0, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
+	
+	Print(32, 1, "Dir: %f %f %f", view->direction.x, view->direction.y, view->direction.z);
+	
+	Print(32, 2, "Rgt: %f %f %f", view->right.x, view->right.y, view->right.z);
+	
+	Print(32, 3, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
+	
+	Print(32, 4, "FPS: %f", 1 / deltaTime);
 }
