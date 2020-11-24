@@ -15,6 +15,9 @@ struct Ray
     Ray( vec3 o, vec3 d );
 
     void Reflect(vec3 i, vec3 n);
+    inline void Offset(float epsilon) { origin += CalculateOffset(epsilon); }
+
+    vec3 CalculateOffset(float epsilon)
 };
 
 }; // namespace AdvancedGraphics

@@ -221,14 +221,11 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		if (fac == 0)
 			continue;
 
-		// TODO: use some blend between direction and normal, depending on the fac value
-		vec3 rayOffset = 1e-3 * shadowRay.direction;
 		if (fac < 0) {
 			fac *= -1;
-			rayOffset *= -1;
 		}
 
-		shadowRay.origin += rayOffset;
+		shadowRay.Offset(1e-3);
 
 		// find intersection of shadow ray, check if it is between the light and object
 		if ( CheckOcclusion( &shadowRay ) )
@@ -256,19 +253,21 @@ Color Game::Trace(Ray r, uint depth)
 
 		if (m->IsFullMirror()) {
 			r.Reflect(interPoint, interNormal);
+			r.Offset(1e-3);
 			return Trace(r, depth - 1);
 		}
 
 		if (m->IsFullDiffuse()) {
-			Color ill = DirectIllumination( interPoint, interNormal );
+			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 			return ill * obj->color;
 		}
 
 		// TODO speculative combinations
 		if (m->IsReflectiveDiffuse()) {
 			float s = m->reflective;
-			Color ill = DirectIllumination( interPoint, interNormal );
+			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 			r.Reflect(interPoint, interNormal);
+			r.Offset(1e-3);
 			Color reflected = Trace( r, depth - 1 );
 			return s * reflected + ( 1 - s ) * ill;
 		}
