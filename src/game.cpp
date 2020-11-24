@@ -75,10 +75,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
-		new Material(   0,   0, 0.5 ), // Diffuse
-		new Material( 0.9,   0, 0.1 ), // Diffuse & reflective
-		new Material( 0.2, 0.8,   0 ), // Glass
-		new Material(   1,   0,   0 )  // Mirror
+		new Material( 0.5,   0,   0 ), // Diffuse
+		new Material( 0.1, 0.9,   0 ), // Diffuse & reflective
+		new Material(   0, 0.2, 0.8 ), // Glass
+		new Material(   0,   1,   0 )  // Mirror
 	};
 
 	// load lights
@@ -181,10 +181,12 @@ Color Game::Trace(Ray r, uint depth)
 
 	// No intersection point found
 	if ( obj == nullptr )
+	{
 		if (sky == nullptr)
 			return SKYDOME_DEFAULT_COLOR;
 		else
 			return sky->FindColor(r.direction);
+	}
 
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;

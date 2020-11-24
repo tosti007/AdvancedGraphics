@@ -7,11 +7,9 @@
 
 struct Material
 {
-	float reflective;
-	float speculative;
-    float diffuse;
+    float diffuse, reflective, speculative;
 
-    inline Material(float r, float s, float d) : reflective(r), speculative(s), diffuse(d) {}
+    inline Material(float d, float r, float s) : diffuse(d), reflective(r), speculative(s) {}
 
     inline bool IsFullMirror() { return reflective == 1.0; }
     inline bool IsFullDiffuse() { return reflective == 0.0; }
