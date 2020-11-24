@@ -148,6 +148,7 @@ void Game::Init(int argc, char **argv)
 	};
 
 	// load lights
+	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light*[nr_lights] {
 		new Light( vec3( 0, 0, 0 ), Color( 10, 10, 10 ) ),
@@ -211,9 +212,15 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		// compute origin and direction of shadow ray
 		Ray shadowRay = Ray( interPoint, lights[i]->position - interPoint );
 		shadowRay.t = shadowRay.direction.length();
-		shadowRay.direction.normalize();
+		shadowRay.direction *= (1 / shadowRay.t);
 
 		float fac = dot( shadowRay.direction, normal );
+
+		// This would mean no additional color so let's early out.
+		// TODO: use epsilon?
+		if (fac == 0)
+			continue;
+
 		vec3 rayOffset = 1e-3 * normal;
 		if (fac < 0) {
 			fac *= -1;
