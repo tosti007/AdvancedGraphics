@@ -4,16 +4,17 @@
 #include "ray.h"
 #include "color.h"
 #include "tiny_obj_loader.h"
+#include "utils.h"
 
 struct Material
 {
-    float diffuse, reflective, speculative;
+    float speculative, refractive;
 
-    inline Material(float d, float r, float s) : diffuse(d), reflective(r), speculative(s) {}
+    inline Material(float s, float r) : speculative(clamp(s, 0.0f, 1.0f)), refractive(clamp(r, 0.0f, 1.0f)) {}
 
-    inline bool IsFullMirror() { return reflective == 1.0; }
-    inline bool IsFullDiffuse() { return reflective == 0.0; }
-	inline bool IsReflectiveDiffuse() { return reflective > 0.0 && reflective < 1.0; }
+    inline bool IsFullMirror() { return speculative == 1.0f; }
+    inline bool IsFullDiffuse() { return speculative == 0.0f; }
+    inline bool IsNotRefractive() { return refractive == 0.0f; }
 };
 
 class Primitive

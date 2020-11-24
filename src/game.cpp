@@ -75,10 +75,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
-		new Material( 0.5,   0,   0 ), // Diffuse
-		new Material( 0.1, 0.9,   0 ), // Diffuse & reflective
-		new Material(   0, 0.2, 0.8 ), // Glass
-		new Material(   0,   1,   0 )  // Mirror
+		new Material(   0,   0 ), // Diffuse
+		new Material( 0.9,   0 ), // Diffuse & reflective
+		new Material( 0.2, 0.8 ), // Glass
+		new Material(   1,   0 )  // Mirror
 	};
 
 	// load lights
@@ -207,15 +207,16 @@ Color Game::Trace(Ray r, uint depth)
 		return ill * obj->color;
 	}
 
-	// TODO speculative combinations
-	if (m->IsReflectiveDiffuse()) {
-		float s = m->reflective;
+	if (m->IsNotRefractive()) {
+		float s = m->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 		r.Reflect(interPoint, interNormal);
 		r.Offset(1e-3);
 		Color reflected = Trace( r, depth - 1 );
 		return s * reflected + ( 1 - s ) * ill;
 	}
+
+	// TODO speculative combinations
 	return Color(0xffff00);
 }
 
