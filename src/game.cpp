@@ -88,8 +88,8 @@ void Game::InitSkyBox()
 		printf( "Loading cached hdr data...\n" );
 		f_bin.read( (char *)&skyWidth, sizeof( skyWidth ) );
 		f_bin.read( (char *)&skyHeight, sizeof( skyHeight ) );
-		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
-		f_bin.read( (char *)pixels, sizeof( float )*3 * skyWidth * skyHeight );
+		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float3) );
+		f_bin.read( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
 	}
 	else
 	{
@@ -109,11 +109,11 @@ void Game::InitSkyBox()
 
 		skyWidth = FreeImage_GetWidth( dib );
 		skyHeight = FreeImage_GetHeight( dib );
-		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float)*3 );
+		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float3) );
 		// line by line
 		for ( uint y = 0; y < skyHeight; y++ )
 		{
-			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float)*3 );
+			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float3) );
 		}
 		FreeImage_Unload( dib );
 
@@ -122,7 +122,7 @@ void Game::InitSkyBox()
 		std::ofstream f_hdr( filename, std::ios::binary );
 		f_hdr.write( (char *)&skyWidth, sizeof( skyWidth ) );
 		f_hdr.write( (char *)&skyHeight, sizeof( skyHeight ) );
-		f_hdr.write( (char *)pixels, sizeof(float)*3 * skyWidth * skyHeight );
+		f_hdr.write( (char *)pixels, sizeof(float3) * skyWidth * skyHeight );
 		f_hdr.close();
 	}
 	f_bin.close();
