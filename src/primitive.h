@@ -27,7 +27,9 @@ class Primitive
     inline Primitive() = default;
     inline Primitive( Pixel c, Material* m) : Primitive(PixelToColor(c), m) {}
     inline Primitive( Color c, Material* m) : color(c), material(m) {}
+    // This must set r.t and r.obj if an intersetion is found.
     virtual bool Intersect(Ray* r) = 0;
+    // This must return a normalized vector
 	virtual vec3 NormalAt( vec3 point ) = 0;
 };
 

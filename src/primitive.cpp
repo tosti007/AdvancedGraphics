@@ -25,11 +25,6 @@ vec3 Plane::NormalAt( vec3 point )
 	return normal;
 }
 
-vec3 Sphere::NormalAt( vec3 point )
-{
-	return point - position;
-}
-
 Sphere::Sphere( vec3 p, float r, Pixel c, Material* m ) :
     Primitive( c, m ),
 	position( p ),
@@ -53,12 +48,17 @@ bool Sphere::Intersect(Ray* r)
     return true;
 }
 
+vec3 Sphere::NormalAt( vec3 point )
+{
+	return (1 / radius) * (point - position);
+}
+
 Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m ) :
     Primitive( c, m ),
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
-	normal( cross( v1 - v0, v2 - v0 ) )
+	normal( ComputeNormal(v0, v1, v2) )
 {
 }
 
@@ -109,7 +109,7 @@ vec3 Triangle::NormalAt( vec3 point )
 
 vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
 {
-    return cross(v1 - v0, v2 - v0);
+    return cross(v1 - v0, v2 - v0).normalized();
 }
 
 vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
