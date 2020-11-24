@@ -3,6 +3,15 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "primitive.h"
 
+bool Primitive::Intersect(Ray* r)
+{
+    float t = IntersectionDistance(r);
+    if (t >= r->t || t <= 0) return false;
+    r->t = t;
+    r->obj = this;
+    return true;
+}
+
 Plane::Plane( vec3 n, float d, Pixel c, Material* m ) :
     Primitive( c, m ),
 	normal( n.normalized() ),
@@ -10,14 +19,9 @@ Plane::Plane( vec3 n, float d, Pixel c, Material* m ) :
 {
 }
 
-bool Plane::Intersect(Ray* r) 
+float Plane::IntersectionDistance(Ray* r) 
 {
-    float t = -(dot(r->origin, normal) + dist) / dot(r->direction, normal);
-
-    if (t >= r->t || t <= 0) return false;
-    r->t = t;
-    r->obj = this;
-    return true;
+    return -(dot(r->origin, normal) + dist) / dot(r->direction, normal);
 }
 
 vec3 Plane::NormalAt( vec3 point )
@@ -32,20 +36,16 @@ Sphere::Sphere( vec3 p, float r, Pixel c, Material* m ) :
 {
 }
 
-bool Sphere::Intersect(Ray* r)
+float Sphere::IntersectionDistance(Ray* r)
 {
     vec3 C = position - r->origin;
     float t = dot(C, r->direction);
     vec3 Q = C - t * r->direction;
     float p2 = dot(Q, Q);
     float r2 = radius * radius;
-    if (p2 > r2) return false;
+    if (p2 > r2) return -1;
     t -= sqrt(r2 - p2);
-    
-    if (t >= r->t || t <= 0) return false;
-    r->t = t;
-    r->obj = this;
-    return true;
+    return t;
 }
 
 vec3 Sphere::NormalAt( vec3 point )
@@ -71,7 +71,7 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
 {
 }
 
-bool Triangle::Intersect(Ray* r)
+float Triangle::IntersectionDistance(Ray* r)
 {
     // Implementation from:
     // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
@@ -82,24 +82,21 @@ bool Triangle::Intersect(Ray* r)
 
     // ray and triangle are parallel if det is close to 0
     // This should probaby be something smaller, but for now it will do
-	if ( fabs( det ) < 0.0000001 ) return false;
+	if ( fabs( det ) < 0.0000001 ) return -1;
 
     float invDet = 1 / det;
 
     vec3 tvec = r->origin - p0;
     float u = tvec.dot(pvec) * invDet;
-    if (u < 0 || u > 1) return false;
+    if (u < 0 || u > 1) return -1;
 
     vec3 qvec = tvec.cross(p0p1);
     float v = r->direction.dot(qvec) * invDet;
-    if (v < 0 || u + v > 1) return false;
+    if (v < 0 || u + v > 1) return -1;
 
     float t = p0p2.dot(qvec) * invDet;
 
-    if (t >= r->t || t <= 0) return false;
-    r->t = t;
-    r->obj = this;
-    return true;
+    return t;
 }
 
 vec3 Triangle::NormalAt( vec3 point )

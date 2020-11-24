@@ -190,7 +190,11 @@ bool Game::CheckOcclusion( Ray *r, float lightDistance )
 {
 	// if any intersection found, return, don't need to know location
 	for ( uint i = 0; i < nr_objects; i++ )
-		if ( objects[i]->Intersect( r ) && r->t < lightDistance ) return true;
+	{
+		float t = objects[i]->IntersectionDistance( r );
+		if (t > 0 && t < lightDistance )
+			return true;
+	}
 	return false;
 }
 

@@ -27,8 +27,11 @@ class Primitive
     inline Primitive() = default;
     inline Primitive( Pixel c, Material* m) : Primitive(PixelToColor(c), m) {}
     inline Primitive( Color c, Material* m) : color(c), material(m) {}
-    // This must set r.t and r.obj if an intersetion is found.
-    virtual bool Intersect(Ray* r) = 0;
+
+    // If a negative value is returned, no intersection is found.
+    virtual float IntersectionDistance(Ray* r) = 0;
+    // This sets r.t and r.obj if an intersetion is found.
+    bool Intersect(Ray* r);
     // This must return a normalized vector
 	virtual vec3 NormalAt( vec3 point ) = 0;
 };
@@ -41,7 +44,7 @@ class Plane : public Primitive
 
     inline Plane( vec3 n, float d, Pixel c ) : Plane(n, d, c, NULL) {}
 	Plane( vec3 n, float d, Pixel c, Material* m );
-    bool Intersect(Ray* r);
+    float IntersectionDistance(Ray* r);
 	vec3 NormalAt( vec3 point );
 };
 
@@ -53,7 +56,7 @@ class Sphere : public Primitive
 
 	inline Sphere( vec3 p, float r, Pixel c ) : Sphere(p, r, c, NULL) {}
 	Sphere( vec3 p, float r, Pixel c, Material* m );
-    bool Intersect(Ray* r);
+    float IntersectionDistance(Ray* r);
     vec3 NormalAt( vec3 point );
 };
 
@@ -68,7 +71,7 @@ class Triangle : public Primitive
 	Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m );
 	inline Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c ) : Triangle( v0, v1, v2, n, c, NULL ) {}
 	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m);
-    bool Intersect(Ray* r);
+    float IntersectionDistance(Ray* r);
 
 	vec3 NormalAt( vec3 point );
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
