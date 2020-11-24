@@ -75,10 +75,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
-		new Material( 0, 0, 0.5 ),		 // Diffuse
-			new Material( 0.9, 0, 0.1 ), // Diffuse & reflective
-			new Material( 0.2, 0.8, 0 ), // Glass
-			new Material( 1, 0, 0 )		 // Mirror
+		new Material(   0,   0, 0.5 ), // Diffuse
+		new Material( 0.9,   0, 0.1 ), // Diffuse & reflective
+		new Material( 0.2, 0.8,   0 ), // Glass
+		new Material(   1,   0,   0 )  // Mirror
 	};
 
 	// load lights
