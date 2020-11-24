@@ -181,9 +181,6 @@ struct mat4
 	}
 };
 
-vec3 operator * ( mat4& m, const vec3& v );
-vec4 operator * ( mat4& m, const vec4& v );
-
 struct aabb
 {
 	aabb() = default;
@@ -236,5 +233,7 @@ bool operator == ( const mat4& a, const mat4& b );
 bool operator != ( const mat4& a, const mat4& b );
 vec4 operator * ( const mat4& a, const vec4& b );
 vec4 operator * ( const vec4& a, const mat4& b );
+
+vec3 operator * ( const mat4& m, const vec3& v );
 
 }; // namespace AdvancedGraphics
