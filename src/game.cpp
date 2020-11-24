@@ -47,7 +47,7 @@ void Game::InitFromTinyObj( char* filename )
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
 			Triangle* tri = new Triangle();
-			tri->color = PixelToColor(0x00ff00);
+			tri->color = Color(0x00ff00);
 
 			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f);
 
@@ -58,12 +58,10 @@ void Game::InitFromTinyObj( char* filename )
 }
 void Game::InitSkyBox()
 {
-	struct float3{
-		float r, g, b;
-	};
 	printf( "Loading skydome data...\n");
-	float3 *pixels = nullptr;
-	FREE64( skyPixels ); // just in case we're reloading
+	if (skyPixels != nullptr)
+		FREE64( skyPixels ); // just in case we're reloading
+	skyPixels = nullptr;
 	char filename[] = "assets/skybox.hdr";
 	
 	char* ext = strstr( filename, ".hdr" );
@@ -88,8 +86,8 @@ void Game::InitSkyBox()
 		printf( "Loading cached hdr data...\n" );
 		f_bin.read( (char *)&skyWidth, sizeof( skyWidth ) );
 		f_bin.read( (char *)&skyHeight, sizeof( skyHeight ) );
-		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float3) );
-		f_bin.read( (char *)pixels, sizeof( float3 ) * skyWidth * skyHeight );
+		skyPixels = (Color*)MALLOC64( skyWidth * skyHeight * sizeof(Color) );
+		f_bin.read( (char *)skyPixels, sizeof( Color ) * skyWidth * skyHeight );
 	}
 	else
 	{
@@ -109,11 +107,11 @@ void Game::InitSkyBox()
 
 		skyWidth = FreeImage_GetWidth( dib );
 		skyHeight = FreeImage_GetHeight( dib );
-		pixels = (float3 *)MALLOC64( skyWidth * skyHeight * sizeof(float3) );
+		skyPixels = (Color *)MALLOC64( skyWidth * skyHeight * sizeof(Color) );
 		// line by line
 		for ( uint y = 0; y < skyHeight; y++ )
 		{
-			memcpy( pixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(float3) );
+			memcpy( skyPixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(Color) );
 		}
 		FreeImage_Unload( dib );
 
@@ -122,17 +120,10 @@ void Game::InitSkyBox()
 		std::ofstream f_hdr( filename, std::ios::binary );
 		f_hdr.write( (char *)&skyWidth, sizeof( skyWidth ) );
 		f_hdr.write( (char *)&skyHeight, sizeof( skyHeight ) );
-		f_hdr.write( (char *)pixels, sizeof(float3) * skyWidth * skyHeight );
+		f_hdr.write( (char *)skyPixels, sizeof(Color) * skyWidth * skyHeight );
 		f_hdr.close();
 	}
 	f_bin.close();
-
-	skyPixels = new Color[skyWidth * skyHeight];
-	for (uint i = 0; i < skyWidth * skyHeight; i++)
-	{
-		float3 c = pixels[i];
-		skyPixels[i] = Color(c.r, c.g, c.b);
-	}
 }
 
 // -----------------------------------------------------------
@@ -159,7 +150,7 @@ void Game::Init(int argc, char **argv)
 	// load lights
 	nr_lights = 1;
 	lights = new Light*[nr_lights] {
-		new Light( vec3( 0, 0, 0 ), vec3( 10, 10, 10 ) ),
+		new Light( vec3( 0, 0, 0 ), Color( 10, 10, 10 ) ),
 	};
 
 	// load model
@@ -261,19 +252,19 @@ Color Game::Trace(Ray r, uint depth)
 		}
 
 		if (m->IsFullDiffuse()) {
-			vec3 ill = DirectIllumination( interPoint, interNormal );
+			Color ill = DirectIllumination( interPoint, interNormal );
 			return ill * r.obj->color;
 		}
 
 		// TODO speculative combinations
 		if (m->IsReflectiveDiffuse()) {
 			float s = m->reflective;
-			vec3 ill = DirectIllumination( interPoint, interNormal );
+			Color ill = DirectIllumination( interPoint, interNormal );
 			r.Reflect(interPoint, interNormal);
 			Color reflected = Trace( r, depth - 1 );
 			return s * reflected + ( 1 - s ) * ill;
 		}
-		return PixelToColor(0xffff00);
+		return Color(0xffff00);
 
 	} else {
 		// find skydome pixel color
@@ -318,7 +309,7 @@ void Game::Tick( float deltaTime )
 
 		Color color = Trace( r, 1 );
 
-		*buf = ColorToPixel(color);
+		*buf = color.ToPixel();
 		buf++;
 	}
 

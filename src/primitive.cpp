@@ -19,7 +19,7 @@ bool Primitive::Occludes(Ray* r)
     return true;
 }
 
-Plane::Plane( vec3 n, float d, Pixel c, Material* m ) :
+Plane::Plane( vec3 n, float d, Color c, Material* m ) :
     Primitive( c, m ),
 	normal( n.normalized() ),
 	dist( d )
@@ -36,7 +36,7 @@ vec3 Plane::NormalAt( vec3 point )
 	return normal;
 }
 
-Sphere::Sphere( vec3 p, float r, Pixel c, Material* m ) :
+Sphere::Sphere( vec3 p, float r, Color c, Material* m ) :
     Primitive( c, m ),
 	position( p ),
 	radius( r )
@@ -58,15 +58,6 @@ float Sphere::IntersectionDistance(Ray* r)
 vec3 Sphere::NormalAt( vec3 point )
 {
 	return (1 / radius) * (point - position);
-}
-
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, Pixel c, Material* m ) :
-    Primitive( c, m ),
-	p0( v0 ),
-	p1( v1 ),
-	p2( v2 ),
-	normal( ComputeNormal(v0, v1, v2) )
-{
 }
 
 Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
