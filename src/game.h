@@ -23,7 +23,7 @@ public:
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
 	bool CheckOcclusion( Ray *r );
-	bool Intersect( Ray* r );
+	Primitive* Intersect( Ray* r );
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray r, uint depth );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);

@@ -8,7 +8,6 @@ bool Primitive::Intersect(Ray* r)
     float t = IntersectionDistance(r);
     if (t <= 0 || t >= r->t) return false;
     r->t = t;
-    r->obj = this;
     return true;
 }
 

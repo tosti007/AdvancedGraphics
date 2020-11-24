@@ -29,7 +29,7 @@ class Primitive
 
     // If a negative value is returned, no intersection is found.
     virtual float IntersectionDistance(Ray* r) = 0;
-    // This sets r.t and r.obj if an intersetion is found.
+    // This sets r.t if an intersetion is found.
     bool Intersect(Ray* r);
     bool Occludes(Ray* r);
     // This must return a normalized vector

@@ -189,14 +189,14 @@ bool Game::CheckOcclusion( Ray *r )
 	return false;
 }
 
-bool Game::Intersect( Ray* r )
+Primitive* Game::Intersect( Ray* r )
 {
-	bool found = false;
-	// TODO: replace this with an iteration over all primitives.
+	Primitive* found = nullptr;
 
 	for (uint i = 0; i < nr_objects; i++)
 	{
-		found |= objects[i]->Intersect(r);
+		if(objects[i]->Intersect(r))
+			found = objects[i];
 	}
 
 	return found;
@@ -242,16 +242,16 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 Color Game::Trace(Ray r, uint depth)
 {
 	// TODO: handle depth value.
-
-	if ( Intersect( &r ) )
+	Primitive* obj = Intersect( &r );
+	if ( obj != nullptr )
 	{
 		// intersection point
 		vec3 interPoint = r.origin + r.t * r.direction;
-		vec3 interNormal = r.obj->NormalAt( interPoint );
+		vec3 interNormal = obj->NormalAt( interPoint );
 		
 		Material* m = materials[0]; // Default diffuse
-		if (r.obj->material != NULL)
-			m = r.obj->material;
+		if (obj->material != nullptr)
+			m = obj->material;
 
 		if (m->IsFullMirror()) {
 			r.Reflect(interPoint, interNormal);
@@ -260,7 +260,7 @@ Color Game::Trace(Ray r, uint depth)
 
 		if (m->IsFullDiffuse()) {
 			Color ill = DirectIllumination( interPoint, interNormal );
-			return ill * r.obj->color;
+			return ill * obj->color;
 		}
 
 		// TODO speculative combinations

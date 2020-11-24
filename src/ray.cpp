@@ -7,8 +7,7 @@
 Ray::Ray( vec3 o, vec3 d ) :
     origin(o), 
     direction(d),
-    t(INFINITY),
-    obj(NULL)
+    t(INFINITY)
 {
 }
 
