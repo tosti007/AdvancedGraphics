@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "primitive.h"
 #include "light.h"
+#include "skydome.h"
 #include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
@@ -31,10 +32,7 @@ public:
   private:
 	Surface* screen;
 	Camera* view;
-
-	Color* skyPixels;
-	uint skyWidth;
-	uint skyHeight;
+	SkyDome* sky;
 
 	Material** materials;
 	uint nr_materials;

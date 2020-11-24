@@ -56,75 +56,6 @@ void Game::InitFromTinyObj( char* filename )
 		}
 	}
 }
-void Game::InitSkyBox()
-{
-	printf( "Loading skydome data...\n");
-	if (skyPixels != nullptr)
-		FREE64( skyPixels ); // just in case we're reloading
-	skyPixels = nullptr;
-	char filename[] = "assets/skybox.hdr";
-	
-	char* ext = strstr( filename, ".hdr" );
-	if ( ext != nullptr )
-	{
-		// Let's try the binary file first.
-		memcpy( ext, ".bin", 4 );
-	}
-
-	ext = strstr( filename, ".bin" );
-	if ( ext == nullptr )
-	{
-		std::cerr << "Skydome filename should either be *.hdr or *.bin" << std::endl;
-		exit(1);
-	}
-
-	// attempt to load skydome from binary file
-	std::ifstream f_bin( filename, std::ios::binary );
-	if ( f_bin.good() )
-	{
-		// A correct binary file
-		printf( "Loading cached hdr data...\n" );
-		f_bin.read( (char *)&skyWidth, sizeof( skyWidth ) );
-		f_bin.read( (char *)&skyHeight, sizeof( skyHeight ) );
-		skyPixels = (Color*)MALLOC64( skyWidth * skyHeight * sizeof(Color) );
-		f_bin.read( (char *)skyPixels, sizeof( Color ) * skyWidth * skyHeight );
-	}
-	else
-	{
-		// Not a correct binary file, so let's use the HDR
-		memcpy( ext, ".hdr", 4 );
-
-		// load skydome from original .hdr file
-		printf( "Loading original hdr data...\n" );
-		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-		fif = FreeImage_GetFileType( filename, 0 );
-		if ( fif == FIF_UNKNOWN ) fif = FreeImage_GetFIFFromFilename( filename );
-		FIBITMAP *dib = FreeImage_Load( fif, filename );
-		if ( !dib ) {
-			std::cerr << "Could not load image!" << std::endl;
-			exit(1);
-		}
-
-		skyWidth = FreeImage_GetWidth( dib );
-		skyHeight = FreeImage_GetHeight( dib );
-		skyPixels = (Color *)MALLOC64( skyWidth * skyHeight * sizeof(Color) );
-		// line by line
-		for ( uint y = 0; y < skyHeight; y++ )
-		{
-			memcpy( skyPixels + y * skyWidth, FreeImage_GetScanLine( dib, skyHeight - 1 - y ), skyWidth * sizeof(Color) );
-		}
-		FreeImage_Unload( dib );
-
-		// save skydome to binary file, .hdr is slow to load
-		memcpy( ext, ".bin", 4 );
-		std::ofstream f_hdr( filename, std::ios::binary );
-		f_hdr.write( (char *)&skyWidth, sizeof( skyWidth ) );
-		f_hdr.write( (char *)&skyHeight, sizeof( skyHeight ) );
-		f_hdr.write( (char *)skyPixels, sizeof(Color) * skyWidth * skyHeight );
-		f_hdr.close();
-	}
-	f_bin.close();
-}
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -135,8 +66,7 @@ void Game::Init(int argc, char **argv)
 	view = new Camera(vec3(0, 0, 0), vec3(0, 0, 1));
 
 	// load skybox
-	skyPixels = 0;
-	InitSkyBox();
+	sky = new SkyDome();
 
 	// load materials
 	nr_materials = 4;
@@ -244,48 +174,43 @@ Color Game::Trace(Ray r, uint depth)
 {
 	// TODO: handle depth value.
 	Primitive* obj = Intersect( &r );
-	if ( obj != nullptr )
-	{
-		// intersection point
-		vec3 interPoint = r.origin + r.t * r.direction;
-		vec3 interNormal = obj->NormalAt( interPoint );
-		
-		Material* m = materials[0]; // Default diffuse
-		if (obj->material != nullptr)
-			m = obj->material;
 
-		if (m->IsFullMirror()) {
-			r.Reflect(interPoint, interNormal);
-			r.Offset(1e-3);
-			return Trace(r, depth - 1);
-		}
+	// No intersection point found
+	if ( obj == nullptr )
+		if (sky == nullptr)
+			return SKYDOME_DEFAULT_COLOR;
+		else
+			return sky->FindColor(r.direction);
 
-		if (m->IsFullDiffuse()) {
-			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-			return ill * obj->color;
-		}
+	// intersection point found
+	vec3 interPoint = r.origin + r.t * r.direction;
+	vec3 interNormal = obj->NormalAt( interPoint );
+	
+	Material* m = materials[0]; // Default diffuse
+	if (obj->material != nullptr)
+		m = obj->material;
 
-		// TODO speculative combinations
-		if (m->IsReflectiveDiffuse()) {
-			float s = m->reflective;
-			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-			r.Reflect(interPoint, interNormal);
-			r.Offset(1e-3);
-			Color reflected = Trace( r, depth - 1 );
-			return s * reflected + ( 1 - s ) * ill;
-		}
-		return Color(0xffff00);
-
-	} else {
-		// find skydome pixel color
-		float u = 1 + atan2f( r.direction.x, -r.direction.z ) * INVPI;
-		float v = acosf( r.direction.y ) * INVPI;
-		
-		uint xPixel = skyWidth / 2 * u;
-		uint yPixel = skyHeight * v;
-		uint pixelIdx = yPixel * skyWidth + xPixel;
-		return skyPixels[std::min( pixelIdx, skyHeight * skyWidth )];
+	if (m->IsFullMirror()) {
+		r.Reflect(interPoint, interNormal);
+		r.Offset(1e-3);
+		return Trace(r, depth - 1);
 	}
+
+	if (m->IsFullDiffuse()) {
+		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
+		return ill * obj->color;
+	}
+
+	// TODO speculative combinations
+	if (m->IsReflectiveDiffuse()) {
+		float s = m->reflective;
+		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
+		r.Reflect(interPoint, interNormal);
+		r.Offset(1e-3);
+		Color reflected = Trace( r, depth - 1 );
+		return s * reflected + ( 1 - s ) * ill;
+	}
+	return Color(0xffff00);
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
