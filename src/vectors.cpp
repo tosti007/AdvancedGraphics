@@ -79,9 +79,9 @@ mat4 mat4::rotatez( const float a )
 vec3 operator * ( const mat4& m, const vec3& v )
 {
 	return vec3(
-		m[0] * v.x + m[1] * v.y + m[2] * v.z,
-		m[4] * v.x + m[5] * v.y + m[6] * v.z,
-		m[8] * v.x + m[9] * v.y + m[10] * v.z
+		m.cell[0] * v.x + m.cell[1] * v.y + m.cell[2] * v.z,
+		m.cell[4] * v.x + m.cell[5] * v.y + m.cell[6] * v.z,
+		m.cell[8] * v.x + m.cell[9] * v.y + m.cell[10] * v.z
 		);
 }
 
