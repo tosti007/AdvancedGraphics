@@ -15,12 +15,12 @@ void Game::InitDefaultScene()
 	nr_objects = 7;
 	objects = new Primitive *[nr_objects] {
 		new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-			new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-			new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[0] ),
-			new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[0] ),
-			new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[0] ),
-			new Plane( vec3( 0, 1, 0 ), 2, 0x000000, materials[2] ),
-			new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[2] )
+		new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+		new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[0] ),
+		new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[0] ),
+		new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[0] ),
+		new Plane( vec3( 0, 1, 0 ), 2, 0x000000, materials[2] ),
+		new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[2] )
 	};
 }
 
