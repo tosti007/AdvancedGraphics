@@ -18,7 +18,7 @@ void Ray::Reflect(vec3 i, vec3 n)
 	t = INFINITY;
 }
 
-void Ray::CalculateOffset(float epsilon)
+vec3 Ray::CalculateOffset(float epsilon)
 {
     // TODO: use some blend between direction and normal, depending on the fac value (dot of normal and direction)
     return epsilon * direction;
