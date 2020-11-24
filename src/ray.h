@@ -12,6 +12,7 @@ struct Ray
 	vec3 origin, direction;
     float t;
 
+    Ray() = default;
     Ray( vec3 o, vec3 d );
 
     void Reflect(vec3 i, vec3 n);
