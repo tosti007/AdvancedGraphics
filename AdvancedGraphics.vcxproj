@@ -120,10 +120,12 @@
     <ClCompile Include="src/game.cpp" />
     <ClCompile Include="src/surface.cpp" />
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\color.cpp" />
     <ClCompile Include="src\light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\primitive.cpp" />
     <ClCompile Include="src\ray.cpp" />
+    <ClCompile Include="src\skydome.cpp" />
     <ClCompile Include="src\vectors.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +137,7 @@
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\primitive.h" />
     <ClInclude Include="src\ray.h" />
+    <ClInclude Include="src\skydome.h" />
     <ClInclude Include="src\timer.h" />
     <ClInclude Include="src\tiny_obj_loader.h" />
     <ClInclude Include="src\utils.h" />
