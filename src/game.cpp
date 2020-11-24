@@ -221,7 +221,8 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		if (fac == 0)
 			continue;
 
-		vec3 rayOffset = 1e-3 * normal;
+		// TODO: use some blend between direction and normal, depending on the fac value
+		vec3 rayOffset = 1e-3 * shadowRay.direction;
 		if (fac < 0) {
 			fac *= -1;
 			rayOffset *= -1;
@@ -233,8 +234,8 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		if ( CheckOcclusion( &shadowRay ) )
 			continue;
 
-		// distance attenuation * angle * color
-		total += (1 / ( shadowRay.t * shadowRay.t ) ) * fac * lights[i]->color;
+		// angle * distance attenuation * color
+		total += (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
 	}
 	return total;
 }
@@ -278,8 +279,8 @@ Color Game::Trace(Ray r, uint depth)
 		float u = 1 + atan2f( r.direction.x, -r.direction.z ) * INVPI;
 		float v = acosf( r.direction.y ) * INVPI;
 		
-		uint xPixel = float( skyWidth ) * 0.5 * u;
-		uint yPixel = float( skyHeight ) * v;
+		uint xPixel = skyWidth / 2 * u;
+		uint yPixel = skyHeight * v;
 		uint pixelIdx = yPixel * skyWidth + xPixel;
 		return skyPixels[std::min( pixelIdx, skyHeight * skyWidth )];
 	}
