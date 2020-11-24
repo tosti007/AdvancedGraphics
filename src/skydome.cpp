@@ -5,7 +5,7 @@
 SkyDome::SkyDome() : width(0), height(0), pixels(nullptr)
 {
 	printf( "Loading skydome data...\n");
-	char filename[] = "assets/skybox.hdr";
+	char filename[] = "assets/forest.hdr";
 	
 	char* ext = strstr( filename, ".hdr" );
 	if ( ext != nullptr )

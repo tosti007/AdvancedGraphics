@@ -12,11 +12,15 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 3;
-	objects = new Primitive*[nr_objects] {
-		new Sphere(vec3(0, 0, 10), 3, 0xff0000, materials[0]),
-		new Plane(vec3(0, 1, 0), 2, 0xffffff, materials[1]),
-		new Triangle(vec3(0, 0, 15), vec3(4, 5, 12), vec3(6, -6, 13), 0x0000ff, materials[0])
+	nr_objects = 7;
+	objects = new Primitive *[nr_objects] {
+		new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+			new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+			new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[0] ),
+			new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[0] ),
+			new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[0] ),
+			new Plane( vec3( 0, 1, 0 ), 2, 0x000000, materials[2] ),
+			new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[2] )
 	};
 }
 
@@ -69,19 +73,19 @@ void Game::Init(int argc, char **argv)
 	sky = new SkyDome();
 
 	// load materials
-	nr_materials = 4;
-	materials = new Material*[nr_materials] {
-		new Material( 0, 0, 0.5 ),	 // Diffuse
-		new Material( 0.3, 0, 0.7 ), // Diffuse & reflective
-		new Material( 0.2, 0.8, 0 ), // Glass
-		new Material( 1, 0, 0 )		 // Mirror
+	nr_materials = 5;
+	materials = new Material *[nr_materials] {
+		new Material( 0, 0, 0.5 ),		 // Diffuse
+			new Material( 0.9, 0, 0.1 ), // Diffuse & reflective
+			new Material( 0.2, 0.8, 0 ), // Glass
+			new Material( 1, 0, 0 )		 // Mirror
 	};
 
 	// load lights
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
-	lights = new Light*[nr_lights] {
-		new Light( vec3( 0, 0, 0 ), Color( 10, 10, 10 ) ),
+	lights = new Light *[nr_lights] {
+		new Light( vec3( 0, 10, 5 ), Color( 100, 100, 20 ) )
 	};
 
 	// load model
