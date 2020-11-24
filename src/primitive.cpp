@@ -12,6 +12,13 @@ bool Primitive::Intersect(Ray* r)
     return true;
 }
 
+bool Primitive::Occludes(Ray* r)
+{
+    float t = IntersectionDistance(r);
+    if (t <= 0 || t >= r->t) return false;
+    return true;
+}
+
 Plane::Plane( vec3 n, float d, Pixel c, Material* m ) :
     Primitive( c, m ),
 	normal( n.normalized() ),

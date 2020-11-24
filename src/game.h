@@ -22,7 +22,7 @@ public:
 	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
 	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
 
-	bool CheckOcclusion( Ray *r, float lightDistance );
+	bool CheckOcclusion( Ray *r );
 	bool Intersect( Ray* r );
 	vec3 DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray r, uint depth );
