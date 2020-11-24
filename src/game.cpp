@@ -253,8 +253,7 @@ Color Game::Trace(Ray r, uint depth)
 			m = r.obj->material;
 
 		if (m->IsFullMirror()) {
-			r.direction -= 2 * dot(r.direction, interNormal) * interNormal;
-			r.origin = interPoint;
+			r.Reflect(interPoint, interNormal);
 			return Trace(r, depth - 1);
 		}
 
@@ -267,8 +266,7 @@ Color Game::Trace(Ray r, uint depth)
 		if (m->IsReflectiveDiffuse()) {
 			float s = m->reflective;
 			vec3 ill = DirectIllumination( interPoint, interNormal );
-			r.direction -= 2 * dot( r.direction, interNormal ) * interNormal;
-			r.origin = interPoint;
+			r.Reflect(interPoint, interNormal);
 			Color reflected = Trace( r, depth - 1 );
 			return s * reflected + ( 1 - s ) * ill;
 		}

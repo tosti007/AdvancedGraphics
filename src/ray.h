@@ -14,6 +14,8 @@ struct Ray
     Primitive* obj;
 
     Ray( vec3 o, vec3 d );
+
+    void Reflect(vec3 i, vec3 n);
 };
 
 }; // namespace AdvancedGraphics

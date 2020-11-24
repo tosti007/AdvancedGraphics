@@ -11,3 +11,10 @@ Ray::Ray( vec3 o, vec3 d ) :
     obj(NULL)
 {
 }
+
+void Ray::Reflect(vec3 i, vec3 n)
+{
+	origin = i;
+    direction -= 2 * dot(direction, n) * n;
+	t = INFINITY;
+}
