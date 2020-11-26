@@ -251,6 +251,7 @@ void Game::Tick( float deltaTime )
 
 		Color color = Trace( r, 1 );
 
+		color.GammaCorrect();
 		*buf = color.ToPixel();
 		buf++;
 	}

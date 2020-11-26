@@ -43,6 +43,22 @@ Color::Color( Pixel p ) : Color(
 	((p & BLUEMASK) >> 0) / 255.0f
 ) {}
 
+void GammaCorrectFloat(float& v)
+{
+	// https://software.intel.com/content/www/us/en/develop/documentation/ipp-dev-reference/top/volume-2-image-processing/image-color-conversion/gamma-correction.html
+	if (v <  0.018f)
+		v *= 4.5f;
+	else
+		v = 1.099f * sqrtf(v) - 0.099f;
+}
+
+void Color::GammaCorrect()
+{
+	GammaCorrectFloat(r);
+	GammaCorrectFloat(g);
+	GammaCorrectFloat(b);
+}
+
 Pixel Color::ToPixel()
 {
 	int cr = clamp( (int)( r * 255.0f ), 0, 255 );
