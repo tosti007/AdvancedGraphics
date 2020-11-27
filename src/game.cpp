@@ -155,12 +155,8 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 
 		// This would mean no additional color so let's early out.
 		// TODO: use epsilon?
-		if (fac == 0)
+		if (fac <= 0)
 			continue;
-
-		if (fac < 0) {
-			fac *= -1;
-		}
 
 		shadowRay.Offset(1e-3);
 
