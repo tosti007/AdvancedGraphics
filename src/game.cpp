@@ -221,9 +221,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// into glass or out
 	// air = 1.0, glass = 1.5
-	float n1 = backFacing ? m->refractive : 1.0f;
-	float n2 = backFacing ? 1.0f : m->refractive;
-	float n = n1 / n2;
+	float n = backFacing ? m->refractive : 1.0f / m->refractive;
 
 	// Angle of ray with normal
 	float cosI = -dot( r.direction, interNormal );
@@ -258,7 +256,7 @@ Color Game::Trace(Ray r, uint depth)
 	*/
 
 	// Schlicks approximation to determine the amount of reflection vs refraction
-	float R0 = ( n1 - n2 ) / ( n1 + n2 );
+	float R0 = ( m->refractive - 1 ) / ( m->refractive + 1 );
 	R0 = R0 * R0;
 	float Fr = 1.0f - cosI ;
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
