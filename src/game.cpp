@@ -12,15 +12,15 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 7;
+	nr_objects = 4;
 	objects = new Primitive *[nr_objects] {
-		new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[2] ),
-		new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[2] ),
-		new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[2] ),
+		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+		new Sphere( vec3( -5, 2, 5 ), 0.75, 0x888888, materials[2] ),
+		new Sphere( vec3( 0, 2, 5 ), 1.5, 0x888888, materials[2] ),
+		new Sphere( vec3( 5, 2, 5 ), 3, 0x888888, materials[2] ),
 		new Plane( vec3( 0, 1, 0 ), 2, 0xff8833, materials[0] ),
-		new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
+		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
 
@@ -75,10 +75,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 4;
 	materials = new Material *[nr_materials] {
-		new Material(   0,   0 ), // Diffuse
-		new Material( 0.9,   0 ), // Diffuse & reflective
-		new Material( 0.2, 0.8 ), // Glass
-		new Material(   1,   0 )  // Mirror
+		new Material(   0,   0,   0  ), // Diffuse
+		new Material( 0.9,   0,   0  ), // Diffuse & reflective
+		new Material( 0.2, 0.8, 0.15 ), // Glass
+		new Material(   1,   0,   0  )  // Mirror
 	};
 
 	// load lights
@@ -248,6 +248,18 @@ Color Game::Trace(Ray r, uint depth)
 	Ray refractiveRay( interPoint, normalize( refractDir ) );
 	refractiveRay.Offset( 1e-3 );
 	Color refractCol = Trace( refractiveRay, depth - 1 );
+
+	// Beer's law
+	// check if refractive ray hits a backface
+	if ( dot( refractiveRay.direction, interNormal ) > 0.0f )
+	{
+		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->color;
+		Color absorbance = inversedColor * obj->material->density * -refractiveRay.t;
+		Color trans = Color(std::expf(absorbance.r),
+							std::expf(absorbance.g),
+							std::expf(absorbance.b));
+		refractCol *= trans;
+	}
 
 	// Schlicks approximation to determine the amount of reflection vs refraction
 	float R0 = powf( ( n1 - n2 ) / ( n1 + n2 ), 2.0f );

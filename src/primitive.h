@@ -8,9 +8,9 @@
 
 struct Material
 {
-    float speculative, refractive;
+    float speculative, refractive, density;
 
-    inline Material(float s, float r) : speculative(clamp(s, 0.0f, 1.0f)), refractive(clamp(r, 0.0f, 1.0f)) {}
+    inline Material(float s, float r, float d) : speculative(clamp(s, 0.0f, 1.0f)), refractive(clamp(r, 0.0f, 1.0f)), density(clamp(d, 0.0f, 1.0f)) {}
 
     inline bool IsFullMirror() { return speculative == 1.0f; }
     inline bool IsFullDiffuse() { return speculative == 0.0f; }

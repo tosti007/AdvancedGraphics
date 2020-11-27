@@ -34,5 +34,6 @@ Color operator * ( const float& a, const Color& c );
 Color operator * ( const Color& c, const float& a );
 Color operator * ( const Color& a, const Color& b );
 Color operator + ( const Color& a, const Color& b );
+Color operator - ( const Color &a, const Color &b );
 
 }; // namespace AdvancedGraphics

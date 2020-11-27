@@ -71,6 +71,6 @@ Color operator * ( const float& a, const Color& c ) { return Color( c.r * a, c.g
 Color operator * ( const Color& c, const float& a ) { return a * c; }
 Color operator * ( const Color& a, const Color& b ) { return Color(a.r * b.r, a.g * b.g, a.b * b.b); }
 Color operator + ( const Color& a, const Color& b ) { return Color(a.r + b.r, a.g + b.g, a.b + b.b); }
-
+Color operator - ( const Color &a, const Color &b ) { return Color( a.r - b.r, a.g - b.g, a.b - b.b ); }
 
 }; // namespace AdvancedGraphics
