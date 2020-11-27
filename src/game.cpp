@@ -16,11 +16,11 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[0] ),
-		new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[0] ),
-		new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[0] ),
-		new Plane( vec3( 0, 1, 0 ), 2, 0x000000, materials[2] ),
-		new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[2] )
+		new Sphere( vec3( -2, 0, 5 ), 0.75, 0xff0000, materials[2] ),
+		new Sphere( vec3( 0, 0, 5 ), 0.75, 0x00ff00, materials[2] ),
+		new Sphere( vec3( 2, 0, 5 ), 0.75, 0x0000ff, materials[2] ),
+		new Plane( vec3( 0, 1, 0 ), 2, 0xff8833, materials[0] ),
+		new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
 
@@ -73,7 +73,7 @@ void Game::Init(int argc, char **argv)
 	sky = new SkyDome();
 
 	// load materials
-	nr_materials = 5;
+	nr_materials = 4;
 	materials = new Material *[nr_materials] {
 		new Material(   0,   0 ), // Diffuse
 		new Material( 0.9,   0 ), // Diffuse & reflective
@@ -211,13 +211,50 @@ Color Game::Trace(Ray r, uint depth)
 		float s = m->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 		r.Reflect(interPoint, interNormal);
-		r.Offset(1e-3);
+		r.Offset( 1e-3 );
 		Color reflected = Trace( r, depth - 1 );
 		return s * reflected + ( 1 - s ) * ill;
 	}
 
-	// TODO speculative combinations
-	return Color(0xffff00);
+	bool backFacing = dot( r.direction, interNormal ) > 0.0f;
+	if ( backFacing )
+		interNormal *= -1;
+	
+	// compute reflected ray and color
+	Ray reflectRay = Ray( interPoint, r.direction );
+	reflectRay.Reflect( interPoint, interNormal );
+	reflectRay.Offset( 1e-3 );
+
+	// into glass or out
+	bool entering = !backFacing;
+	// air = 1.0, glass = 1.5
+	float n1 = entering ? 1.0f : 1.5f;
+	float n2 = entering ? 1.5f : 1.0f;
+	float n = n1 / n2;
+
+	// Angle of ray with normal
+	float cosI = dot( interNormal, -r.direction );
+	float k = 1 - ( n * n * ( 1 - cosI * cosI ) );
+
+	if ( k < 0 )
+	{
+		// Total Internal Reflection
+		Color reflectCol = Trace( reflectRay, depth - 1 );
+		return obj->color * reflectCol;
+	}
+
+	// Calculate the refractive ray, and its color
+	vec3 refractDir = n * r.direction + interNormal * ( n * cosI - sqrtf( k ) );
+	Ray refractiveRay( interPoint, normalize( refractDir ) );
+	refractiveRay.Offset( 1e-3 );
+	Color refractCol = Trace( refractiveRay, depth - 1 );
+
+	// Schlicks approximation to determine the amount of reflection vs refraction
+	float R0 = powf( ( n1 - n2 ) / ( n1 + n2 ), 2.0f );
+	float Fr = R0 + ( 1.0f - R0 ) * powf( ( 1.0f - cosI ), 5.0f );
+
+	Color reflectCol = Trace( reflectRay, depth - 1 );
+	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
@@ -249,7 +286,7 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 
-		Color color = Trace( r, 1 );
+		Color color = Trace( r, 4 );
 
 		*buf = color.ToPixel();
 		buf++;
