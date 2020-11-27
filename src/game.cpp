@@ -220,10 +220,9 @@ Color Game::Trace(Ray r, uint depth)
 	reflectRay.Offset( 1e-3 );
 
 	// into glass or out
-	bool entering = !backFacing;
 	// air = 1.0, glass = 1.5
-	float n1 = entering ? 1.0f : m->refractive;
-	float n2 = entering ? m->refractive : 1.0f;
+	float n1 = backFacing ? m->refractive : 1.0f;
+	float n2 = backFacing ? 1.0f : m->refractive;
 	float n = n1 / n2;
 
 	// Angle of ray with normal
