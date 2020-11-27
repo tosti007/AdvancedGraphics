@@ -233,7 +233,7 @@ Color Game::Trace(Ray r, uint depth)
 	float n = n1 / n2;
 
 	// Angle of ray with normal
-	float cosI = dot( interNormal, -r.direction );
+	float cosI = -dot( r.direction, interNormal );
 	float k = 1 - ( n * n * ( 1 - cosI * cosI ) );
 
 	if ( k < 0 )
@@ -245,7 +245,8 @@ Color Game::Trace(Ray r, uint depth)
 
 	// Calculate the refractive ray, and its color
 	vec3 refractDir = n * r.direction + interNormal * ( n * cosI - sqrtf( k ) );
-	Ray refractiveRay( interPoint, normalize( refractDir ) );
+	refractDir.normalize();
+	Ray refractiveRay( interPoint, refractDir );
 	refractiveRay.Offset( 1e-3 );
 	Color refractCol = Trace( refractiveRay, depth - 1 );
 
@@ -264,8 +265,10 @@ Color Game::Trace(Ray r, uint depth)
 	*/
 
 	// Schlicks approximation to determine the amount of reflection vs refraction
-	float R0 = powf( ( n1 - n2 ) / ( n1 + n2 ), 2.0f );
-	float Fr = R0 + ( 1.0f - R0 ) * powf( ( 1.0f - cosI ), 5.0f );
+	float R0 = ( n1 - n2 ) / ( n1 + n2 );
+	R0 = R0 * R0;
+	float Fr = 1.0f - cosI ;
+	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
 	Color reflectCol = Trace( reflectRay, depth - 1 );
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
