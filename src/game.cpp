@@ -158,8 +158,6 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		if (fac <= 0)
 			continue;
 
-		shadowRay.Offset(1e-3);
-
 		// find intersection of shadow ray, check if it is between the light and object
 		if ( CheckOcclusion( &shadowRay ) )
 			continue;
