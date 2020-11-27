@@ -196,18 +196,18 @@ Color Game::Trace(Ray r, uint depth)
 	if (obj->material != nullptr)
 		m = obj->material;
 
-	if (m->IsFullMirror()) {
-		r.Reflect(interPoint, interNormal);
-		r.Offset(1e-3);
-		return Trace(r, depth - 1);
-	}
-
-	if (m->IsFullDiffuse()) {
-		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-		return ill * obj->color;
-	}
-
 	if (m->IsNotRefractive()) {
+		if (m->IsFullMirror()) {
+			r.Reflect(interPoint, interNormal);
+			r.Offset(1e-3);
+			return Trace(r, depth - 1);
+		}
+
+		if (m->IsFullDiffuse()) {
+			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
+			return ill * obj->color;
+		}
+
 		float s = m->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 		r.Reflect(interPoint, interNormal);
