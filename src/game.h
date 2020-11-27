@@ -17,11 +17,11 @@ public:
 	void Shutdown();
 	void Tick( float deltaTime );
 	
-	void MouseUp( int button ) { view->MouseUp(button); }
-	void MouseDown( int button ) { view->MouseDown(button); }
-	void MouseMove( int x, int y ) { view->MouseMove(x, y); }
-	void KeyUp( int key, byte repeat ) { view->KeyUp(key, repeat); }
-	void KeyDown( int key, byte repeat ) { view->KeyDown(key, repeat); }
+	void MouseUp( int button ) { if (view->MouseUp(button)) CameraChanged(); }
+	void MouseDown( int button ) { if (view->MouseDown(button)) CameraChanged(); }
+	void MouseMove( int x, int y ) { if (view->MouseMove(x, y)) CameraChanged(); }
+	void KeyUp( int key, byte repeat ) { if (view->KeyUp(key, repeat)) CameraChanged(); }
+	void KeyDown( int key, byte repeat ) { if (view->KeyDown(key, repeat)) CameraChanged(); }
 
 	bool CheckOcclusion( Ray *r );
 	Primitive* Intersect( Ray* r );
@@ -44,6 +44,7 @@ public:
 	void InitDefaultScene();
   	void InitFromTinyObj( char* filename );
 	void InitSkyBox();
+	inline void CameraChanged() { /* implement if you want to camera movement callbacks */};
 };
 
 }; // namespace AdvancedGraphics

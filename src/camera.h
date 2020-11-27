@@ -15,11 +15,11 @@ struct Camera
     Camera( vec3 p, vec3 d );
     vec3 TopLeft();
 
-	void MouseUp( int button ) { /* implement if you want to detect mouse button presses */ }
-	void MouseDown( int button ) { /* implement if you want to detect mouse button presses */ }
-	void MouseMove( int x, int y ) { /* implement if you want to detect mouse movement */ }
-	void KeyUp( int key, byte repeat ) { /* implement if you want to handle keys */ }
-	void KeyDown( int key, byte repeat );
+	bool MouseUp( int button ) { return false; /* implement if you want to detect mouse button presses */ }
+	bool MouseDown( int button ) { return false; /* implement if you want to detect mouse button presses */ }
+	bool MouseMove( int x, int y ) { return false; /* implement if you want to detect mouse movement */ }
+	bool KeyUp( int key, byte repeat ) { return false; /* implement if you want to handle keys */ }
+	bool KeyDown( int key, byte repeat );
 	private:
 	void RotateAround( vec3 axis, float angle );
 };

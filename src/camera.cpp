@@ -17,7 +17,7 @@ vec3 Camera::TopLeft()
     return fov * direction - 0.5 * (right + down);
 }
 
-void Camera::KeyDown( int key, byte repeat )
+bool Camera::KeyDown( int key, byte repeat )
 {
     const float speed = 0.1;
     const float angle = 0.03;
@@ -25,42 +25,43 @@ void Camera::KeyDown( int key, byte repeat )
     {
         case SDLK_w:
             position += speed * direction;
-            break;
+            return true;
         case SDLK_a:
             position -= speed * right;
-            break;
+            return true;
         case SDLK_s:
             position -= speed * direction;
-            break;
+            return true;
         case SDLK_d:
             position += speed * right;
-            break;
+            return true;
         case SDLK_e:
             position -= speed * down;
-            break;
+            return true;
         case SDLK_r:
             fov += speed;
-            break;
+            return true;
         case SDLK_f:
             fov -= speed;
-            break;
+            return true;
         // These do not re-trigger once pressed.
         case SDLK_q:
             position += speed * down;
-            break;
+            return true;
         case SDLK_LEFT:
             RotateAround(down, angle);
-            break;
+            return true;
         case SDLK_RIGHT:
             RotateAround(down, -angle);
-            break;
+            return true;
         case SDLK_UP:
             RotateAround(right, -angle);
-            break;
+            return true;
         case SDLK_DOWN:
             RotateAround(right, angle);
-            break;
+            return true;
     }
+    return false;
 }
 
 void Camera::RotateAround( vec3 axis, float angle )

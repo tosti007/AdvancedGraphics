@@ -22,6 +22,7 @@ struct Color {
 	inline Color(float cr, float cg, float cb) : r(cr), g(cg),	b(cb) {}
 	Color( Pixel p );
 
+	void GammaCorrect();
 	Pixel ToPixel();
 
 	void operator *= ( const float& a ) { r *= a; g *= a; b *= a; }
