@@ -251,6 +251,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// Beer's law
 	// check if refractive ray hits a backface
+	/*
 	if ( dot( refractiveRay.direction, interNormal ) > 0.0f )
 	{
 		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->color;
@@ -260,6 +261,7 @@ Color Game::Trace(Ray r, uint depth)
 							std::expf(absorbance.b));
 		refractCol *= trans;
 	}
+	*/
 
 	// Schlicks approximation to determine the amount of reflection vs refraction
 	float R0 = powf( ( n1 - n2 ) / ( n1 + n2 ), 2.0f );
