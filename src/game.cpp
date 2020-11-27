@@ -210,9 +210,13 @@ Color Game::Trace(Ray r, uint depth)
 		return s * reflected + ( 1 - s ) * ill;
 	}
 
-	bool backFacing = dot( r.direction, interNormal ) > 0.0f;
-	if ( backFacing )
+	float cosI = -dot( r.direction, interNormal );
+	bool exiting = cosI < 0.0f;
+	if ( exiting )
+	{
 		interNormal *= -1;
+		cosI *= -1;
+	}
 	
 	// compute reflected ray and color
 	Ray reflectRay = Ray( interPoint, r.direction );
@@ -221,10 +225,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// into glass or out
 	// air = 1.0, glass = 1.5
-	float n = backFacing ? m->refractive : 1.0f / m->refractive;
-
-	// Angle of ray with normal
-	float cosI = -dot( r.direction, interNormal );
+	float n = exiting ? m->refractive : 1.0f / m->refractive;
 	float k = 1 - ( n * n * ( 1 - cosI * cosI ) );
 
 	if ( k < 0 )
