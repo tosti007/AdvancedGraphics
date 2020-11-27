@@ -77,7 +77,7 @@ void Game::Init(int argc, char **argv)
 	materials = new Material *[nr_materials] {
 		new Material(   0,   0,   0  ), // Diffuse
 		new Material( 0.9,   0,   0  ), // Diffuse & reflective
-		new Material( 0.2, 0.8, 0.15 ), // Glass
+		new Material( 0.2, 1.5, 0.15 ), // Glass
 		new Material(   1,   0,   0  )  // Mirror
 	};
 
@@ -228,8 +228,8 @@ Color Game::Trace(Ray r, uint depth)
 	// into glass or out
 	bool entering = !backFacing;
 	// air = 1.0, glass = 1.5
-	float n1 = entering ? 1.0f : 1.5f;
-	float n2 = entering ? 1.5f : 1.0f;
+	float n1 = entering ? 1.0f : m->refractive;
+	float n2 = entering ? m->refractive : 1.0f;
 	float n = n1 / n2;
 
 	// Angle of ray with normal
