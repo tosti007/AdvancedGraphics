@@ -246,8 +246,6 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	if (unmoved_frames < 50)
-		return Color(0, 0, 0);
 	return obj->color;
 }
 
@@ -298,7 +296,6 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 void Game::Tick( float deltaTime )
 {
 	printf("Game Tick\n");
-	unmoved_frames++;
 
 	vec3 p0 = view->TopLeft();
 	Pixel* buf = screen->GetBuffer();
@@ -317,14 +314,14 @@ void Game::Tick( float deltaTime )
 		color.GammaCorrect();
 
 		#ifdef USEPATHTRACE
-			color *= 1/(float)unmoved_frames;
-			*buf = color.ToPixel(*buf);
+			*buf = color.ToPixel(*buf, unmoved_frames);
 		#else
 			*buf = color.ToPixel();
 		#endif
 
 		buf++;
 	}
+	unmoved_frames++;
 
 	// Write debug output
 	Print(32, 0, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);

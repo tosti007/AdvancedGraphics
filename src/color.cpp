@@ -67,19 +67,20 @@ Pixel Color::ToPixel()
 	return ( cr << 16 ) + ( cg << 8 ) + (cb << 0);
 }
 
-Pixel Color::ToPixel(Pixel origional)
+Pixel Color::ToPixel(Pixel origional, uint weight)
 {
 	uint cr = clamp( (int)( r * 255.0f ), 0, 255 );
 	uint cg = clamp( (int)( g * 255.0f ), 0, 255 );
 	uint cb = clamp( (int)( b * 255.0f ), 0, 255 );
 
-	cr += ((origional & REDMASK) >> 16);
-	cg += ((origional & GREENMASK) >> 8);
-	cb += ((origional & BLUEMASK) >> 0);
+	cr += ((origional & REDMASK) >> 16) * weight;
+	cg += ((origional & GREENMASK) >> 8) * weight;
+	cb += ((origional & BLUEMASK) >> 0) * weight;
 
-	cr = std::min(cr, static_cast<uint>(255));
-	cg = std::min(cg, static_cast<uint>(255));
-	cb = std::min(cb, static_cast<uint>(255));
+	float fac = 1 / (float)(weight + 1);
+	cr = std::min((uint)(cr * fac), static_cast<uint>(255));
+	cg = std::min((uint)(cg * fac), static_cast<uint>(255));
+	cb = std::min((uint)(cb * fac), static_cast<uint>(255));
 
 	return ( cr << 16 ) + ( cg << 8 ) + (cb << 0);
 }
