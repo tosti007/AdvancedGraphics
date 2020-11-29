@@ -199,7 +199,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	if (m->IsNotRefractive()) {
 		if (m->IsFullMirror()) {
-			r.Reflect(interPoint, interNormal);
+			r.Reflect(interPoint, interNormal, angle);
 			r.Offset(1e-3);
 			return Trace(r, depth - 1);
 		}
@@ -211,7 +211,7 @@ Color Game::Trace(Ray r, uint depth)
 
 		float s = m->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-		r.Reflect(interPoint, interNormal);
+		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
 		Color reflected = Trace( r, depth - 1 );
 		return s * reflected + ( 1 - s ) * ill;
@@ -219,7 +219,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// compute reflected ray and color
 	Ray reflectRay = Ray( interPoint, r.direction );
-	reflectRay.Reflect( interPoint, interNormal );
+	reflectRay.Reflect( interPoint, interNormal, angle );
 	reflectRay.Offset( 1e-3 );
 
 	// into glass or out

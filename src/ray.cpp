@@ -13,8 +13,13 @@ Ray::Ray( vec3 o, vec3 d ) :
 
 void Ray::Reflect(vec3 i, vec3 n)
 {
+    Reflect(i, n, dot(direction, n));
+}
+
+void Ray::Reflect(vec3 i, vec3 n, float angle)
+{
 	origin = i;
-    direction -= 2 * dot(direction, n) * n;
+    direction -= 2 * angle * n;
 	t = INFINITY;
 }
 
