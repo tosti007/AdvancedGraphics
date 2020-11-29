@@ -24,7 +24,7 @@ struct Color {
 
 	void GammaCorrect();
 	Pixel ToPixel();
-	Pixel ToPixel(Pixel origional, uint weight)
+	Pixel ToPixel(Pixel origional);
 
 	void operator *= ( const float& a ) { r *= a; g *= a; b *= a; }
 	void operator *= ( const Color& a ) { r *= a.r; g *= a.g; b *= a.b; }

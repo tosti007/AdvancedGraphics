@@ -338,6 +338,6 @@ void Game::CameraChanged()
 {
 	#ifdef USEPATHTRACE
 		unmoved_frames = 0;
-		view->Clear(0);
+		screen->Clear(0);
 	#endif
 }
