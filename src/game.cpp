@@ -84,8 +84,8 @@ void Game::Init(int argc, char **argv)
 	// load lights
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
-	lights = new Light *[nr_lights] {
-		new Light( vec3( 0, 10, 5 ), Color( 100, 100, 20 ) )
+	lights = new PointLight *[nr_lights] {
+		new PointLight( vec3( 0, 10, 5 ), Color( 100, 100, 20 ) )
 	};
 
 	// load model

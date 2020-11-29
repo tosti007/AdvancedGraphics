@@ -6,12 +6,12 @@
 namespace AdvancedGraphics
 {
 
-struct Light
+struct PointLight
 {
 	vec3 position;
 	Color color;
 
-	Light( vec3 pos, Color col );
+	PointLight( vec3 pos, Color col );
 };
 
 }; // namespace AdvancedGraphics
