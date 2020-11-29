@@ -146,7 +146,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 {
 	// accumulated color
 	Color total( 0 );
-	Ray shadowRay(vec3(0), vec3(0));
+	Ray shadowRay(interPoint, vec3(0));
 	float fac;
 	// send shadow ray to each light and add its color
 	for ( size_t i = 0; i < nr_lights; i++ )
@@ -155,8 +155,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 			i = RandomIndex(nr_lights);
 		#endif
 		// compute origin and direction of shadow ray
-		shadowRay.origin = interPoint;
-		shadowRay.direction = lights[i]->PointOnLight() - interPoint;
+		shadowRay.direction = lights[i]->PointOnLight() - shadowRay.origin;
 		shadowRay.t = shadowRay.direction.length();
 		shadowRay.direction *= (1 / shadowRay.t);
 
