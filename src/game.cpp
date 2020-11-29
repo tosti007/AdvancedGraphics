@@ -251,7 +251,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 	return obj->color;
 }
 
-Color Game::Trace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
+Color Game::Trace(Ray r, uint depth)
 {
 	// TODO: handle depth value.
 	Primitive* obj = Intersect( &r );
