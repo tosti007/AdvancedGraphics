@@ -151,6 +151,9 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	// send shadow ray to each light and add its color
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
+		#ifdef USEPATHTRACE
+			i = RandomIndex(nr_lights);
+		#endif
 		// compute origin and direction of shadow ray
 		shadowRay.origin = interPoint;
 		shadowRay.direction = lights[i]->PointOnLight() - interPoint;
@@ -164,12 +167,27 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		if (fac <= 0)
 			continue;
 
+		#ifdef USEPATHTRACE
+			// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
+			// fac_light = ???
+			float fac_light = 1;
+
+			if (fac_light <= 0)
+				continue;
+		#endif
+
 		// find intersection of shadow ray, check if it is between the light and object
 		if ( CheckOcclusion( &shadowRay ) )
 			continue;
 
 		// angle * distance attenuation * color
 		total += (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
+
+		#ifdef USEPATHTRACE
+			// TODO: Find some way of getting the Scene.LIGHTAREA.
+			float light_area = 1;
+			return INVPI * nr_lights * fac_light * light_area * total;
+		#endif
 	}
 	return total;
 }
@@ -246,7 +264,8 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	return obj->color;
+	Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
+	return ill * obj->color;
 }
 
 Color Game::Trace(Ray r, uint depth)
