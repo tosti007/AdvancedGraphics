@@ -267,6 +267,8 @@ Color Game::RayTrace(Ray r, uint depth)
 
 Color Game::PathTrace(Ray r, uint depth)
 {
+	if (unmoved_frames < 50)
+		return Color(0, 0, 0);
 	return Color(1, 1, 0);
 }
 

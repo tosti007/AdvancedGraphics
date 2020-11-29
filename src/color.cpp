@@ -77,6 +77,10 @@ Pixel Color::ToPixel(Pixel origional)
 	cg += ((origional & GREENMASK) >> 8);
 	cb += ((origional & BLUEMASK) >> 0);
 
+	cr = std::min(cr, static_cast<uint>(255));
+	cg = std::min(cg, static_cast<uint>(255));
+	cb = std::min(cb, static_cast<uint>(255));
+
 	return ( cr << 16 ) + ( cg << 8 ) + (cb << 0);
 }
 
