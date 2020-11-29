@@ -44,9 +44,12 @@ public:
 	void InitDefaultScene();
   	void InitFromTinyObj( char* filename );
 	void InitSkyBox();
-	inline void CameraChanged() { /* implement if you want to camera movement callbacks */};
+
+	uint unmoved_frames = 0;
+	void CameraChanged();
 
 	Color RayTrace( Ray r, uint depth );
+	Color PathTrace( Ray r, uint depth );
 };
 
 }; // namespace AdvancedGraphics

@@ -265,9 +265,18 @@ Color Game::RayTrace(Ray r, uint depth)
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
+Color Game::PathTrace(Ray r, uint depth)
+{
+	return Color(1, 1, 0);
+}
+
 Color Game::Trace(Ray r, uint depth)
 {
-	return RayTrace(r, depth);
+	#ifdef USEPATHTRACE
+		return PathTrace(r, depth);
+	#else
+		return RayTrace(r, depth);
+	#endif
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
@@ -285,6 +294,7 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 void Game::Tick( float deltaTime )
 {
 	printf("Game Tick\n");
+	unmoved_frames++;
 
 	vec3 p0 = view->TopLeft();
 	Pixel* buf = screen->GetBuffer();
@@ -300,9 +310,15 @@ void Game::Tick( float deltaTime )
 		Ray r = Ray(view->position, dir);
 
 		Color color = Trace( r, 4 );
-
 		color.GammaCorrect();
-		*buf = color.ToPixel();
+
+		#ifdef USEPATHTRACE
+			color *= 1/(float)unmoved_frames;
+			*buf = color.ToPixel(*buf);
+		#else
+			*buf = color.ToPixel();
+		#endif
+
 		buf++;
 	}
 
@@ -316,4 +332,12 @@ void Game::Tick( float deltaTime )
 	Print(32, 3, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
 	
 	Print(32, 4, "FPS: %f", 1 / deltaTime);
+}
+
+void Game::CameraChanged()
+{
+	#ifdef USEPATHTRACE
+		unmoved_frames = 0;
+		view->Clear(0);
+	#endif
 }

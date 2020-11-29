@@ -53,6 +53,9 @@
 #define SCRWIDTH 512
 #define SCRHEIGHT 512
 
+// To use path tracing instead of ray-tracing
+//#define USEPATHTRACE
+
 typedef unsigned char uchar;
 typedef unsigned char byte;
 typedef int64_t int64;
