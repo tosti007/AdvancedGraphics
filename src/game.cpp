@@ -168,7 +168,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return total;
 }
 
-Color Game::Trace(Ray r, uint depth)
+Color Game::RayTrace(Ray r, uint depth)
 {
 	// TODO: handle depth value.
 	Primitive* obj = Intersect( &r );
@@ -263,6 +263,11 @@ Color Game::Trace(Ray r, uint depth)
 
 	Color reflectCol = Trace( reflectRay, depth - 1 );
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
+}
+
+Color Game::Trace(Ray r, uint depth)
+{
+	return RayTrace(r, depth);
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
