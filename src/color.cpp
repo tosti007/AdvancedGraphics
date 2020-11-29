@@ -61,9 +61,22 @@ void Color::GammaCorrect()
 
 Pixel Color::ToPixel()
 {
-	int cr = clamp( (int)( r * 255.0f ), 0, 255 );
-	int cg = clamp( (int)( g * 255.0f ), 0, 255 );
-	int cb = clamp( (int)( b * 255.0f ), 0, 255 );
+	uint cr = clamp( (uint)( r * 255.0f ), 0, 255 );
+	uint cg = clamp( (uint)( g * 255.0f ), 0, 255 );
+	uint cb = clamp( (uint)( b * 255.0f ), 0, 255 );
+	return ( cr << 16 ) + ( cg << 8 ) + (cb << 0);
+}
+
+Pixel Color::ToPixel(Pixel origional)
+{
+	uint cr = clamp( (uint)( r * 255.0f ), 0, 255 );
+	uint cg = clamp( (uint)( g * 255.0f ), 0, 255 );
+	uint cb = clamp( (uint)( b * 255.0f ), 0, 255 );
+
+	cr += ((origional & REDMASK) >> 16);
+	cg += ((origional & GREENMASK) >> 8);
+	cb += ((origional & BLUEMASK) >> 0);
+
 	return ( cr << 16 ) + ( cg << 8 ) + (cb << 0);
 }
 
