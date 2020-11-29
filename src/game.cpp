@@ -174,31 +174,8 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return total;
 }
 
-Color Game::RayTrace(Ray r, uint depth)
+Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	// TODO: handle depth value.
-	Primitive* obj = Intersect( &r );
-
-	// No intersection point found
-	if ( obj == nullptr )
-	{
-		if (sky == nullptr)
-			return SKYDOME_DEFAULT_COLOR;
-		else
-			return sky->FindColor(r.direction);
-	}
-
-	// intersection point found
-	vec3 interPoint = r.origin + r.t * r.direction;
-	vec3 interNormal = obj->NormalAt( interPoint );
-	float angle = -dot( r.direction, interNormal );
-	bool backfacing = angle < 0.0f;
-	if ( backfacing )
-	{
-		interNormal *= -1;
-		angle *= -1;
-	}
-
 	if (obj->material->IsNotRefractive()) {
 		if (obj->material->IsFullMirror()) {
 			r.Reflect(interPoint, interNormal, angle);
@@ -267,19 +244,42 @@ Color Game::RayTrace(Ray r, uint depth)
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
-Color Game::PathTrace(Ray r, uint depth)
+Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
 	if (unmoved_frames < 50)
 		return Color(0, 0, 0);
-	return Color(1, 1, 0);
+	return obj->color;
 }
 
-Color Game::Trace(Ray r, uint depth)
+Color Game::Trace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
+	// TODO: handle depth value.
+	Primitive* obj = Intersect( &r );
+
+	// No intersection point found
+	if ( obj == nullptr )
+	{
+		if (sky == nullptr)
+			return SKYDOME_DEFAULT_COLOR;
+		else
+			return sky->FindColor(r.direction);
+	}
+
+	// intersection point found
+	vec3 interPoint = r.origin + r.t * r.direction;
+	vec3 interNormal = obj->NormalAt( interPoint );
+	float angle = -dot( r.direction, interNormal );
+	bool backfacing = angle < 0.0f;
+	if ( backfacing )
+	{
+		interNormal *= -1;
+		angle *= -1;
+	}
+
 	#ifdef USEPATHTRACE
-		return PathTrace(r, depth);
+		return PathTrace(r, depth, obj, interPoint, interNormal, angle, backfacing);
 	#else
-		return RayTrace(r, depth);
+		return RayTrace(r, depth, obj, interPoint, interNormal, angle, backfacing);
 	#endif
 }
 

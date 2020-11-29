@@ -48,8 +48,8 @@ public:
 	uint unmoved_frames = 0;
 	void CameraChanged();
 
-	Color RayTrace( Ray r, uint depth );
-	Color PathTrace( Ray r, uint depth );
+	Color RayTrace( Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing );
+	Color PathTrace( Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing );
 };
 
 }; // namespace AdvancedGraphics
