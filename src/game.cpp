@@ -102,6 +102,12 @@ void Game::Init(int argc, char **argv)
 			exit(1);
 			break;
 	}
+
+	for (uint i = 0; i < nr_objects; i++)
+	{
+		if(objects[i]->material == nullptr)
+			objects[i]->material = materials[0];
+	}
 }
 
 // -----------------------------------------------------------
@@ -193,23 +199,19 @@ Color Game::RayTrace(Ray r, uint depth)
 		angle *= -1;
 	}
 
-	Material* m = materials[0]; // Default diffuse
-	if (obj->material != nullptr)
-		m = obj->material;
-
-	if (m->IsNotRefractive()) {
-		if (m->IsFullMirror()) {
+	if (obj->material->IsNotRefractive()) {
+		if (obj->material->IsFullMirror()) {
 			r.Reflect(interPoint, interNormal, angle);
 			r.Offset(1e-3);
 			return Trace(r, depth - 1);
 		}
 
-		if (m->IsFullDiffuse()) {
+		if (obj->material->IsFullDiffuse()) {
 			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 			return ill * obj->color;
 		}
 
-		float s = m->speculative;
+		float s = obj->material->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
 		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
@@ -224,7 +226,7 @@ Color Game::RayTrace(Ray r, uint depth)
 
 	// into glass or out
 	// air = 1.0, glass = 1.5
-	float n = backfacing ? m->refractive : 1.0f / m->refractive;
+	float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
 	float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 	if ( k < 0 )
@@ -256,7 +258,7 @@ Color Game::RayTrace(Ray r, uint depth)
 	*/
 
 	// Schlicks approximation to determine the amount of reflection vs refraction
-	float R0 = ( m->refractive - 1 ) / ( m->refractive + 1 );
+	float R0 = ( obj->material->refractive - 1 ) / ( obj->material->refractive + 1 );
 	R0 = R0 * R0;
 	float Fr = 1.0f - angle ;
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
