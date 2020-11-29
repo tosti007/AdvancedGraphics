@@ -84,7 +84,7 @@ void Game::Init(int argc, char **argv)
 	// load lights
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
-	lights = new PointLight *[nr_lights] {
+	lights = new Light *[nr_lights] {
 		new PointLight( vec3( 0, 10, 5 ), Color( 100, 100, 20 ) )
 	};
 
@@ -153,7 +153,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	{
 		// compute origin and direction of shadow ray
 		shadowRay.origin = interPoint;
-		shadowRay.direction = lights[i]->position - interPoint;
+		shadowRay.direction = lights[i]->PointOnLight() - interPoint;
 		shadowRay.t = shadowRay.direction.length();
 		shadowRay.direction *= (1 / shadowRay.t);
 

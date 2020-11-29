@@ -4,7 +4,7 @@
 #include "light.h"
 
 PointLight::PointLight( vec3 pos, Color col ) : 
-	position( pos ),
-	color( col )
+	Light(col),
+	position( pos )
 {
 }

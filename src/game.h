@@ -36,7 +36,7 @@ public:
 
 	Material** materials;
 	uint nr_materials;
-	PointLight** lights;
+	Light** lights;
 	uint nr_lights;
 	Primitive** objects;
 	uint nr_objects;
