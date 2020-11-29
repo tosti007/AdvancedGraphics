@@ -185,7 +185,14 @@ Color Game::Trace(Ray r, uint depth)
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = obj->NormalAt( interPoint );
-	
+	float angle = -dot( r.direction, interNormal );
+	bool backfacing = angle < 0.0f;
+	if ( backfacing )
+	{
+		interNormal *= -1;
+		angle *= -1;
+	}
+
 	Material* m = materials[0]; // Default diffuse
 	if (obj->material != nullptr)
 		m = obj->material;
@@ -210,14 +217,6 @@ Color Game::Trace(Ray r, uint depth)
 		return s * reflected + ( 1 - s ) * ill;
 	}
 
-	float cosI = -dot( r.direction, interNormal );
-	bool exiting = cosI < 0.0f;
-	if ( exiting )
-	{
-		interNormal *= -1;
-		cosI *= -1;
-	}
-	
 	// compute reflected ray and color
 	Ray reflectRay = Ray( interPoint, r.direction );
 	reflectRay.Reflect( interPoint, interNormal );
@@ -225,8 +224,8 @@ Color Game::Trace(Ray r, uint depth)
 
 	// into glass or out
 	// air = 1.0, glass = 1.5
-	float n = exiting ? m->refractive : 1.0f / m->refractive;
-	float k = 1 - ( n * n * ( 1 - cosI * cosI ) );
+	float n = backfacing ? m->refractive : 1.0f / m->refractive;
+	float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 	if ( k < 0 )
 	{
@@ -236,7 +235,7 @@ Color Game::Trace(Ray r, uint depth)
 	}
 
 	// Calculate the refractive ray, and its color
-	vec3 refractDir = n * r.direction + interNormal * ( n * cosI - sqrtf( k ) );
+	vec3 refractDir = n * r.direction + interNormal * ( n * angle - sqrtf( k ) );
 	refractDir.normalize();
 	Ray refractiveRay( interPoint, refractDir );
 	refractiveRay.Offset( 1e-3 );
@@ -259,7 +258,7 @@ Color Game::Trace(Ray r, uint depth)
 	// Schlicks approximation to determine the amount of reflection vs refraction
 	float R0 = ( m->refractive - 1 ) / ( m->refractive + 1 );
 	R0 = R0 * R0;
-	float Fr = 1.0f - cosI ;
+	float Fr = 1.0f - angle ;
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
 	Color reflectCol = Trace( reflectRay, depth - 1 );
