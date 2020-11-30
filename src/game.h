@@ -25,6 +25,7 @@ public:
 
 	bool CheckOcclusion( Ray *r );
 	Primitive* Intersect( Ray* r );
+	Light* IntersectLights( Ray* r );
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray r, uint depth );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);

@@ -12,11 +12,10 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 5;
+	nr_objects = 4;
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3(0,10,5), 5.0f, 0xffffff, materials[4]), 
 		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[0]),
 		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[0]),
 		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[0]),
@@ -76,11 +75,10 @@ void Game::Init(int argc, char **argv)
 	// load materials
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
-		new Material(   0,   0,   0, false, Color(0,0,0)),		// Diffuse
-		new Material( 0.1, 0, 0, false, Color( 0, 0, 0 )),		// Diffuse & reflective
-		new Material( 0.2, 1.5, 0.15, false, Color( 0, 0, 0 ) ), // Glass
-		new Material( 1, 0, 0, false, Color( 0, 0, 0 ) ),		 // Mirror
-		new Material( 0, 0, 0, true, Color( 100, 100, 100 ) )	 // Light
+		new Material(   0,   0, 0 ),	// Diffuse
+		new Material( 0.1,   0, 0 ),	// Diffuse & reflective
+		new Material( 0.2, 1.5, 0.15 ), // Glass
+		new Material(   1,   0, 0 )		// Mirror
 	};
 
 	// load lights
@@ -143,6 +141,19 @@ Primitive* Game::Intersect( Ray* r )
 	{
 		if(objects[i]->Intersect(r))
 			found = objects[i];
+	}
+
+	return found;
+}
+
+Light* Game::IntersectLights( Ray* r )
+{
+	Light* found = nullptr;
+
+	for (uint i = 0; i < nr_lights; i++)
+	{
+		if(lights[i]->Intersect(r))
+			found = lights[i];
 	}
 
 	return found;
@@ -296,6 +307,12 @@ Color Game::Trace(Ray r, uint depth)
 	// TODO: handle depth value.
 	Primitive* obj = Intersect( &r );
 
+	#ifdef USEPATHTRACE
+		Light* light = IntersectLights( &r );
+		if ( light != nullptr )
+			return light->color;
+	#endif
+
 	// No intersection point found
 	if ( obj == nullptr )
 	{
@@ -304,8 +321,6 @@ Color Game::Trace(Ray r, uint depth)
 		else
 			return sky->FindColor(r.direction);
 	}
-	if ( obj->material->isLight )
-		return obj->material->emittance;
 
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
