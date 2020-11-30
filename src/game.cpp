@@ -86,7 +86,11 @@ void Game::Init(int argc, char **argv)
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
+#ifdef USEPATHTRACE
 		new SphereLight( vec3( 0, 10, 5 ), 1, Color( 100, 100, 20 ) )
+#else
+		new PointLight( vec3( 0, 10, 0 ), Color( 100, 100, 100 ) )
+#endif
 	};
 
 	// load model
