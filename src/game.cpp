@@ -17,10 +17,10 @@ void Game::InitDefaultScene()
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		new Sphere(vec3(0,10,5), 5.0f, 0xffffff, materials[4]), 
-		new Sphere(vec3( -5, 2, 5 ), 0.75f, 0xff0000, materials[2]),
-		new Sphere(vec3( 0, 2, 5 ), 1.5f, 0x00ff00, materials[2]),
-		new Sphere(vec3( 5, 2, 5 ), 3.0f, 0x0000ff, materials[2]),
-		new Plane( vec3( 0, 1, 0 ), 2.0f, 0xff8833, materials[0]),
+		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[0]),
+		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[0]),
+		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[0]),
+		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x888888, materials[3]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
@@ -287,9 +287,18 @@ vec3 DiffuseReflection( vec3 interNormal )
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
+	if (obj->material->IsFullMirror())
+	{
+		// TODO: why does inverting the angle fix it?
+		angle *= -1;
+
+		r.Reflect( interPoint, interNormal, angle );
+		r.Offset( 1e-3 );
+		return obj->color * Trace(r, depth - 1);
+	}
+	Color BRDF = obj->color * INVPI;
 	vec3 random_dir = DiffuseReflection( interNormal );
 	Ray newRay = Ray( interPoint, random_dir );
-	Color BRDF = obj->color * INVPI;
 
 	// irradiance
 	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
