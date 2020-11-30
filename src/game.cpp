@@ -12,10 +12,11 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 4;
+	nr_objects = 5;
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
+		new Sphere( vec3( 0, 10, 5 ), 0.95, Color( 100, 100, 20 ) ), // temporary hack for the light
 		new Sphere( vec3( -5, 2, 5 ), 0.75, 0x888888, materials[2] ),
 		new Sphere( vec3( 0, 2, 5 ), 1.5, 0x888888, materials[2] ),
 		new Sphere( vec3( 5, 2, 5 ), 3, 0x888888, materials[2] ),
@@ -85,7 +86,7 @@ void Game::Init(int argc, char **argv)
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new PointLight( vec3( 0, 10, 5 ), Color( 100, 100, 20 ) )
+		new SphereLight( vec3( 0, 10, 5 ), 1, Color( 100, 100, 20 ) )
 	};
 
 	// load model
