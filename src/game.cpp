@@ -20,7 +20,7 @@ void Game::InitDefaultScene()
 		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[0]),
 		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[0]),
 		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[0]),
-		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x888888, materials[3]),
+		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x11ffff, materials[1]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
@@ -77,7 +77,7 @@ void Game::Init(int argc, char **argv)
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
 		new Material(   0,   0,   0, false, Color(0,0,0)),		// Diffuse
-		new Material( 0.9, 0, 0, false, Color( 0, 0, 0 )),		// Diffuse & reflective
+		new Material( 0.1, 0, 0, false, Color( 0, 0, 0 )),		// Diffuse & reflective
 		new Material( 0.2, 1.5, 0.15, false, Color( 0, 0, 0 ) ), // Glass
 		new Material( 1, 0, 0, false, Color( 0, 0, 0 ) ),		 // Mirror
 		new Material( 0, 0, 0, true, Color( 100, 100, 100 ) )	 // Light
@@ -268,7 +268,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
-vec3 DiffuseReflection( vec3 interNormal )
+vec3 DirFromHemisphere( vec3 interNormal )
 {
 	float x, y, z, d;
 	do
@@ -287,17 +287,19 @@ vec3 DiffuseReflection( vec3 interNormal )
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	if (obj->material->IsFullMirror())
+	float random = Rand( 1 );
+	bool reflect = random < obj->material->speculative;
+	if (reflect)
 	{
 		// TODO: why does inverting the angle fix it?
 		angle *= -1;
 
 		r.Reflect( interPoint, interNormal, angle );
 		r.Offset( 1e-3 );
-		return obj->color * Trace(r, depth - 1);
+		return obj->color * Trace( r, depth - 1 );
 	}
 	Color BRDF = obj->color * INVPI;
-	vec3 random_dir = DiffuseReflection( interNormal );
+	vec3 random_dir = DirFromHemisphere( interNormal );
 	Ray newRay = Ray( interPoint, random_dir );
 
 	// irradiance
