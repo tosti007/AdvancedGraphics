@@ -16,10 +16,10 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3(0,10,5), 1.0f, 0x888888, materials[4]), 
-		new Sphere(vec3( -5, 2, 5 ), 0.75f, 0x888888, materials[2]),
-		new Sphere(vec3( 0, 2, 5 ), 1.5f, 0x888888, materials[2]),
-		new Sphere(vec3( 5, 2, 5 ), 3.0f, 0x888888, materials[2]),
+		new Sphere(vec3(0,10,5), 5.0f, 0xffffff, materials[4]), 
+		new Sphere(vec3( -5, 2, 5 ), 0.75f, 0xff0000, materials[2]),
+		new Sphere(vec3( 0, 2, 5 ), 1.5f, 0x00ff00, materials[2]),
+		new Sphere(vec3( 5, 2, 5 ), 3.0f, 0x0000ff, materials[2]),
 		new Plane( vec3( 0, 1, 0 ), 2.0f, 0xff8833, materials[0]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
@@ -88,7 +88,7 @@ void Game::Init(int argc, char **argv)
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
 #ifdef USEPATHTRACE
-		new SphereLight( vec3( 0, 10, 5 ), 1, Color( 100, 100, 20 ) )
+		new SphereLight( vec3( 0, 10, 5 ), 5, Color( 100, 100, 20 ) )
 #else
 		new PointLight( vec3( 0, 10, 0 ), Color( 100, 100, 100 ) )
 #endif
@@ -158,6 +158,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
 		#ifdef USEPATHTRACE
+		// TODO: take size of light into account -> higher chance for lights that are closer or bigger
 			i = RandomIndex(nr_lights);
 		#endif
 		// compute origin and direction of shadow ray
@@ -267,10 +268,33 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
+vec3 DiffuseReflection( vec3 interNormal )
+{
+	float x, y, z, d;
+	do
+	{
+		x = Rand( 2 ) - 1.0f;
+		y = Rand( 2 ) - 1.0f;
+		z = Rand( 2 ) - 1.0f;
+		d = sqrt( x * x + y * y + z * z );
+	} while ( d > 1 );
+
+	x /= d;
+	y /= d;
+	z /= d;
+	return interNormal * vec3{ x, y, z };
+}
+
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-	return ill * obj->color;
+	vec3 random_dir = DiffuseReflection( interNormal );
+	Ray newRay = Ray( interPoint, random_dir );
+	Color BRDF = obj->color * INVPI;
+
+	// irradiance
+	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
+
+	return PI * 2.0f * BRDF * ei;
 }
 
 Color Game::Trace(Ray r, uint depth)
