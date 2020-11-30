@@ -16,9 +16,9 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[0]),
-		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[0]),
-		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[0]),
+		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[2]),
+		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[2]),
+		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[2]),
 		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x11ffff, materials[1]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
@@ -76,7 +76,7 @@ void Game::Init(int argc, char **argv)
 	nr_materials = 5;
 	materials = new Material *[nr_materials] {
 		new Material(   0,   0, 0 ),	// Diffuse
-		new Material( 0.1,   0, 0 ),	// Diffuse & reflective
+		new Material( 0.3,   0, 0 ),	// Diffuse & reflective
 		new Material( 0.2, 1.5, 0.15 ), // Glass
 		new Material(   1,   0, 0 )		// Mirror
 	};
@@ -281,25 +281,69 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	float random = Rand( 1 );
-	bool reflect = random < obj->material->speculative;
-	if (reflect)
+	if (obj->material->IsNotRefractive())
 	{
-		// TODO: why does inverting the angle fix it?
-		angle *= -1;
+		float random = Rand( 1 );
+		bool reflect = random < obj->material->speculative;
+		if ( reflect )
+		{
+			// TODO: why does inverting the angle fix it?
+			angle *= -1;
 
-		r.Reflect( interPoint, interNormal, angle );
-		r.Offset( 1e-3 );
-		return obj->color * Trace( r, depth - 1 );
+			r.Reflect( interPoint, interNormal, angle );
+			r.Offset( 1e-3 );
+			return obj->color * Trace( r, depth - 1 );
+		}
+		Color BRDF = obj->color * INVPI;
+		vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
+		Ray newRay = Ray( interPoint, random_dir );
+
+		// irradiance
+		Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
+
+		return PI * 2.0f * BRDF * ei;
 	}
-	Color BRDF = obj->color * INVPI;
-	vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
-	Ray newRay = Ray( interPoint, random_dir );
+	else
+	{
+		// decide if refract
+		float random = Rand( 1 );
+		bool refract = random < obj->material->refractive;
+		if ( refract )
+		{
+			// into glass or out
+			// air = 1.0, glass = 1.5
+			float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
+			float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
-	// irradiance
-	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
+			if ( k < 0 )
+			{
+				// create reflect ray
+				Ray reflectRay = Ray( interPoint, r.direction );
+				reflectRay.Reflect( interPoint, interNormal, angle );
+				reflectRay.Offset( 1e-3 );
+				// Total Internal Reflection
+				Color reflectCol = Trace( reflectRay, depth - 1 );
+				return obj->color * reflectCol;
+			}
 
-	return PI * 2.0f * BRDF * ei;
+			// Calculate the refractive ray, and its color
+			vec3 refractDir = n * r.direction + interNormal * ( n * angle - sqrtf( k ) );
+			refractDir.normalize();
+			Ray refractiveRay( interPoint, refractDir );
+			refractiveRay.Offset( 1e-3 );
+			return obj->color * Trace( refractiveRay, depth - 1 );
+		}
+		else
+		{
+			// reflect
+			// TODO: why does inverting the angle fix it?
+			angle *= -1;
+
+			r.Reflect( interPoint, interNormal, angle );
+			r.Offset( 1e-3 );
+			return obj->color * Trace( r, depth - 1 );
+		}
+	}
 }
 
 Color Game::Trace(Ray r, uint depth)
