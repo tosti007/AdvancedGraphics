@@ -12,13 +12,16 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 4;
+	nr_objects = 7;
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -5, 0, 5 ), 0.75f, 0xff0000, materials[2]),
-		new Sphere(vec3( 0, 0, 5 ), 1.5f, 0x00ff00, materials[2]),
-		new Sphere(vec3( 5, 0, 5 ), 3.0f, 0x0000ff, materials[2]),
+		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[2]),
+		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[2]),
+		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[2]),
+		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
+		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
+		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x11ffff, materials[1]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
@@ -86,7 +89,7 @@ void Game::Init(int argc, char **argv)
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
 #ifdef USEPATHTRACE
-		new SphereLight( vec3( 0, 10, 5 ), 5, Color( 100, 100, 20 ) )
+		new SphereLight( vec3( 3, 3, 5 ), 1, Color( 50, 50, 50 ) )
 #else
 		new PointLight( vec3( 0, 10, 0 ), Color( 100, 100, 100 ) )
 #endif
@@ -302,13 +305,41 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 			r.Offset( 1e-3 );
 			return obj->color * Trace( r, depth - 1 );
 		}
+
+		/*
+		// TODO: take size of light into account -> higher chance for lights that are closer or bigger
+		int i = RandomIndex( nr_lights );
+
+		Ray shadowRay( interPoint, lights[i]->PointOnLight() - interPoint );
+		shadowRay.t = shadowRay.direction.length();
+		shadowRay.direction *= ( 1 / shadowRay.t );
+
+		float cos_o = dot( shadowRay.direction, interNormal );
+		// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
+		float cos_i = 1;
+		if ( cos_o <= 0 || cos_i <= 0 )
+			return Color( 0 );
+
+		if ( CheckOcclusion( &shadowRay ) )
+			return Color( 0 );
+
 		Color BRDF = obj->color * INVPI;
+
+		// TODO: Find some way of getting the Scene.LIGHTAREA.
+		float light_area = 1;
+		float solidAngle = ( cos_o * light_area ) / ( shadowRay.t * shadowRay.t );
+		return BRDF * nr_lights * lights[i]->color * solidAngle * cos_i;
+		*/
+
+		//Color ei = DirectIllumination( interPoint, interNormal );
+
+		// Random bounce
 		vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
 		Ray newRay = Ray( interPoint, random_dir );
 
 		// irradiance
 		Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
-
+		Color BRDF = obj->color * INVPI;
 		return PI * 2.0f * BRDF * ei;
 	}
 	else
