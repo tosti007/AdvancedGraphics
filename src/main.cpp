@@ -222,11 +222,6 @@ int main( int argc, char **argv )
 		SDL_RenderCopy( renderer, frameBuffer, NULL, NULL );
 		SDL_RenderPresent( renderer );
 	#endif
-
-		// calculate frame time and pass it to game->Tick
-		game->Tick( t.elapsed() );
-		t.reset();
-
 		// event loop
 		SDL_Event event;
 		while (SDL_PollEvent( &event ))
@@ -258,6 +253,9 @@ int main( int argc, char **argv )
 				break;
 			}
 		}
+		// calculate frame time and pass it to game->Tick
+		game->Tick( t.elapsed() );
+		t.reset();
 	}
 	game->Shutdown();
 	SDL_Quit();
