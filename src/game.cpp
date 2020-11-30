@@ -182,7 +182,11 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		// This would mean no additional color so let's early out.
 		// TODO: use epsilon?
 		if (fac <= 0)
-			continue;
+			#ifdef USEPATHTRACE
+				return total;
+			#else
+				continue;
+			#endif
 
 		#ifdef USEPATHTRACE
 			// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
@@ -190,12 +194,16 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 			float fac_light = 1;
 
 			if (fac_light <= 0)
-				continue;
+				return total;
 		#endif
 
 		// find intersection of shadow ray, check if it is between the light and object
 		if ( CheckOcclusion( &shadowRay ) )
-			continue;
+			#ifdef USEPATHTRACE
+				return total;
+			#else
+				continue;
+			#endif
 
 		// angle * distance attenuation * color
 		total += (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
