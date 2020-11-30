@@ -34,25 +34,5 @@ bool SphereLight::Intersect(Ray* r)
 
 vec3 SphereLight::PointOnLight()
 {
-	// From: https://mathworld.wolfram.com/SpherePointPicking.html
-	// Equation 12, 13, and 14
-	float x0, x1, x2, x3;
-	float x02, x12, x22, x32;
-	float sum;
-	do {
-		x0 = RandomFloat() * 2 - 1;
-		x1 = RandomFloat() * 2 - 1;
-		x2 = RandomFloat() * 2 - 1;
-		x3 = RandomFloat() * 2 - 1;
-		x02 = x0 * x0;
-		x12 = x1 * x1;
-		x22 = x2 * x2;
-		x32 = x3 * x3;
-		sum = x02 + x12 + x22 + x32;
-	} while( sum <= 1);
-	return (radius / sum) * vec3(
-		2 * (x1 * x3 + x0 * x2), 
-		2 * (x2 * x3 + x0 * x1),
-		x02 + x32 - x12 -x22
-		);
+	return RandomPointOnSphere(radius);
 }

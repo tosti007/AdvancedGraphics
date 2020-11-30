@@ -268,23 +268,6 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
-vec3 DirFromHemisphere( vec3 interNormal )
-{
-	float x, y, z, d;
-	do
-	{
-		x = Rand( 2 ) - 1.0f;
-		y = Rand( 2 ) - 1.0f;
-		z = Rand( 2 ) - 1.0f;
-		d = sqrt( x * x + y * y + z * z );
-	} while ( d > 1 );
-
-	x /= d;
-	y /= d;
-	z /= d;
-	return interNormal * vec3{ x, y, z };
-}
-
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
 	float random = Rand( 1 );
@@ -299,7 +282,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 		return obj->color * Trace( r, depth - 1 );
 	}
 	Color BRDF = obj->color * INVPI;
-	vec3 random_dir = DirFromHemisphere( interNormal );
+	vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
 	Ray newRay = Ray( interPoint, random_dir );
 
 	// irradiance

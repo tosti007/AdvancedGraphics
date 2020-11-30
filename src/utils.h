@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "vectors.h"
+
 #define clamp(v,a,b) ((std::min)((b),(std::max)((v),(a))))
 
 #define PI 3.14159265358979323846264338327950288419716939937510582097494459072381640628620899862803482534211706798f
@@ -54,6 +56,40 @@ inline void NotifyUser( const char *s )
 	std::cout << "ERROR: " << s << std::endl;
 #endif
 	exit( 0 );
+}
+
+inline vec3 RandomPointOnSphere(float radius)
+{
+	// From: https://mathworld.wolfram.com/SpherePointPicking.html
+	// Equation 12, 13, and 14
+	float x0, x1, x2, x3;
+	float x02, x12, x22, x32;
+	float sum;
+	do {
+		x0 = RandomFloat() * 2 - 1;
+		x1 = RandomFloat() * 2 - 1;
+		x2 = RandomFloat() * 2 - 1;
+		x3 = RandomFloat() * 2 - 1;
+		x02 = x0 * x0;
+		x12 = x1 * x1;
+		x22 = x2 * x2;
+		x32 = x3 * x3;
+		sum = x02 + x12 + x22 + x32;
+	} while( sum >= 1);
+	return (radius / sum) * vec3(
+		2 * (x1 * x3 + x0 * x2), 
+		2 * (x2 * x3 + x0 * x1),
+		x02 + x32 - x12 -x22
+		);
+}
+
+inline vec3 RandomPointOnHemisphere(float radius, vec3 interNormal)
+{
+	vec3 point = RandomPointOnSphere(radius);
+	float angle = dot(point, interNormal);
+	if ( angle < 0.0f )
+		point *= -1;
+	return point;
 }
 
 }; // namespace AdvancedGraphics
