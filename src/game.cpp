@@ -16,11 +16,11 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere( vec3( 0, 10, 5 ), 0.95, Color( 100, 100, 20 ) ), // temporary hack for the light
-		new Sphere( vec3( -5, 2, 5 ), 0.75, 0x888888, materials[2] ),
-		new Sphere( vec3( 0, 2, 5 ), 1.5, 0x888888, materials[2] ),
-		new Sphere( vec3( 5, 2, 5 ), 3, 0x888888, materials[2] ),
-		new Plane( vec3( 0, 1, 0 ), 2, 0xff8833, materials[0] ),
+		new Sphere(vec3(0,10,5), 1.0f, 0x888888, materials[4]), 
+		new Sphere(vec3( -5, 2, 5 ), 0.75f, 0x888888, materials[2]),
+		new Sphere(vec3( 0, 2, 5 ), 1.5f, 0x888888, materials[2]),
+		new Sphere(vec3( 5, 2, 5 ), 3.0f, 0x888888, materials[2]),
+		new Plane( vec3( 0, 1, 0 ), 2.0f, 0xff8833, materials[0]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
@@ -74,12 +74,13 @@ void Game::Init(int argc, char **argv)
 	sky = new SkyDome();
 
 	// load materials
-	nr_materials = 4;
+	nr_materials = 5;
 	materials = new Material *[nr_materials] {
-		new Material(   0,   0,   0  ), // Diffuse
-		new Material( 0.9,   0,   0  ), // Diffuse & reflective
-		new Material( 0.2, 1.5, 0.15 ), // Glass
-		new Material(   1,   0,   0  )  // Mirror
+		new Material(   0,   0,   0, false, Color(0,0,0)),		// Diffuse
+		new Material( 0.9, 0, 0, false, Color( 0, 0, 0 )),		// Diffuse & reflective
+		new Material( 0.2, 1.5, 0.15, false, Color( 0, 0, 0 ) ), // Glass
+		new Material( 1, 0, 0, false, Color( 0, 0, 0 ) ),		 // Mirror
+		new Material( 0, 0, 0, true, Color( 100, 100, 100 ) )	 // Light
 	};
 
 	// load lights
@@ -285,6 +286,8 @@ Color Game::Trace(Ray r, uint depth)
 		else
 			return sky->FindColor(r.direction);
 	}
+	if ( obj->material->isLight )
+		return obj->material->emittance;
 
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
