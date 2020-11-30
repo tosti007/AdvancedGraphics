@@ -16,7 +16,7 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[2]),
+		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[3]),
 		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[2]),
 		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[2]),
 		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
@@ -76,7 +76,7 @@ void Game::Init(int argc, char **argv)
 	sky = new SkyDome();
 
 	// load materials
-	nr_materials = 5;
+	nr_materials = 4;
 	materials = new Material *[nr_materials] {
 		new Material(   0,   0, 0 ),	// Diffuse
 		new Material( 0.3,   0, 0 ),	// Diffuse & reflective
