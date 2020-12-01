@@ -17,8 +17,8 @@ void Game::InitDefaultScene()
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[3]),
-		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[2]),
-		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[2]),
+		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[3]),
+		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[3]),
 		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
@@ -54,7 +54,8 @@ void Game::InitFromTinyObj( char* filename )
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
 			Triangle* tri = new Triangle();
-			tri->color = Color(0x00ff00);
+			auto diffuse = materials[shapes[s].mesh.material_ids[f]].diffuse;
+			tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
 
 			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f);
 
@@ -91,7 +92,7 @@ void Game::Init(int argc, char **argv)
 #ifdef USEPATHTRACE
 		new SphereLight( vec3( 3, 3, 5 ), 1, Color( 50, 50, 50 ) )
 #else
-		new PointLight( vec3( 0, 10, 0 ), Color( 100, 100, 100 ) )
+		new PointLight( vec3( 5, 10, 5 ), Color( 100, 100, 100 ) )
 #endif
 	};
 
