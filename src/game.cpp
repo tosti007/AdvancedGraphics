@@ -1,4 +1,5 @@
 #include <stdarg.h> // For variable number of arguments
+#include <math.h>
 
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
@@ -280,18 +281,15 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 	// Beer's law
 	// check if refractive ray hits a backface
-	/*
-	if ( dot( refractiveRay.direction, interNormal ) > 0.0f )
+	Color beers = Color(1, 1, 1);
+	if ( backfacing )
 	{
-		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->ColorAt( interPoint );
-		Color absorbance = inversedColor * obj->material->density * -refractiveRay.t;
-		Color trans = Color(std::expf(absorbance.r),
-							std::expf(absorbance.g),
-							std::expf(absorbance.b));
-		refractCol *= trans;
+		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->InternalColor();
+		Color absorbance = inversedColor * obj->material->density * -r.t;
+		beers = Color(	expf(absorbance.r),
+						expf(absorbance.g),
+						expf(absorbance.b));
 	}
-	*/
-
 	// Schlicks approximation to determine the amount of reflection vs refraction
 	float R0 = ( obj->material->refractive - 1 ) / ( obj->material->refractive + 1 );
 	R0 = R0 * R0;
@@ -299,7 +297,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
 	Color reflectCol = Trace( reflectRay, depth + 1 );
-	return obj->ColorAt( interPoint ) * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
+	return obj->ColorAt( interPoint ) * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol ) * beers;
 }
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)

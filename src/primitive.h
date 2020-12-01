@@ -42,6 +42,7 @@ class Primitive
     // This must return a normalized vector
 	virtual vec3 NormalAt( vec3 point ) = 0;
     Color ColorAt( vec3 point );
+    inline Color InternalColor() { return color; }
     
     protected:
     Color color;
