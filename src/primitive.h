@@ -44,7 +44,7 @@ class Primitive
 	virtual vec3 NormalAt( vec3 point ) = 0;
     Color ColorAt( vec3 point );
     
-    private:
+    protected:
     virtual int TextureAt ( vec3 point ) = 0;
 };
 
