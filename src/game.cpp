@@ -224,6 +224,8 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 {
 	if (obj->material->IsNotRefractive()) {
 		if (obj->material->IsFullMirror()) {
+			// TODO: why does inverting the angle fix it?
+			angle *= -1;
 			r.Reflect(interPoint, interNormal, angle);
 			r.Offset(1e-3);
 			return Trace(r, depth - 1);
@@ -236,6 +238,8 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 		float s = obj->material->speculative;
 		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
+		// TODO: why does inverting the angle fix it?
+		angle *= -1;
 		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
 		Color reflected = Trace( r, depth - 1 );
@@ -323,7 +327,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 	if (reflect)
 	{
 		// TODO: why does inverting the angle fix it?
-		//angle *= -1;
+		angle *= -1;
 		// create reflect ray
 		Ray reflectRay = Ray( interPoint, r.direction );
 		reflectRay.Reflect( interPoint, interNormal, angle );
