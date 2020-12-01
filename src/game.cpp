@@ -243,7 +243,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
 		Color reflected = Trace( r, depth - 1 );
-		return s * reflected + ( 1 - s ) * ill;
+		return s * reflected + ( 1 - s ) * ill * obj->color;
 	}
 
 	// compute reflected ray and color
