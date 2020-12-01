@@ -155,13 +155,21 @@ int Triangle::TextureAt( vec3 point )
     return x + y * texture->GetWidth();
 }
 
-vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
+vec3 TinyObjGetVector3(int idx, std::vector<tinyobj::real_t>* values) {
     assert(idx >= 0);
     // I think there are better ways than to use "at", but im lazy for now.
 	tinyobj::real_t vx = values->at(3 * idx + 0);
 	tinyobj::real_t vy = values->at(3 * idx + 1);
 	tinyobj::real_t vz = values->at(3 * idx + 2);
     return vec3(vx, vy, vz);
+}
+
+vec2 TinyObjGetVector2(int idx, std::vector<tinyobj::real_t>* values) {
+    assert(idx >= 0);
+    // I think there are better ways than to use "at", but im lazy for now.
+	tinyobj::real_t vx = values->at(2 * idx + 0);
+	tinyobj::real_t vy = values->at(2 * idx + 1);
+    return vec2(vx, vy);
 }
 
 void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials )
@@ -183,9 +191,17 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
 	else
 		tri->color = DEFAULT_OBJECT_COLOR;
 
-    tri->p0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
-    tri->p1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
-    tri->p2 = TinyObjGetVector(idx2.vertex_index, &attrib->vertices);
+    tri->p0 = TinyObjGetVector3(idx0.vertex_index, &attrib->vertices);
+    tri->p1 = TinyObjGetVector3(idx1.vertex_index, &attrib->vertices);
+    tri->p2 = TinyObjGetVector3(idx2.vertex_index, &attrib->vertices);
+
+    if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0)
+    {
+        tri->HasCustomTextureValues = true;
+        tri->t0 = TinyObjGetVector2(idx0.texcoord_index, &attrib->texcoords);
+        tri->t1 = TinyObjGetVector2(idx1.texcoord_index, &attrib->texcoords);
+        tri->t2 = TinyObjGetVector2(idx2.texcoord_index, &attrib->texcoords);
+    }
 
     // I think colors are defined on a per-vertex base.
     // Since we need only the full face normal let's just compute it ourselves.

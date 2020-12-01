@@ -241,7 +241,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 		if (obj->material->IsFullDiffuse()) {
 			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-			return ill * obj->color;
+			return ill * obj->ColorAt( interPoint );
 		}
 
 		float s = obj->material->speculative;
@@ -251,7 +251,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
 		Color reflected = Trace( r, depth - 1 );
-		return s * reflected + ( 1 - s ) * ill * obj->color;
+		return s * reflected + ( 1 - s ) * ill * obj->ColorAt( interPoint );
 	}
 
 	// compute reflected ray and color
@@ -268,7 +268,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	{
 		// Total Internal Reflection
 		Color reflectCol = Trace( reflectRay, depth - 1 );
-		return obj->color * reflectCol;
+		return obj->ColorAt( interPoint ) * reflectCol;
 	}
 
 	// Calculate the refractive ray, and its color
@@ -283,7 +283,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	/*
 	if ( dot( refractiveRay.direction, interNormal ) > 0.0f )
 	{
-		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->color;
+		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->ColorAt( interPoint );
 		Color absorbance = inversedColor * obj->material->density * -refractiveRay.t;
 		Color trans = Color(std::expf(absorbance.r),
 							std::expf(absorbance.g),
@@ -299,7 +299,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
 	Color reflectCol = Trace( reflectRay, depth - 1 );
-	return obj->color * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
+	return obj->ColorAt( interPoint ) * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
@@ -328,7 +328,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return obj->color * Trace( refractiveRay, depth - 1 );
+			return obj->ColorAt( interPoint ) * Trace( refractiveRay, depth - 1 );
 		}
 	}
 
@@ -342,7 +342,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 		reflectRay.Offset( 1e-3 );
 		// Total Internal Reflection
 		Color reflectCol = Trace( reflectRay, depth - 1 );
-		return obj->color * reflectCol;
+		return obj->ColorAt( interPoint ) * reflectCol;
 	}
 
 	// Random bounce
@@ -351,7 +351,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 
 	// irradiance
 	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
-	Color BRDF = obj->color * INVPI;
+	Color BRDF = obj->ColorAt( interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
 

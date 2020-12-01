@@ -28,7 +28,6 @@ struct Material
 class Primitive
 {
     public:
-    Color color;
     Material* material;
     Surface* texture;
 
@@ -45,6 +44,7 @@ class Primitive
     Color ColorAt( vec3 point );
     
     protected:
+    Color color;
     virtual int TextureAt ( vec3 point ) = 0;
 };
 
