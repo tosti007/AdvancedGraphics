@@ -35,7 +35,15 @@ void Game::InitFromTinyObj( const std::string filename )
 	std::string warn;
 	std::string err;
 
-	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename.c_str(), NULL, true, false );
+	const char* basedir;
+	size_t found = filename.find_last_of("/\\");
+	if (found == std::string::npos) {
+		basedir = "";
+	} else {
+		basedir = filename.substr(0,found).c_str();
+	}
+
+	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename.c_str(), basedir, true, false );
 	if ( !warn.empty() )
 		std::cout << warn << std::endl;
 	if ( !err.empty() )
