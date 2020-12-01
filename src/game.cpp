@@ -27,14 +27,15 @@ void Game::InitDefaultScene()
 	};
 }
 
-void Game::InitFromTinyObj( char* filename )
+void Game::InitFromTinyObj( const std::string filename )
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
-	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename );
+
+	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename.c_str(), NULL, true, false );
 	if ( !warn.empty() )
 		std::cout << warn << std::endl;
 	if ( !err.empty() )
@@ -101,7 +102,7 @@ void Game::Init(int argc, char **argv)
 			InitDefaultScene();
 			break;
 		case 2: // An obj file
-			InitFromTinyObj(argv[1]);
+			InitFromTinyObj(std::string(argv[1]));
 			break;
 		default:
 			std::cout << argc << " arguments not accepted!" << std::endl;

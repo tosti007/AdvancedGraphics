@@ -43,7 +43,7 @@ public:
 	uint nr_objects;
 
 	void InitDefaultScene();
-  	void InitFromTinyObj( char* filename );
+  	void InitFromTinyObj( std::string filename );
 	void InitSkyBox();
 
 	uint unmoved_frames = 0;
