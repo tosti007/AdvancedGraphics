@@ -54,6 +54,7 @@
 #define SCRHEIGHT 512
 
 #define DEFAULT_OBJECT_COLOR Color(1, 0, 0)
+#define MAX_NR_ITERATIONS 4
 
 // To use path tracing instead of ray-tracing
 //#define USEPATHTRACE

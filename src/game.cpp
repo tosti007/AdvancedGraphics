@@ -236,7 +236,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 			angle *= -1;
 			r.Reflect(interPoint, interNormal, angle);
 			r.Offset(1e-3);
-			return Trace(r, depth - 1);
+			return Trace(r, depth + 1);
 		}
 
 		if (obj->material->IsFullDiffuse()) {
@@ -250,7 +250,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 		angle *= -1;
 		r.Reflect(interPoint, interNormal, angle);
 		r.Offset( 1e-3 );
-		Color reflected = Trace( r, depth - 1 );
+		Color reflected = Trace( r, depth + 1 );
 		return s * reflected + ( 1 - s ) * ill * obj->ColorAt( interPoint );
 	}
 
@@ -267,7 +267,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	if ( k < 0 )
 	{
 		// Total Internal Reflection
-		Color reflectCol = Trace( reflectRay, depth - 1 );
+		Color reflectCol = Trace( reflectRay, depth + 1 );
 		return obj->ColorAt( interPoint ) * reflectCol;
 	}
 
@@ -276,7 +276,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	refractDir.normalize();
 	Ray refractiveRay( interPoint, refractDir );
 	refractiveRay.Offset( 1e-3 );
-	Color refractCol = Trace( refractiveRay, depth - 1 );
+	Color refractCol = Trace( refractiveRay, depth + 1 );
 
 	// Beer's law
 	// check if refractive ray hits a backface
@@ -298,7 +298,7 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 	float Fr = 1.0f - angle ;
 	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
-	Color reflectCol = Trace( reflectRay, depth - 1 );
+	Color reflectCol = Trace( reflectRay, depth + 1 );
 	return obj->ColorAt( interPoint ) * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol );
 }
 
@@ -328,7 +328,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return obj->ColorAt( interPoint ) * Trace( refractiveRay, depth - 1 );
+			return obj->ColorAt( interPoint ) * Trace( refractiveRay, depth + 1 );
 		}
 	}
 
@@ -341,7 +341,7 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
 		// Total Internal Reflection
-		Color reflectCol = Trace( reflectRay, depth - 1 );
+		Color reflectCol = Trace( reflectRay, depth + 1 );
 		return obj->ColorAt( interPoint ) * reflectCol;
 	}
 
@@ -350,14 +350,14 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 	Ray newRay = Ray( interPoint, random_dir );
 
 	// irradiance
-	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
+	Color ei = Trace( newRay, depth + 1 ) * dot( interNormal, random_dir );
 	Color BRDF = obj->ColorAt( interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
 
 Color Game::Trace(Ray r, uint depth)
 {
-	if (depth < 0)
+	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
 
 	Primitive* obj = Intersect( &r );
@@ -424,7 +424,7 @@ void Game::Tick( float deltaTime )
 
 		Ray r = Ray(view->position, dir);
 
-		Color color = Trace( r, 4 );
+		Color color = Trace( r, 0 );
 		color.GammaCorrect();
 
 		#ifdef USEPATHTRACE
