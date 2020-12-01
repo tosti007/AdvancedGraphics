@@ -115,7 +115,7 @@ vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
     return vec3(vx, vy, vz);
 }
 
-void Triangle::FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::mesh_t* mesh, size_t f )
+void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials )
 {
     // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
     assert(mesh->num_face_vertices[f] == 3);
@@ -124,13 +124,15 @@ void Triangle::FromTinyObj( Triangle* tri, tinyobj::attrib_t* attrib, tinyobj::m
     tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
 
-    /* Just an example of how to retrieve material id and values.
-    vec3 diffuse(0);
-    int current_material_id = mesh->material_ids[f];
-    for (size_t i = 0; i < 3; i++) {
-        diffuse[i] = materials[current_material_id].diffuse[i];
-    }
-    */
+    // Just an example of how to retrieve material id and values.
+	if ( materials.size() > 0 )
+	{
+		int current_material_id = mesh->material_ids[f];
+		auto diffuse = materials[current_material_id].diffuse;
+		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
+	}
+	else
+		tri->color = Color( 0x22ff22 );
 
     tri->p0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
     tri->p1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
