@@ -54,8 +54,13 @@ void Game::InitFromTinyObj( char* filename )
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
 			Triangle* tri = new Triangle();
-			auto diffuse = materials[shapes[s].mesh.material_ids[f]].diffuse;
-			tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
+			if ( materials.size() > 0 )
+			{
+				auto diffuse = materials[shapes[s].mesh.material_ids[f]].diffuse;
+				tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
+			}
+			else
+				tri->color = Color( 0x22ff22 );
 
 			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f);
 
