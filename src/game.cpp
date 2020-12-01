@@ -292,79 +292,25 @@ Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 in
 
 Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
 {
-	if (obj->material->IsNotRefractive())
+	bool reflect = false;
+	bool refract = false;
+
+	if (obj->material->HasRefract())
 	{
-		float random = Rand( 1 );
-		bool reflect = random < obj->material->speculative;
-		if ( reflect )
-		{
-			// TODO: why does inverting the angle fix it?
-			angle *= -1;
-
-			r.Reflect( interPoint, interNormal, angle );
-			r.Offset( 1e-3 );
-			return obj->color * Trace( r, depth - 1 );
-		}
-
-		/*
-		// TODO: take size of light into account -> higher chance for lights that are closer or bigger
-		int i = RandomIndex( nr_lights );
-
-		Ray shadowRay( interPoint, lights[i]->PointOnLight() - interPoint );
-		shadowRay.t = shadowRay.direction.length();
-		shadowRay.direction *= ( 1 / shadowRay.t );
-
-		float cos_o = dot( shadowRay.direction, interNormal );
-		// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
-		float cos_i = 1;
-		if ( cos_o <= 0 || cos_i <= 0 )
-			return Color( 0 );
-
-		if ( CheckOcclusion( &shadowRay ) )
-			return Color( 0 );
-
-		Color BRDF = obj->color * INVPI;
-
-		// TODO: Find some way of getting the Scene.LIGHTAREA.
-		float light_area = 1;
-		float solidAngle = ( cos_o * light_area ) / ( shadowRay.t * shadowRay.t );
-		return BRDF * nr_lights * lights[i]->color * solidAngle * cos_i;
-		*/
-
-		//Color ei = DirectIllumination( interPoint, interNormal );
-
-		// Random bounce
-		vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
-		Ray newRay = Ray( interPoint, random_dir );
-
-		// irradiance
-		Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
-		Color BRDF = obj->color * INVPI;
-		return PI * 2.0f * BRDF * ei;
+		refract = RandomFloat() < obj->material->speculative;
+	} else if (obj->material->HasReflect())
+	{
+		reflect = RandomFloat() < obj->material->speculative;
 	}
-	else
-	{
-		// decide if refract
-		float random = Rand( 1 );
-		bool refract = random < obj->material->refractive;
-		if ( refract )
+
+	if (refract) {
+		float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
+		float k = 1 - ( n * n * ( 1 - angle * angle ) );
+
+		if (k < 0)
 		{
-			// into glass or out
-			// air = 1.0, glass = 1.5
-			float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
-			float k = 1 - ( n * n * ( 1 - angle * angle ) );
-
-			if ( k < 0 )
-			{
-				// create reflect ray
-				Ray reflectRay = Ray( interPoint, r.direction );
-				reflectRay.Reflect( interPoint, interNormal, angle );
-				reflectRay.Offset( 1e-3 );
-				// Total Internal Reflection
-				Color reflectCol = Trace( reflectRay, depth - 1 );
-				return obj->color * reflectCol;
-			}
-
+			reflect = true;
+		} else {
 			// Calculate the refractive ray, and its color
 			vec3 refractDir = n * r.direction + interNormal * ( n * angle - sqrtf( k ) );
 			refractDir.normalize();
@@ -372,17 +318,29 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 			refractiveRay.Offset( 1e-3 );
 			return obj->color * Trace( refractiveRay, depth - 1 );
 		}
-		else
-		{
-			// reflect
-			// TODO: why does inverting the angle fix it?
-			angle *= -1;
-
-			r.Reflect( interPoint, interNormal, angle );
-			r.Offset( 1e-3 );
-			return obj->color * Trace( r, depth - 1 );
-		}
 	}
+
+	if (reflect)
+	{
+		// TODO: why does inverting the angle fix it?
+		//angle *= -1;
+		// create reflect ray
+		Ray reflectRay = Ray( interPoint, r.direction );
+		reflectRay.Reflect( interPoint, interNormal, angle );
+		reflectRay.Offset( 1e-3 );
+		// Total Internal Reflection
+		Color reflectCol = Trace( reflectRay, depth - 1 );
+		return obj->color * reflectCol;
+	}
+
+	// Random bounce
+	vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
+	Ray newRay = Ray( interPoint, random_dir );
+
+	// irradiance
+	Color ei = Trace( newRay, depth - 1 ) * dot( interNormal, random_dir );
+	Color BRDF = obj->color * INVPI;
+	return PI * 2.0f * BRDF * ei;
 }
 
 Color Game::Trace(Ray r, uint depth)
