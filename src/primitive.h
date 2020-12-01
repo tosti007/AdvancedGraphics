@@ -16,6 +16,9 @@ struct Material
         density(clamp(d, 0.0f, 1.0f))
         {}
 
+    inline bool HasReflect() { return speculative > 0.0f; }
+    inline bool HasRefract() { return refractive > 0.0f; }
+
     inline bool IsFullMirror() { return speculative == 1.0f; }
     inline bool IsFullDiffuse() { return speculative == 0.0f; }
     inline bool IsNotRefractive() { return refractive == 0.0f; }
