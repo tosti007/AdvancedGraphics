@@ -53,6 +53,8 @@
 #define SCRWIDTH 512
 #define SCRHEIGHT 512
 
+#define DEFAULT_OBJECT_COLOR Color(1, 0, 0)
+
 // To use path tracing instead of ray-tracing
 //#define USEPATHTRACE
 

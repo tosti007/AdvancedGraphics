@@ -5,6 +5,7 @@
 #include "color.h"
 #include "tiny_obj_loader.h"
 #include "utils.h"
+#include "surface.h"
 
 struct Material
 {
@@ -29,9 +30,10 @@ class Primitive
     public:
     Color color;
     Material* material;
+    Surface* texture;
 
     inline Primitive() = default;
-    inline Primitive( Color c, Material* m) : color(c), material(m) {}
+    inline Primitive( Color c, Material* m) : color(c), material(m), texture(nullptr) {}
 
     // If a negative value is returned, no intersection is found.
     virtual float IntersectionDistance(Ray* r) = 0;
@@ -40,6 +42,10 @@ class Primitive
     bool Occludes(Ray* r);
     // This must return a normalized vector
 	virtual vec3 NormalAt( vec3 point ) = 0;
+    Color ColorAt( vec3 point );
+    
+    private:
+    virtual int TextureAt ( vec3 point ) = 0;
 };
 
 class Plane : public Primitive
@@ -52,6 +58,7 @@ class Plane : public Primitive
 	Plane( vec3 n, float d, Color c, Material* m );
     float IntersectionDistance(Ray* r);
 	vec3 NormalAt( vec3 point );
+    int TextureAt ( vec3 point );
 };
 
 class Sphere : public Primitive
@@ -64,6 +71,7 @@ class Sphere : public Primitive
 	Sphere( vec3 p, float r, Color c, Material* m );
     float IntersectionDistance(Ray* r);
     vec3 NormalAt( vec3 point );
+    int TextureAt ( vec3 point );
 };
 
 class Triangle : public Primitive
@@ -71,6 +79,8 @@ class Triangle : public Primitive
     public:
     vec3 p0, p1, p2;
     vec3 normal;
+    vec2 t0, t1, t2;
+    bool HasCustomTextureValues;
 
     Triangle() = default;
     inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c) : Triangle( v0, v1, v2, c, NULL) {}
@@ -82,4 +92,5 @@ class Triangle : public Primitive
 	vec3 NormalAt( vec3 point );
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
 	static void FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials );
+    int TextureAt ( vec3 point );
 };

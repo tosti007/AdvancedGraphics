@@ -18,6 +18,17 @@ bool Primitive::Occludes(Ray* r)
     return true;
 }
 
+Color Primitive::ColorAt( vec3 point )
+{
+    if (texture == nullptr) {
+        return color;
+    }
+    int idx = TextureAt(point);
+    if (idx < 0)
+        return DEFAULT_OBJECT_COLOR;
+    return texture->GetBuffer()[idx];
+}
+
 Plane::Plane( vec3 n, float d, Color c, Material* m ) :
     Primitive( c, m ),
 	normal( n.normalized() ),
@@ -33,6 +44,11 @@ float Plane::IntersectionDistance(Ray* r)
 vec3 Plane::NormalAt( vec3 point )
 {
 	return normal;
+}
+
+int Plane::TextureAt ( vec3 point )
+{
+    return -1;
 }
 
 Sphere::Sphere( vec3 p, float r, Color c, Material* m ) :
@@ -57,6 +73,16 @@ float Sphere::IntersectionDistance(Ray* r)
 vec3 Sphere::NormalAt( vec3 point )
 {
 	return (1 / radius) * (point - position);
+}
+
+int Sphere::TextureAt ( vec3 point )
+{
+    vec3 direction = point - position;
+    float u = (1 + atan2f( direction.x, -direction.z ) * INVPI) / 2;
+    float v = acosf( direction.y ) * INVPI;
+    uint x = texture->GetWidth() * u;
+    uint y = texture->GetHeight() * v;
+    return y * texture->GetWidth() + x;
 }
 
 Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
@@ -106,6 +132,29 @@ vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
     return cross(v1 - v0, v2 - v0).normalized();
 }
 
+int Triangle::TextureAt( vec3 point )
+{
+    vec3 p0p1 = p1 - p0;
+    vec3 p0p2 = p2 - p0;
+    point = point - p0;
+
+    float u = dot(point, p0p1);
+    float v = dot(point, p0p2);
+
+    int x, y;
+    if (HasCustomTextureValues){
+        vec2 uv = t0 + t1 * u + t2 * v;
+        // TODO: i have no idea if these values will be between [0,1] or [0,width or height], i will assume [0,1] for now
+        x = uv.x * texture->GetWidth();
+        y = uv.y * texture->GetHeight();
+    }else{
+        x = u * texture->GetWidth();
+        y = v * texture->GetHeight();
+    }
+
+    return x + y * texture->GetWidth();
+}
+
 vec3 TinyObjGetVector(int idx, std::vector<tinyobj::real_t>* values) {
     assert(idx >= 0);
     // I think there are better ways than to use "at", but im lazy for now.
@@ -132,7 +181,7 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
 		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
 	}
 	else
-		tri->color = Color( 0x22ff22 );
+		tri->color = DEFAULT_OBJECT_COLOR;
 
     tri->p0 = TinyObjGetVector(idx0.vertex_index, &attrib->vertices);
     tri->p1 = TinyObjGetVector(idx1.vertex_index, &attrib->vertices);
