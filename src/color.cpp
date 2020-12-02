@@ -59,6 +59,21 @@ void Color::GammaCorrect()
 	GammaCorrectFloat(b);
 }
 
+void Color::ChromaticAbberation( vec2 uv )
+{
+	float chromaticAbberation = 33.6f;
+	// 1 / 512 (resolution)
+	vec2 texel = { 0.001953125, 0.001953125 };
+
+	vec2 coords = ( uv - 0.5 ) * 2.0;
+	float coordDot = coords.dot( coords );
+
+	vec2 precompute = coords * chromaticAbberation * coordDot;
+
+	vec2 uvR = uv - texel * precompute;
+	vec2 uvB = uv + texel * precompute;
+}
+
 Pixel Color::ToPixel()
 {
 	uint cr = clamp( (int)( r * 255.0f ), 0, 255 );

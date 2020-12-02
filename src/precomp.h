@@ -55,9 +55,10 @@
 
 #define DEFAULT_OBJECT_COLOR Color(1, 0, 0)
 #define MAX_NR_ITERATIONS 4
+#define SSAA
 
 // To use path tracing instead of ray-tracing
-//#define USEPATHTRACE
+#define USEPATHTRACE
 
 typedef unsigned char uchar;
 typedef unsigned char byte;

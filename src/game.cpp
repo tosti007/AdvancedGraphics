@@ -415,6 +415,16 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	screen->Print(buf, 2, 2 + yline * 7, 0xffff00);
 }
 
+// floats for anti aliasing
+float rand1 = Rand( 1 );
+float rand2 = Rand( 1 );
+float rand3 = Rand( 1 );
+float rand4 = Rand( 1 );
+float rand5 = Rand( 1 );
+float rand6 = Rand( 1 );
+float rand7 = Rand( 1 );
+float rand8 = Rand( 1 );
+
 // -----------------------------------------------------------
 // Main application tick function
 // -----------------------------------------------------------
@@ -428,15 +438,51 @@ void Game::Tick( float deltaTime )
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		float u = (float)x / screen->GetWidth();
-		float v = (float)y / screen->GetHeight();
-		vec3 dir = p0 + u * view->right + v * view->down;
-		dir.normalize();
+		#ifdef SSAA
+			// 4 rays with random offsett, then compute average
+			float u = ((float)x + rand5) / screen->GetWidth();
+			float v = ((float)y + rand6) / screen->GetHeight();
+			vec3 dir = p0 + u * view->right + v * view->down;
+			dir.normalize();
+			Ray r = Ray( view->position, dir );
+			Color color1 = Trace( r, 0 );
 
-		Ray r = Ray(view->position, dir);
+			u = ((float)x + rand1) / screen->GetWidth();
+			v = ((float)y + rand7) / screen->GetHeight();
+			dir = p0 + u * view->right + v * view->down;
+			dir.normalize();
+			r = Ray( view->position, dir );
+			Color color2 = Trace( r, 0 );
 
-		Color color = Trace( r, 0 );
+			u = ((float)x + rand2) / screen->GetWidth();
+			v = ((float)y + rand3) / screen->GetHeight();
+			dir = p0 + u * view->right + v * view->down;
+			dir.normalize();
+			r = Ray( view->position, dir );
+			Color color3 = Trace( r, 0 );
+
+			u = ((float)x + rand8) / screen->GetWidth();
+			v = ((float)y + rand4) / screen->GetHeight();
+			dir = p0 + u * view->right + v * view->down;
+			dir.normalize();
+			r = Ray( view->position, dir );
+			Color color4 = Trace( r, 0 );
+			Color color;
+			color.r = ( color1.r + color2.r + color3.r + color4.r ) * 0.25;
+			color.g = ( color1.g + color2.g + color3.g + color4.g ) * 0.25;
+			color.b = ( color1.b + color2.b + color3.b + color4.b ) * 0.25;
+		#else
+			float u = (float)x / screen->GetWidth();
+			float v = (float)y / screen->GetHeight();
+			vec3 dir = p0 + u * view->right + v * view->down;
+			dir.normalize();
+
+			Ray r = Ray( view->position, dir );
+
+			Color color = Trace( r, 0 );
+		#endif
 		color.GammaCorrect();
+		color.ChromaticAbberation( { u, v } );
 
 		#ifdef USEPATHTRACE
 			*buf = color.ToPixel(*buf, unmoved_frames);

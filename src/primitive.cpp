@@ -191,15 +191,16 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
     tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
 
-    // Just an example of how to retrieve material id and values.
+    // Read material types from file
 	if ( mesh->material_ids[f] >= 0 )
 	{
         auto thismat = materials[mesh->material_ids[f]];
         std::cout << "NAME: " << thismat.name << std::endl;
 		auto diffuse = thismat.diffuse;
 		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
-		tri->material->speculative = thismat.specular[0];
-		tri->material->refractive = thismat.transmittance[0];
+
+		//Material mat = Material( thismat.specular[0], thismat.transmittance[0], thismat.emission[0] );
+		//tri->material = &mat;
 
         auto tex = textures.find(thismat.diffuse_texname);
         if (tex != textures.end()) {
