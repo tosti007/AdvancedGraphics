@@ -435,6 +435,12 @@ void Game::Tick( float deltaTime )
 	vec3 p0 = view->TopLeft();
 	Pixel* buf = screen->GetBuffer();
 
+	int dist_x_max = screen->GetWidth() / 2;
+	int dist_y_max = screen->GetHeight() / 2;
+	float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
+		
+	float max_distanceImage = sqrtf(pow(screen->GetWidth()/2, 2.0f) + pow(screen->GetHeight()/2, 2.0f));
+
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
@@ -483,6 +489,11 @@ void Game::Tick( float deltaTime )
 		#endif
 		color.GammaCorrect();
 		color.ChromaticAbberation( { u, v } );
+
+		int dist_x = x - screen->GetWidth() / 2;
+		int dist_y = y - screen->GetHeight() / 2;
+		float dist_total = 1 - dist_total_max * sqrtf(dist_x * dist_x + dist_y * dist_y);
+		color *= dist_total;
 
 		#ifdef USEPATHTRACE
 			*buf = color.ToPixel(*buf, unmoved_frames);
