@@ -17,9 +17,9 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[3]),
-		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[3]),
-		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[3]),
+		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[2]),
+		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[2]),
+		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[2]),
 		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
