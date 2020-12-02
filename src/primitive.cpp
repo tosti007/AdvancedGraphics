@@ -24,7 +24,7 @@ Color Primitive::ColorAt( vec3 point )
         return color;
     }
     int idx = TextureAt(point);
-    if (idx < 0)
+    if (idx < 0 || idx >= texture->GetWidth() * texture->GetHeight())
         return DEFAULT_OBJECT_COLOR;
     return texture->GetBuffer()[idx];
 }
@@ -90,7 +90,10 @@ Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
-	normal( n )
+	normal( n ),
+	t0(0, 0), 
+	t1(1, 0), 
+	t2(0, 1)
 {
 }
 
@@ -134,23 +137,30 @@ vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
 
 int Triangle::TextureAt( vec3 point )
 {
+	//std::cout<<"\nTriangle::TextureAt"<<std::endl;
+    // TODO: triangles that are "upside down" result in bad values
     vec3 p0p1 = p1 - p0;
     vec3 p0p2 = p2 - p0;
     point = point - p0;
 
     float u = dot(point, p0p1);
     float v = dot(point, p0p2);
+    
+    if (u >= 1 || u < 0 || v >= 1 || v < 0)
+        return -1;
 
-    int x, y;
-    if (HasCustomTextureValues){
-        vec2 uv = t0 + t1 * u + t2 * v;
-        // TODO: i have no idea if these values will be between [0,1] or [0,width or height], i will assume [0,1] for now
-        x = uv.x * texture->GetWidth();
-        y = uv.y * texture->GetHeight();
-    }else{
-        x = u * texture->GetWidth();
-        y = v * texture->GetHeight();
-    }
+    vec2 uv = t0 + t1 * u + t2 * v;
+
+    /*
+    std::cout << "u v " << u << " " << v << std::endl;
+    std::cout << "t0 " << t0.x << " " << t0.y << std::endl;
+    std::cout << "t1 " << t1.x << " " << t1.y << std::endl;
+    std::cout << "t2 " << t2.x << " " << t2.y << std::endl;
+    std::cout << "uv " << uv.x << " " << uv.y << std::endl;
+    */
+
+    int x = uv.x * texture->GetWidth();
+    int y = uv.y * texture->GetHeight();
 
     return x + y * texture->GetWidth();
 }
@@ -172,7 +182,7 @@ vec2 TinyObjGetVector2(int idx, std::vector<tinyobj::real_t>* values) {
     return vec2(vx, vy);
 }
 
-void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials )
+void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials, std::map<std::string, Surface*> textures )
 {
     // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
     assert(mesh->num_face_vertices[f] == 3);
@@ -182,11 +192,17 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
 
     // Just an example of how to retrieve material id and values.
-	if ( materials.size() > 0 )
+	if ( mesh->material_ids[f] >= 0 )
 	{
-		int current_material_id = mesh->material_ids[f];
-		auto diffuse = materials[current_material_id].diffuse;
+        auto thismat = materials[mesh->material_ids[f]];
+        std::cout << "NAME: " << thismat.name << std::endl;
+		auto diffuse = thismat.diffuse;
 		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
+
+        auto tex = textures.find(thismat.diffuse_texname);
+        if (tex != textures.end()) {
+           tri->texture = tex->second;
+        }
 	}
 	else
 		tri->color = DEFAULT_OBJECT_COLOR;
@@ -197,10 +213,23 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
 
     if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0)
     {
-        tri->HasCustomTextureValues = true;
         tri->t0 = TinyObjGetVector2(idx0.texcoord_index, &attrib->texcoords);
         tri->t1 = TinyObjGetVector2(idx1.texcoord_index, &attrib->texcoords);
         tri->t2 = TinyObjGetVector2(idx2.texcoord_index, &attrib->texcoords);
+
+	    if ( mesh->material_ids[f] >= 0 )
+        {
+            // Lets just only support diffuse
+            auto matoffset = materials[mesh->material_ids[f]].diffuse_texopt.origin_offset;
+            vec2 offset(matoffset[0], matoffset[1]);
+            tri->t0 += offset;
+            tri->t1 += offset;
+            tri->t2 += offset;
+        }
+
+        // Let's make these relative to t0
+        tri->t1 -= tri->t0;
+        tri->t2 -= tri->t0;
     }
 
     // I think colors are defined on a per-vertex base.

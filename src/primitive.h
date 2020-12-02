@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "vectors.h"
 #include "ray.h"
 #include "color.h"
@@ -81,7 +83,6 @@ class Triangle : public Primitive
     vec3 p0, p1, p2;
     vec3 normal;
     vec2 t0, t1, t2;
-    bool HasCustomTextureValues;
 
     Triangle() = default;
     inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c) : Triangle( v0, v1, v2, c, NULL) {}
@@ -92,6 +93,6 @@ class Triangle : public Primitive
 
 	vec3 NormalAt( vec3 point );
     static vec3 ComputeNormal( vec3 v0, vec3 v1, vec3 v2 );
-	static void FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials );
+	static void FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials, std::map<std::string, Surface*> textures );
     int TextureAt ( vec3 point );
 };

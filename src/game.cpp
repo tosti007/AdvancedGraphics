@@ -52,6 +52,19 @@ void Game::InitFromTinyObj( const std::string filename )
 	if ( !ret )
 		exit( 1 );
 
+	std::cout << "Loading texture maps" << std::endl;
+
+	for (size_t t = 0; t < materials.size(); t++)
+	{
+		std::string tname =  materials[t].diffuse_texname;
+		auto search = textures.find(tname);
+    	if (search == textures.end()) {
+			std::string tname_full = basedir + tname;
+			std::cout << "Load " << tname_full << std::endl;
+			textures[tname] = new Surface(tname_full.c_str());
+    	}
+	}
+
 	nr_objects = 0;
     for (size_t s = 0; s < shapes.size(); s++)
 		nr_objects += shapes[s].mesh.indices.size() / 3;
@@ -65,7 +78,7 @@ void Game::InitFromTinyObj( const std::string filename )
 		{
 			Triangle* tri = new Triangle();
 
-			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f, materials);
+			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f, materials, textures);
 
 			*current = tri;
 			current++;
