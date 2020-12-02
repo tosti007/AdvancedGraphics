@@ -198,6 +198,8 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
         std::cout << "NAME: " << thismat.name << std::endl;
 		auto diffuse = thismat.diffuse;
 		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
+		tri->material->speculative = thismat.specular[0];
+		tri->material->refractive = thismat.transmittance[0];
 
         auto tex = textures.find(thismat.diffuse_texname);
         if (tex != textures.end()) {
