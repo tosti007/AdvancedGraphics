@@ -59,6 +59,15 @@ void Color::GammaCorrect()
 	GammaCorrectFloat(b);
 }
 
+void Color::Vignetting( int dist_x, int dist_y, float dist_total_max )
+{
+
+	float dist_total = 1 - dist_total_max * sqrtf( dist_x * dist_x + dist_y * dist_y );
+	r *= dist_total;
+	g *= dist_total;
+	b *= dist_total;
+}
+
 void Color::ChromaticAbberation( vec2 uv )
 {
 	float chromaticAbberation = 33.6f;

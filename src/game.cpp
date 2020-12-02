@@ -489,11 +489,7 @@ void Game::Tick( float deltaTime )
 		#endif
 		color.GammaCorrect();
 		color.ChromaticAbberation( { u, v } );
-
-		int dist_x = x - screen->GetWidth() / 2;
-		int dist_y = y - screen->GetHeight() / 2;
-		float dist_total = 1 - dist_total_max * sqrtf(dist_x * dist_x + dist_y * dist_y);
-		color *= dist_total;
+		color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 
 		#ifdef USEPATHTRACE
 			*buf = color.ToPixel(*buf, unmoved_frames);
