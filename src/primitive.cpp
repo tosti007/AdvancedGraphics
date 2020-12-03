@@ -137,27 +137,29 @@ vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
 
 int Triangle::TextureAt( vec3 point )
 {
-	//std::cout<<"\nTriangle::TextureAt"<<std::endl;
     // TODO: triangles that are "upside down" result in bad values
     vec3 p0p1 = p1 - p0;
     vec3 p0p2 = p2 - p0;
     point = point - p0;
 
-    float u = dot(point, p0p1);
-    float v = dot(point, p0p2);
-    
-    if (u >= 1 || u < 0 || v >= 1 || v < 0)
-        return -1;
+    p0p1.normalized();
+    p0p2.normalized();
+    point.normalized();
+
+    float u = dot(p0p1, point);
+    float v = dot(p0p2, point);
+
+    if (u < 0)
+        u *= -1;
+    if (v < 0)
+        v *= -1;
+
+    if (u > 1)
+        u = 1 / u;
+    if (v > 1)
+        v = 1 / v;
 
     vec2 uv = t0 + t1 * u + t2 * v;
-
-    /*
-    std::cout << "u v " << u << " " << v << std::endl;
-    std::cout << "t0 " << t0.x << " " << t0.y << std::endl;
-    std::cout << "t1 " << t1.x << " " << t1.y << std::endl;
-    std::cout << "t2 " << t2.x << " " << t2.y << std::endl;
-    std::cout << "uv " << uv.x << " " << uv.y << std::endl;
-    */
 
     int x = uv.x * texture->GetWidth();
     int y = uv.y * texture->GetHeight();

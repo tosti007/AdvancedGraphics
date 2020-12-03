@@ -382,3 +382,6 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# NOT our obj files tho
+!assets/*.obj
