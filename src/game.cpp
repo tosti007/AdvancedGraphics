@@ -17,9 +17,9 @@ void Game::InitDefaultScene()
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xff0000, materials[2]),
-		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0x00ff00, materials[2]),
-		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0x0000ff, materials[2]),
+		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
+		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
+		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
 		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
@@ -416,14 +416,15 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 }
 
 // floats for anti aliasing
-float rand1 = Rand( 1 );
-float rand2 = Rand( 1 );
-float rand3 = Rand( 1 );
-float rand4 = Rand( 1 );
-float rand5 = Rand( 1 );
-float rand6 = Rand( 1 );
-float rand7 = Rand( 1 );
-float rand8 = Rand( 1 );
+float randArray[8] = {
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ),
+	Rand( 1 ) };
 
 // -----------------------------------------------------------
 // Main application tick function
@@ -445,38 +446,21 @@ void Game::Tick( float deltaTime )
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		#ifdef SSAA
-			// 4 rays with random offsett, then compute average
-			float u = ((float)x + rand5) / screen->GetWidth();
-			float v = ((float)y + rand6) / screen->GetHeight();
+		// 4 rays with random offsett, then compute average
+		Color color;
+		for ( size_t i = 0; i < 4; i++ )
+		{
+			float u = ((float)x + randArray[i]) / screen->GetWidth();
+			float v = ( (float)y + randArray[i+4] ) / screen->GetHeight();
 			vec3 dir = p0 + u * view->right + v * view->down;
 			dir.normalize();
 			Ray r = Ray( view->position, dir );
-			Color color1 = Trace( r, 0 );
-
-			u = ((float)x + rand1) / screen->GetWidth();
-			v = ((float)y + rand7) / screen->GetHeight();
-			dir = p0 + u * view->right + v * view->down;
-			dir.normalize();
-			r = Ray( view->position, dir );
-			Color color2 = Trace( r, 0 );
-
-			u = ((float)x + rand2) / screen->GetWidth();
-			v = ((float)y + rand3) / screen->GetHeight();
-			dir = p0 + u * view->right + v * view->down;
-			dir.normalize();
-			r = Ray( view->position, dir );
-			Color color3 = Trace( r, 0 );
-
-			u = ((float)x + rand8) / screen->GetWidth();
-			v = ((float)y + rand4) / screen->GetHeight();
-			dir = p0 + u * view->right + v * view->down;
-			dir.normalize();
-			r = Ray( view->position, dir );
-			Color color4 = Trace( r, 0 );
-			Color color;
-			color.r = ( color1.r + color2.r + color3.r + color4.r ) * 0.25;
-			color.g = ( color1.g + color2.g + color3.g + color4.g ) * 0.25;
-			color.b = ( color1.b + color2.b + color3.b + color4.b ) * 0.25;
+			Color rayColor = Trace( r, 0 );
+			color += rayColor;
+		}
+		color *= 0.25;
+		float u = (float)x / screen->GetWidth();
+		float v = (float)y / screen->GetHeight();
 		#else
 			float u = (float)x / screen->GetWidth();
 			float v = (float)y / screen->GetHeight();
@@ -488,7 +472,7 @@ void Game::Tick( float deltaTime )
 			Color color = Trace( r, 0 );
 		#endif
 		color.GammaCorrect();
-		color.ChromaticAbberation( { u, v } );
+		//color.ChromaticAbberation( { u, v } );
 		color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 
 		#ifdef USEPATHTRACE
