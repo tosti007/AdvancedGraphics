@@ -262,7 +262,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	if (obj->material->HasRefract())
 	{
-		refract = RandomFloat() < obj->material->speculative;
+		refract = RandomFloat() < obj->material->refractive;
 	} else if (obj->material->HasReflect())
 	{
 		reflect = RandomFloat() < obj->material->speculative;
