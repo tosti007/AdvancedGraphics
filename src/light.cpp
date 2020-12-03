@@ -5,12 +5,6 @@
 #include "utils.h"
 #include "primitive.h"
 
-PointLight::PointLight( vec3 pos, Color col ) : 
-	Light(col),
-	position( pos )
-{
-}
-
 SphereLight::SphereLight( vec3 p, float r, Color c ) :
 	Light(c),
 	position(p),

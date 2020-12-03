@@ -34,7 +34,7 @@ class Primitive
     Surface* texture;
 
     inline Primitive() = default;
-    inline Primitive( Color c, Material* m) : color(c), material(m), texture(nullptr) {}
+    inline Primitive( Color c, Material* m) : material(m), texture(nullptr), color(c) {}
 
     // If a negative value is returned, no intersection is found.
     virtual float IntersectionDistance(Ray* r) = 0;
@@ -49,19 +49,6 @@ class Primitive
     protected:
     Color color;
     virtual int TextureAt ( vec3 point ) = 0;
-};
-
-class Plane : public Primitive
-{ // Normally a plane has a d value, but let's just assume that's always 0
-    public:
-    vec3 normal;
-    float dist;
-
-    inline Plane( vec3 n, float d, Color c ) : Plane(n, d, c, NULL) {}
-	Plane( vec3 n, float d, Color c, Material* m );
-    float IntersectionDistance(Ray* r);
-	vec3 NormalAt( vec3 point );
-    int TextureAt ( vec3 point );
 };
 
 class Sphere : public Primitive

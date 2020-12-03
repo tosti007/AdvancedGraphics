@@ -13,7 +13,7 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 7;
+	nr_objects = 6;
 	objects = new Primitive *[nr_objects] {
 		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
 		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
@@ -23,7 +23,6 @@ void Game::InitDefaultScene()
 		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
 		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		new Plane( vec3( 0, 1, 0 ), 2.0f, 0x11ffff, materials[1]),
 		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
 	};
 }
@@ -110,11 +109,7 @@ void Game::Init(int argc, char **argv)
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-#ifdef USEPATHTRACE
 		new SphereLight( vec3( 3, 3, 5 ), 1, Color( 50, 50, 50 ) )
-#else
-		new PointLight( vec3( 5, 10, 5 ), Color( 100, 100, 100 ) )
-#endif
 	};
 
 	// load model
@@ -191,12 +186,10 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	Ray shadowRay(interPoint, vec3(0));
 	float fac;
 	// send shadow ray to each light and add its color
-	for ( size_t i = 0; i < nr_lights; i++ )
+	for ( size_t l = 0; l < NR_LIGHT_SAMPLES; l++ )
 	{
-		#ifdef USEPATHTRACE
 		// TODO: take size of light into account -> higher chance for lights that are closer or bigger
-			i = RandomIndex(nr_lights);
-		#endif
+		size_t i = RandomIndex(nr_lights);
 		// compute origin and direction of shadow ray
 		shadowRay.direction = lights[i]->PointOnLight() - shadowRay.origin;
 		shadowRay.t = shadowRay.direction.length();
@@ -207,114 +200,63 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 		// This would mean no additional color so let's early out.
 		// TODO: use epsilon?
 		if (fac <= 0)
-			#ifdef USEPATHTRACE
-				return total;
-			#else
-				continue;
-			#endif
+			continue;
 
-		#ifdef USEPATHTRACE
-			// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
-			// fac_light = ???
-			float fac_light = 1;
+		// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
+		// fac_light = ???
+		float fac_light = 1;
 
-			if (fac_light <= 0)
-				return total;
-		#endif
+		if (fac_light <= 0)
+			continue;
 
 		// find intersection of shadow ray, check if it is between the light and object
 		if ( CheckOcclusion( &shadowRay ) )
-			#ifdef USEPATHTRACE
-				return total;
-			#else
-				continue;
-			#endif
+			continue;
+
+		// TODO: Find some way of getting the Scene.LIGHTAREA.
+		float light_area = 1;
 
 		// angle * distance attenuation * color
-		total += (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
-
-		#ifdef USEPATHTRACE
-			// TODO: Find some way of getting the Scene.LIGHTAREA.
-			float light_area = 1;
-			return INVPI * nr_lights * fac_light * light_area * total;
-		#endif
+		Color thislight = (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
+		thislight *= INVPI * nr_lights * fac_light * light_area;
+		total += thislight;
 	}
-	return total;
+	return (1 / NR_LIGHT_SAMPLES) * total;
 }
 
-Color Game::RayTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
+Color Game::Trace(Ray r, uint depth)
 {
-	if (obj->material->IsNotRefractive()) {
-		if (obj->material->IsFullMirror()) {
-			// TODO: why does inverting the angle fix it?
-			angle *= -1;
-			r.Reflect(interPoint, interNormal, angle);
-			r.Offset(1e-3);
-			return Trace(r, depth + 1);
-		}
+	if (depth > MAX_NR_ITERATIONS)
+		return Color(0, 0, 0);
 
-		if (obj->material->IsFullDiffuse()) {
-			Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-			return ill * obj->ColorAt( interPoint );
-		}
+	Primitive* obj = Intersect( &r );
 
-		float s = obj->material->speculative;
-		Color ill = DirectIllumination( interPoint + r.CalculateOffset(-1e-3), interNormal );
-		// TODO: why does inverting the angle fix it?
-		angle *= -1;
-		r.Reflect(interPoint, interNormal, angle);
-		r.Offset( 1e-3 );
-		Color reflected = Trace( r, depth + 1 );
-		return s * reflected + ( 1 - s ) * ill * obj->ColorAt( interPoint );
-	}
+	#ifdef USEPATHTRACE
+		Light* light = IntersectLights( &r );
+		if ( light != nullptr )
+			return light->color;
+	#endif
 
-	// compute reflected ray and color
-	Ray reflectRay = Ray( interPoint, r.direction );
-	reflectRay.Reflect( interPoint, interNormal, angle );
-	reflectRay.Offset( 1e-3 );
-
-	// into glass or out
-	// air = 1.0, glass = 1.5
-	float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
-	float k = 1 - ( n * n * ( 1 - angle * angle ) );
-
-	if ( k < 0 )
+	// No intersection point found
+	if ( obj == nullptr )
 	{
-		// Total Internal Reflection
-		Color reflectCol = Trace( reflectRay, depth + 1 );
-		return obj->ColorAt( interPoint ) * reflectCol;
+		if (sky == nullptr)
+			return SKYDOME_DEFAULT_COLOR;
+		else
+			return sky->FindColor(r.direction);
 	}
 
-	// Calculate the refractive ray, and its color
-	vec3 refractDir = n * r.direction + interNormal * ( n * angle - sqrtf( k ) );
-	refractDir.normalize();
-	Ray refractiveRay( interPoint, refractDir );
-	refractiveRay.Offset( 1e-3 );
-	Color refractCol = Trace( refractiveRay, depth + 1 );
-
-	// Beer's law
-	// check if refractive ray hits a backface
-	Color beers = Color(1, 1, 1);
+	// intersection point found
+	vec3 interPoint = r.origin + r.t * r.direction;
+	vec3 interNormal = obj->NormalAt( interPoint );
+	float angle = -dot( r.direction, interNormal );
+	bool backfacing = angle < 0.0f;
 	if ( backfacing )
 	{
-		Color inversedColor = Color( 1.0f, 1.0f, 1.0f ) - obj->InternalColor();
-		Color absorbance = inversedColor * obj->material->density * -r.t;
-		beers = Color(	expf(absorbance.r),
-						expf(absorbance.g),
-						expf(absorbance.b));
+		interNormal *= -1;
+		angle *= -1;
 	}
-	// Schlicks approximation to determine the amount of reflection vs refraction
-	float R0 = ( obj->material->refractive - 1 ) / ( obj->material->refractive + 1 );
-	R0 = R0 * R0;
-	float Fr = 1.0f - angle ;
-	Fr = R0 + ( 1.0f - R0 ) * Fr * Fr * Fr * Fr * Fr;
 
-	Color reflectCol = Trace( reflectRay, depth + 1 );
-	return obj->ColorAt( interPoint ) * ( Fr * reflectCol + ( 1.0f - Fr ) * refractCol ) * beers;
-}
-
-Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 interNormal, float angle, bool backfacing)
-{
 	bool reflect = false;
 	bool refract = false;
 
@@ -366,46 +308,6 @@ Color Game::PathTrace(Ray r, uint depth, Primitive* obj, vec3 interPoint, vec3 i
 	return PI * 2.0f * BRDF * ei;
 }
 
-Color Game::Trace(Ray r, uint depth)
-{
-	if (depth > MAX_NR_ITERATIONS)
-		return Color(0, 0, 0);
-
-	Primitive* obj = Intersect( &r );
-
-	#ifdef USEPATHTRACE
-		Light* light = IntersectLights( &r );
-		if ( light != nullptr )
-			return light->color;
-	#endif
-
-	// No intersection point found
-	if ( obj == nullptr )
-	{
-		if (sky == nullptr)
-			return SKYDOME_DEFAULT_COLOR;
-		else
-			return sky->FindColor(r.direction);
-	}
-
-	// intersection point found
-	vec3 interPoint = r.origin + r.t * r.direction;
-	vec3 interNormal = obj->NormalAt( interPoint );
-	float angle = -dot( r.direction, interNormal );
-	bool backfacing = angle < 0.0f;
-	if ( backfacing )
-	{
-		interNormal *= -1;
-		angle *= -1;
-	}
-
-	#ifdef USEPATHTRACE
-		return PathTrace(r, depth, obj, interPoint, interNormal, angle, backfacing);
-	#else
-		return RayTrace(r, depth, obj, interPoint, interNormal, angle, backfacing);
-	#endif
-}
-
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
 	va_list va;
@@ -440,8 +342,6 @@ void Game::Tick( float deltaTime )
 	int dist_y_max = screen->GetHeight() / 2;
 	float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
 		
-	float max_distanceImage = sqrtf(pow(screen->GetWidth()/2, 2.0f) + pow(screen->GetHeight()/2, 2.0f));
-
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
@@ -475,11 +375,7 @@ void Game::Tick( float deltaTime )
 		//color.ChromaticAbberation( { u, v } );
 		color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 
-		#ifdef USEPATHTRACE
-			*buf = color.ToPixel(*buf, unmoved_frames);
-		#else
-			*buf = color.ToPixel();
-		#endif
+		*buf = color.ToPixel(*buf, unmoved_frames);
 
 		buf++;
 	}
@@ -499,8 +395,6 @@ void Game::Tick( float deltaTime )
 
 void Game::CameraChanged()
 {
-	#ifdef USEPATHTRACE
-		unmoved_frames = 0;
-		screen->Clear(0);
-	#endif
+	unmoved_frames = 0;
+	screen->Clear(0);
 }

@@ -29,28 +29,6 @@ Color Primitive::ColorAt( vec3 point )
     return texture->GetBuffer()[idx];
 }
 
-Plane::Plane( vec3 n, float d, Color c, Material* m ) :
-    Primitive( c, m ),
-	normal( n.normalized() ),
-	dist( d )
-{
-}
-
-float Plane::IntersectionDistance(Ray* r) 
-{
-    return -(dot(r->origin, normal) + dist) / dot(r->direction, normal);
-}
-
-vec3 Plane::NormalAt( vec3 point )
-{
-	return normal;
-}
-
-int Plane::TextureAt ( vec3 point )
-{
-    return -1;
-}
-
 Sphere::Sphere( vec3 p, float r, Color c, Material* m ) :
     Primitive( c, m ),
 	position( p ),

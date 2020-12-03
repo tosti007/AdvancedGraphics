@@ -17,16 +17,6 @@ struct Light
 	virtual vec3 PointOnLight() = 0;
 };
 
-struct PointLight : Light
-{
-	vec3 position;
-
-	PointLight( vec3 pos, Color col );
-
-    inline bool Intersect(Ray* r) { return false; }
-	inline vec3 PointOnLight() { return position; }
-};
-
 struct SphereLight : Light 
 {
 	vec3 position;
