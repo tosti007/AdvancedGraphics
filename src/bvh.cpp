@@ -1,7 +1,49 @@
 #include "bvh.h"
 
-void BVHNode::Traverse( Ray r, BVH *bvh, vec3 &i, int &depth )
+void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
 {
+	// if node is a leaf
+	if ( count > 0 )
+	{
+		for ( int i = firstleft; i < ( firstleft + count ); i++ )
+		{
+			Triangle &tri = bvh->triangles[bvh->indices[i]];
+			if (tri.Intersect( &r ))
+			{
+				
+				interPoint.distance = r.t;
+				interPoint.triangle = &tri;
+				interPoint.location = r.origin + r.direction * interPoint.distance;
+			}
+		}
+		return;
+	}
+	float tminL, tmaxL, tminR, tmaxR;
+
+	bool intL = AABBIntersection( r, bvh->pool[firstleft].bounds, tminL, tmaxL );
+	bool intR = AABBIntersection( r, bvh->pool[firstleft + 1].bounds, tminR, tmaxR );
+
+	// if both sides are intersected, decide which is nearest
+	if ( intL && intR )
+	{
+		bool leftIsNearNode = tminL < tminR;
+		int bound = leftIsNearNode ? tminR : tminL;
+		BVHNode nearNode = leftIsNearNode ? bvh->pool[firstleft] : bvh->pool[firstleft + 1];
+		BVHNode farNode = !leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
+
+		// first check nearest node
+		nearNode.Traverse( r, bvh, interPoint, ++depth );
+		// early out
+		if ( interPoint.distance < bound )
+			return;
+
+		// then far node
+		farNode.Traverse( r, bvh, interPoint, ++depth );
+	}
+	else if ( intL )
+		bvh->pool[firstleft].Traverse( r, bvh, interPoint, ++depth );
+	else if ( intR )
+		bvh->pool[firstleft + 1].Traverse( r, bvh, interPoint, ++depth );
 }
 
 void Swap( uint *a, uint *b )

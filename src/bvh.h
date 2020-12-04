@@ -56,13 +56,21 @@ struct AABB
 	inline float Center( uint axis ) const { return ( tmin[axis] + tmax[axis] ) * 0.5f; }
 };
 
+struct Intersection
+{
+  public:
+	Triangle *triangle;
+	vec3 location;
+	float distance = INFINITY;
+};
+
 struct BVHNode
 {
   public:
 	AABB bounds;
 	uint firstleft; 
 	uint count; // number of triangles
-	void Traverse( Ray r, BVH *bvh, vec3 &i, int &depth );
+	void Traverse( Ray r, BVH *bvh, Intersection& i, int &depth );
 	void Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles );
 	bool AABBIntersection( const Ray &r, const AABB &bb, float &tmin, float &tmax );
 };
