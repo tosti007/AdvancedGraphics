@@ -102,7 +102,25 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 
 bool BVHNode::AABBIntersection( const Ray &r, const AABB &bb, float &tmin, float &tmax )
 {
-	return false;
+	vec3 invdir = { 1 / r.direction.x, 1 / r.direction.y, 1 / r.direction.z };
+	float t[6];
+	t[0] = ( bb.tmin.x - r.origin.x ) * invdir.x;
+	t[1] = ( bb.tmax.x - r.origin.x ) * invdir.x;
+	t[2] = ( bb.tmin.y - r.origin.y ) * invdir.y;
+	t[3] = ( bb.tmax.y - r.origin.y ) * invdir.y;
+	t[4] = ( bb.tmin.z - r.origin.z ) * invdir.z;
+	t[5] = ( bb.tmax.z - r.origin.z ) * invdir.z;
+
+	tmax = std::min( std::min( std::max( t[0], t[1] ), std::max( t[2], t[3] ) ), std::max( t[4], t[5] ) );
+
+	if ( tmax < 0 )
+		return false;
+
+	tmin = std::max( std::max( std::min( t[0], t[1] ), std::min( t[2], t[3] ) ), std::min( t[4], t[5] ) );
+	if ( tmin > tmax )
+		return false;
+
+	return true;
 }
 
 void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
