@@ -37,7 +37,8 @@ struct AABB
 	}
 	inline void Grow( const AABB &bb )
 	{
-		// Not implemented yet;
+		this->Grow( bb.tmin );
+		this->Grow( bb.tmax );
 	}
 	float Area() const
 	{
