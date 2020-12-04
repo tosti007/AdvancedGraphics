@@ -31,6 +31,9 @@
     <ClCompile Include="src\skydome.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\bvh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h">
@@ -70,6 +73,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\skydome.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="bvh.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

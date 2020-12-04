@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="src/game.cpp" />
     <ClCompile Include="src/surface.cpp" />
+    <ClCompile Include="src\bvh.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\color.cpp" />
     <ClCompile Include="src\light.cpp" />
@@ -129,6 +130,7 @@
     <ClCompile Include="src\vectors.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bvh.h" />
     <ClInclude Include="src/game.h" />
     <ClInclude Include="src/precomp.h" />
     <ClInclude Include="src/surface.h" />
