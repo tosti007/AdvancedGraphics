@@ -13,17 +13,15 @@
 
 void Game::InitDefaultScene()
 {
-	nr_objects = 6;
-	objects = new Primitive *[nr_objects] {
-		//new Sphere( vec3( -3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		//new Sphere( vec3( 3, 2, 10 ), 2.5, 0xffffff, materials[1] ),
-		new Sphere(vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
-		new Sphere(vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
-		new Sphere(vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, materials[2]),
-		new Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		new Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		new Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		//new Triangle( vec3( 0, 0, 15 ), vec3( 4, 5, 12 ), vec3( 6, -6, 13 ), 0x0000ff, materials[1] )
+	nr_triangles = 0;
+	nr_spheres = 6;
+	spheres = new Sphere[nr_spheres] {
+		Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
+		Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
+		Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
+		Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
+		Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
+		Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] )
 	};
 }
 
@@ -64,22 +62,19 @@ void Game::InitFromTinyObj( const std::string filename )
     	}
 	}
 
-	nr_objects = 0;
+	nr_spheres = 0;
+	nr_triangles = 0;
     for (size_t s = 0; s < shapes.size(); s++)
-		nr_objects += shapes[s].mesh.indices.size() / 3;
+		nr_triangles += shapes[s].mesh.indices.size() / 3;
 
-	objects = new Primitive*[nr_objects];
-	Primitive** current = objects;
+	triangles = new Triangle[nr_triangles];
+	Triangle* current = triangles;
 
 	for (size_t s = 0; s < shapes.size(); s++)
 	{
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
-			Triangle* tri = new Triangle();
-
-			Triangle::FromTinyObj(tri, &attrib, &shapes[s].mesh, f, materials, textures);
-
-			*current = tri;
+			Triangle::FromTinyObj(current, &attrib, &shapes[s].mesh, f, materials, textures);
 			current++;
 		}
 	}
@@ -127,10 +122,15 @@ void Game::Init(int argc, char **argv)
 			break;
 	}
 
-	for (uint i = 0; i < nr_objects; i++)
+	for (uint i = 0; i < nr_spheres; i++)
 	{
-		if(objects[i]->material == nullptr)
-			objects[i]->material = materials[0];
+		if(spheres[i].material == nullptr)
+			spheres[i].material = materials[0];
+	}
+	for (uint i = 0; i < nr_triangles; i++)
+	{
+		if(triangles[i].material == nullptr)
+			triangles[i].material = materials[0];
 	}
 }
 
@@ -145,9 +145,15 @@ void Game::Shutdown()
 bool Game::CheckOcclusion( Ray *r )
 {
 	// if any intersection found, return, don't need to know location
-	for ( uint i = 0; i < nr_objects; i++ )
+	for ( uint i = 0; i < nr_spheres; i++ )
 	{
-		if (objects[i]->Occludes( r ))
+		if (spheres[i].Occludes( r ))
+			return true;
+	}
+
+	for ( uint i = 0; i < nr_triangles; i++ )
+	{
+		if (triangles[i].Occludes( r ))
 			return true;
 	}
 	return false;
@@ -157,10 +163,16 @@ Primitive* Game::Intersect( Ray* r )
 {
 	Primitive* found = nullptr;
 
-	for (uint i = 0; i < nr_objects; i++)
+	for (uint i = 0; i < nr_spheres; i++)
 	{
-		if(objects[i]->Intersect(r))
-			found = objects[i];
+		if(spheres[i].Intersect(r))
+			found = spheres + i;
+	}
+
+	for (uint i = 0; i < nr_triangles; i++)
+	{
+		if(triangles[i].Intersect(r))
+			found = triangles + i;
 	}
 
 	return found;

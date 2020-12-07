@@ -43,8 +43,12 @@ public:
 
 	Light** lights;
 	uint nr_lights;
-	Primitive** objects;
-	uint nr_objects;
+
+	Sphere* spheres;
+	uint nr_spheres;
+
+	Triangle* triangles;
+	uint nr_triangles;
 
 	void InitDefaultScene();
   	void InitFromTinyObj( std::string filename );

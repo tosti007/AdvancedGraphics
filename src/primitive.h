@@ -57,6 +57,7 @@ class Sphere : public Primitive
     vec3 position;
     float radius;
 
+    Sphere() = default;
 	inline Sphere( vec3 p, float r, Color c ) : Sphere(p, r, c, NULL) {}
 	Sphere( vec3 p, float r, Color c, Material* m );
     float IntersectionDistance(Ray* r);
