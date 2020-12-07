@@ -186,6 +186,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 
 	root->Subdivide( this );
 	printf( "Maximum number of nodes: %i", nr_nodes_max );
+	printf( "Used number of nodes: %i", nr_nodes );
 }
 
 aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
