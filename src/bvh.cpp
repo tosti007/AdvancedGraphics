@@ -16,7 +16,7 @@ Triangle *BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 		Triangle* found = nullptr;
 		for ( size_t i = 0; i < count; i++ )
 		{
-			Triangle *tri = bvh->triangles + bvh->indices[firstleft + i];
+			Triangle *tri = &bvh->triangles[bvh->indices[firstleft + i]];
 			if (tri->Intersect( r ))
 				found = tri;
 		}
@@ -87,7 +87,7 @@ void BVHNode::Subdivide( BVH *bvh )
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		const Triangle *tri = bvh->triangles + bvh->indices[i];
+		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 		aabb bb = aabb();
 		GrowWithTriangle(&bb, tri);
 
@@ -99,7 +99,7 @@ void BVHNode::Subdivide( BVH *bvh )
 			leftbox.Grow( bb );
 			index++;
 			// Sort in place
-			Swap( bvh->indices + index, bvh->indices + i );
+			Swap( &bvh->indices[index], &bvh->indices[i] );
 		}
 		else
 		{
@@ -127,8 +127,8 @@ void BVHNode::Subdivide( BVH *bvh )
 		this->count = 0;
 		this->firstleft = bvh->nr_nodes;
 
-		left = bvh->pool + bvh->nr_nodes++;
-		right = bvh->pool + bvh->nr_nodes++;
+		left = &bvh->pool[bvh->nr_nodes++];
+		right = &bvh->pool[bvh->nr_nodes++];
 
 		// Assign triangles to new nodes
 		left->firstleft = firstleft;
@@ -179,7 +179,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	// leave dummy value on location 0 for cache alignment
 	nr_nodes = 1;
  
-	root = pool + nr_nodes++;
+	root = &pool[nr_nodes++];
  	root->firstleft = 0;
  	root->count = triangleCount;
  	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
