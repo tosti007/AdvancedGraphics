@@ -1,6 +1,13 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "bvh.h"
 
+void GrowWithTriangle( aabb* bb, const Triangle* tri)
+{
+	bb->Grow( tri->p0 );
+	bb->Grow( tri->p1 );
+	bb->Grow( tri->p2 );
+}
+
 void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
 {
 	// if node is a leaf
@@ -81,9 +88,7 @@ void BVHNode::Subdivide( BVH *bvh )
 	{
 		const Triangle *tri = bvh->triangles + bvh->indices[i];
 		aabb bb = aabb();
-		bb.Grow( tri->p0 );
-		bb.Grow( tri->p1 );
-		bb.Grow( tri->p2 );
+		GrowWithTriangle(&bb, tri);
 
 		float ac = bb.Center( axis );
 
@@ -187,10 +192,6 @@ aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
 {
 	aabb bb;
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
-	{
-		bb.Grow( triangles[i].p0 );
-		bb.Grow( triangles[i].p1 );
-		bb.Grow( triangles[i].p2 );
-	}
+		GrowWithTriangle(&bb, &triangles[i]);
 	return bb;
 }
