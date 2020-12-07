@@ -71,18 +71,18 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 	// Middle split, TODO: becomes better
 	float splitLocation = bounds.Center( axis );
 
-	// Counts and AABBs for new child nodes
+	// Counts and aabbs for new child nodes
 	uint leftCount = 0;
 	uint rightCount = 0;
-	AABB leftbox = AABB();
-	AABB rightbox = AABB();
+	aabb leftbox = aabb();
+	aabb rightbox = aabb();
 
 	int index = firstleft - 1;
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
 		const auto &tri = triangles[indices[i]];
-		AABB bb = AABB();
+		aabb bb = aabb();
 		bb.Grow( tri.p0 );
 		bb.Grow( tri.p1 );
 		bb.Grow( tri.p2 );
@@ -143,16 +143,16 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 	}
 }
 
-bool BVHNode::AABBIntersection( const Ray &r, const AABB &bb, float &tmin, float &tmax )
+bool BVHNode::AABBIntersection( const Ray &r, const aabb &bb, float &tmin, float &tmax )
 {
 	vec3 invdir = { 1 / r.direction.x, 1 / r.direction.y, 1 / r.direction.z };
 	float t[6];
-	t[0] = ( bb.tmin.x - r.origin.x ) * invdir.x;
-	t[1] = ( bb.tmax.x - r.origin.x ) * invdir.x;
-	t[2] = ( bb.tmin.y - r.origin.y ) * invdir.y;
-	t[3] = ( bb.tmax.y - r.origin.y ) * invdir.y;
-	t[4] = ( bb.tmin.z - r.origin.z ) * invdir.z;
-	t[5] = ( bb.tmax.z - r.origin.z ) * invdir.z;
+	t[0] = ( bb.bmin3.x - r.origin.x ) * invdir.x;
+	t[1] = ( bb.bmax3.x - r.origin.x ) * invdir.x;
+	t[2] = ( bb.bmin3.y - r.origin.y ) * invdir.y;
+	t[3] = ( bb.bmax3.y - r.origin.y ) * invdir.y;
+	t[4] = ( bb.bmin3.z - r.origin.z ) * invdir.z;
+	t[5] = ( bb.bmax3.z - r.origin.z ) * invdir.z;
 
 	tmax = std::min( std::min( std::max( t[0], t[1] ), std::max( t[2], t[3] ) ), std::max( t[4], t[5] ) );
 
@@ -190,9 +190,9 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	printf( "Number of nodes: %i", nodeCount );
 }
 
-AABB BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
+aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
 {
-	AABB bb;
+	aabb bb;
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
 		bb.Grow( triangles[i].p0 );
