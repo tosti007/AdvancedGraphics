@@ -115,27 +115,17 @@ vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
 
 int Triangle::TextureAt( vec3 point )
 {
-    // TODO: triangles that are "upside down" result in bad values
     vec3 p0p1 = p1 - p0;
     vec3 p0p2 = p2 - p0;
-    point = point - p0;
+    vec3 pvec = -normal.cross(p0p2);
 
-    p0p1.normalized();
-    p0p2.normalized();
-    point.normalized();
+    vec3 tvec = point - p0;
+    float u = tvec.dot(pvec);
+    if (u < 0 || u > 1) return -1;
 
-    float u = dot(p0p1, point);
-    float v = dot(p0p2, point);
-
-    if (u < 0)
-        u *= -1;
-    if (v < 0)
-        v *= -1;
-
-    if (u > 1)
-        u = 1 / u;
-    if (v > 1)
-        v = 1 / v;
+    vec3 qvec = tvec.cross(p0p1);
+    float v = -normal.dot(qvec);
+    if (v < 0 || u + v > 1) return -1;
 
     vec2 uv = t0 + t1 * u + t2 * v;
 
