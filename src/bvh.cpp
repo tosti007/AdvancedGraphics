@@ -167,6 +167,9 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	printf( "Constructing BVH...\n" );
 	// Create index array
 	this->triangles = triangles;
+	this->nr_triangles = triangleCount;
+	return;
+	
 	indices = new uint[triangleCount];
 
 	// initial index values
