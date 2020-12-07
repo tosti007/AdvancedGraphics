@@ -2,11 +2,12 @@
 
 #include "vectors.h"
 #include "ray.h"
-#include "precomp.h"
 #include "primitive.h"
 
 namespace AdvancedGraphics
 {
+
+struct BVH; // forward declaration
 
 struct AABB
 {
@@ -68,9 +69,9 @@ struct BVHNode
 {
   public:
 	AABB bounds;
-	uint firstleft; 
+	size_t firstleft; 
 	uint count; // number of triangles
-	void Traverse( Ray r, BVH *bvh, Intersection& i, int &depth );
+	void Traverse( Ray r, BVH *bvh, Intersection& interPoint, int &depth );
 	void Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles );
 	bool AABBIntersection( const Ray &r, const AABB &bb, float &tmin, float &tmax );
 };
@@ -83,7 +84,7 @@ struct BVH
 	Triangle *triangles;
 	uint *indices;
 	void ConstructBVH( Triangle *triangles, uint triangleCount );
-	static AABB ComputeBounds( const Triangle *triangles, int firstleft, int count );
+	static AABB ComputeBounds( const Triangle *triangles, int firstleft, uint count );
 };
 
 }; // namespace AdvancedGraphics

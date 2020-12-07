@@ -1,3 +1,4 @@
+#include "precomp.h" // include (only) this in every .cpp file
 #include "bvh.h"
 
 void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
@@ -5,7 +6,7 @@ void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
 	// if node is a leaf
 	if ( count > 0 )
 	{
-		for ( int i = firstleft; i < ( firstleft + count ); i++ )
+		for ( size_t i = firstleft; i < ( firstleft + count ); i++ )
 		{
 			Triangle &tri = bvh->triangles[bvh->indices[i]];
 			if (tri.Intersect( &r ))
@@ -173,7 +174,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	indices = new uint[triangleCount];
 
 	// initial index values
-	for ( int i = 0; i < triangleCount; i++ )
+	for ( size_t i = 0; i < triangleCount; i++ )
 		indices[i] = i;
 
 	// allocate space for BVH Nodes with max possible nodes
@@ -186,10 +187,10 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	root->count = triangleCount;
 	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
 	root->Subdivide( pool, indices, triangles );
-	printf( "Number of nodes: %f", nodeCount );
+	printf( "Number of nodes: %i", nodeCount );
 }
 
-AABB BVH::ComputeBounds( const Triangle *triangles, int firstleft, int count )
+AABB BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
 {
 	AABB bb;
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
