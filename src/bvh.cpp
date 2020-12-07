@@ -8,26 +8,22 @@ void GrowWithTriangle( aabb* bb, const Triangle* tri)
 	bb->Grow( tri->p2 );
 }
 
-void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
+Triangle *BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 {
 	// if node is a leaf
 	if ( count > 0 )
 	{
-		for ( size_t i = firstleft; i < ( firstleft + count ); i++ )
+		Triangle* found = nullptr;
+		for ( size_t i = 0; i < count; i++ )
 		{
-			Triangle &tri = bvh->triangles[bvh->indices[i]];
-			if (tri.Intersect( &r ))
-			{
-				
-				interPoint.distance = r.t;
-				interPoint.triangle = &tri;
-				interPoint.location = r.origin + r.direction * interPoint.distance;
-			}
+			Triangle *tri = bvh->triangles + bvh->indices[firstleft + i];
+			if (tri->Intersect( r ))
+				found = tri;
 		}
-		return;
+		return found;
 	}
-	float tminL, tmaxL, tminR, tmaxR;
 
+	float tminL, tmaxL, tminR, tmaxR;
 	bool intL = AABBIntersection( r, bvh->pool[firstleft].bounds, tminL, tmaxL );
 	bool intR = AABBIntersection( r, bvh->pool[firstleft + 1].bounds, tminR, tmaxR );
 
@@ -37,21 +33,26 @@ void BVHNode::Traverse( Ray r, BVH *bvh, Intersection &interPoint, int &depth )
 		bool leftIsNearNode = tminL < tminR;
 		int bound = leftIsNearNode ? tminR : tminL;
 		BVHNode nearNode = leftIsNearNode ? bvh->pool[firstleft] : bvh->pool[firstleft + 1];
-		BVHNode farNode = !leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
+		BVHNode farNode = leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
 
 		// first check nearest node
-		nearNode.Traverse( r, bvh, interPoint, ++depth );
+		Triangle* found = nearNode.Traverse( bvh, r, depth++ );
 		// early out
-		if ( interPoint.distance < bound )
-			return;
+		if ( found != nullptr && r->t < bound )
+			return found;
 
 		// then far node
-		farNode.Traverse( r, bvh, interPoint, ++depth );
+		Triangle* found2 = farNode.Traverse( bvh, r, depth++ );
+		if ( found2 != nullptr )
+			return found2;
+		return found;
 	}
 	else if ( intL )
-		bvh->pool[firstleft].Traverse( r, bvh, interPoint, ++depth );
+		return bvh->pool[firstleft].Traverse( bvh, r, depth++ );
 	else if ( intR )
-		bvh->pool[firstleft + 1].Traverse( r, bvh, interPoint, ++depth );
+		return bvh->pool[firstleft + 1].Traverse( bvh, r, depth++ );
+
+	return nullptr;
 }
 
 void Swap( uint *a, uint *b )
@@ -144,14 +145,13 @@ void BVHNode::Subdivide( BVH *bvh )
 	}
 }
 
-bool BVHNode::AABBIntersection( const Ray &r, const aabb &bb, float &tmin, float &tmax )
+bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax )
 {
-	vec3 invdir = { 1 / r.direction.x, 1 / r.direction.y, 1 / r.direction.z };
-	vec3 vmin = (bb.bmin3 - r.origin) * invdir;
-	vec3 vmax = (bb.bmax3 - r.origin) * invdir;
+	vec3 invdir = { 1 / r->direction.x, 1 / r->direction.y, 1 / r->direction.z };
+	vec3 vmin = (bb.bmin3 - r->origin) * invdir;
+	vec3 vmax = (bb.bmax3 - r->origin) * invdir;
 
 	tmax = std::min( std::min( std::max( vmin.x, vmax.x ), std::max( vmin.y, vmax.y ) ), std::max( vmin.z, vmax.z ) );
-
 	if ( tmax < 0 )
 		return false;
 

@@ -10,23 +10,15 @@ namespace AdvancedGraphics
 
 struct BVH; // forward declaration
 
-struct Intersection
-{
-  public:
-	Triangle *triangle;
-	vec3 location;
-	float distance = INFINITY;
-};
-
 struct BVHNode
 {
   public:
 	aabb bounds;
 	size_t firstleft; 
 	uint count; // number of triangles
-	void Traverse( Ray r, BVH *bvh, Intersection& interPoint, int &depth );
+	Triangle *Traverse( BVH *bvh, Ray *r, int depth );
 	void Subdivide( BVH *bvh );
-	bool AABBIntersection( const Ray &r, const aabb &bb, float &tmin, float &tmax );
+	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 };
 
 struct BVH
@@ -38,6 +30,8 @@ struct BVH
 	BVHNode *root;
 	Triangle *triangles;
 	uint *indices;
+
+	inline Triangle* Traverse( Ray *r ) { return root->Traverse(this, r, 0); }
 	void ConstructBVH( Triangle *triangles, uint triangleCount );
 	static aabb ComputeBounds( const Triangle *triangles, int firstleft, uint count );
 };
