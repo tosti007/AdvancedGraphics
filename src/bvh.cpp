@@ -54,9 +54,7 @@ void Swap( uint *a, uint *b )
 	*b = t;
 }
 
-// forward declaration
-uint poolPtr, nodeCount;
-void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles )
+void BVHNode::Subdivide( BVH *bvh )
 {
 	// Max number of primitives per leaf
 	if ( count <= 3 )
@@ -81,11 +79,11 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		const auto &tri = triangles[indices[i]];
+		const Triangle *tri = bvh->triangles + bvh->indices[i];
 		aabb bb = aabb();
-		bb.Grow( tri.p0 );
-		bb.Grow( tri.p1 );
-		bb.Grow( tri.p2 );
+		bb.Grow( tri->p0 );
+		bb.Grow( tri->p1 );
+		bb.Grow( tri->p2 );
 
 		float ac = bb.Center( axis );
 
@@ -95,7 +93,7 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 			leftbox.Grow( bb );
 			index++;
 			// Sort in place
-			Swap( &indices[index], &indices[i] );
+			Swap( bvh->indices + index, bvh->indices + i );
 		}
 		else
 		{
@@ -118,28 +116,26 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 	{
 		// Do actual split
 		BVHNode *left, *right;
-		int leftidx = poolPtr;
-		// notl eaf node, so it doesn't have any triangles
+
+		// not a leaf node, so it doesn't have any triangles
 		this->count = 0;
-		left = &pool[poolPtr++];
-		right = &pool[poolPtr++];
+		this->firstleft = bvh->nr_nodes;
+
+		left = bvh->pool + bvh->nr_nodes++;
+		right = bvh->pool + bvh->nr_nodes++;
 
 		// Assign triangles to new nodes
 		left->firstleft = firstleft;
 		left->count = leftCount;
 		left->bounds = leftbox;
-		nodeCount++;
 
 		right->firstleft = firstleft + leftCount;
 		right->count = rightCount;
 		right->bounds = rightbox;
-		nodeCount++;
-
-		this->firstleft = leftidx;
 
 		// Go in recursion on both child nodes
-		left->Subdivide( pool, indices, triangles );
-		right->Subdivide( pool, indices, triangles );
+		left->Subdivide( bvh );
+		right->Subdivide( bvh );
 	}
 }
 
@@ -173,16 +169,18 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 		indices[i] = i;
 
 	// allocate space for BVH Nodes with max possible nodes
-	pool = new BVHNode[triangleCount * 2 - 1];
-	root = &pool[0];
-	// leave dummy value on location 1 for cache alignment
-	poolPtr = 2;
+	nr_nodes_max = triangleCount * 2 - 1;
+	pool = new BVHNode[nr_nodes_max];
+	// leave dummy value on location 0 for cache alignment
+	nr_nodes = 1;
+ 
+	root = pool + nr_nodes++;
+ 	root->firstleft = 0;
+ 	root->count = triangleCount;
+ 	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
 
-	root->firstleft = 0;
-	root->count = triangleCount;
-	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
-	root->Subdivide( pool, indices, triangles );
-	printf( "Number of nodes: %i", nodeCount );
+	root->Subdivide( this );
+	printf( "Maximum number of nodes: %i", nr_nodes_max );
 }
 
 aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )

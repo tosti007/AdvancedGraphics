@@ -25,7 +25,7 @@ struct BVHNode
 	size_t firstleft; 
 	uint count; // number of triangles
 	void Traverse( Ray r, BVH *bvh, Intersection& interPoint, int &depth );
-	void Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles );
+	void Subdivide( BVH *bvh );
 	bool AABBIntersection( const Ray &r, const aabb &bb, float &tmin, float &tmax );
 };
 
@@ -33,6 +33,8 @@ struct BVH
 {
   public:
 	BVHNode *pool;
+	uint nr_nodes, nr_nodes_max;
+
 	BVHNode *root;
 	Triangle *triangles;
 	uint *indices;
