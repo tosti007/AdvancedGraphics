@@ -125,7 +125,9 @@ void BVHNode::Subdivide( BVH *bvh )
 
 		// not a leaf node, so it doesn't have any triangles
 		this->count = 0;
-		this->firstleft = bvh->nr_nodes;
+		// Save this
+		int leftidx = bvh->nr_nodes;
+		this->firstleft = firstleft; //bvh->nr_nodes;
 
 		left = &bvh->pool[bvh->nr_nodes++];
 		right = &bvh->pool[bvh->nr_nodes++];
@@ -138,6 +140,8 @@ void BVHNode::Subdivide( BVH *bvh )
 		right->firstleft = firstleft + leftCount;
 		right->count = rightCount;
 		right->bounds = rightbox;
+
+		this->firstleft = leftidx;
 
 		// Go in recursion on both child nodes
 		left->Subdivide( bvh );
@@ -168,7 +172,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	// Create index array
 	this->triangles = triangles;
 	this->nr_triangles = triangleCount;
-	return;
+	//return;
 	
 	indices = new uint[triangleCount];
 
