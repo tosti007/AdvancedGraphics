@@ -132,6 +132,9 @@ void Game::Init(int argc, char **argv)
 		if(triangles[i].material == nullptr)
 			triangles[i].material = materials[0];
 	}
+
+	bvh = new BVH();
+	bvh->ConstructBVH(triangles, nr_triangles);
 }
 
 // -----------------------------------------------------------
@@ -161,7 +164,7 @@ bool Game::CheckOcclusion( Ray *r )
 
 Primitive* Game::Intersect( Ray* r )
 {
-	Primitive* found = nullptr;
+	Primitive* found = bvh->Traverse(r);
 
 	for (uint i = 0; i < nr_spheres; i++)
 	{
@@ -169,11 +172,13 @@ Primitive* Game::Intersect( Ray* r )
 			found = spheres + i;
 	}
 
+	/*
 	for (uint i = 0; i < nr_triangles; i++)
 	{
 		if(triangles[i].Intersect(r))
 			found = triangles + i;
 	}
+	*/
 
 	return found;
 }

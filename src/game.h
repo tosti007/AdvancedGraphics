@@ -7,6 +7,7 @@
 #include "primitive.h"
 #include "light.h"
 #include "skydome.h"
+#include "bvh.h"
 #include "tiny_obj_loader.h"
 
 namespace AdvancedGraphics {
@@ -36,6 +37,7 @@ public:
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
+	BVH* bvh;
 
 	Material** materials;
 	uint nr_materials;
