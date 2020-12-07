@@ -146,20 +146,15 @@ void BVHNode::Subdivide( BVHNode *pool, uint *indices, const Triangle *triangles
 bool BVHNode::AABBIntersection( const Ray &r, const aabb &bb, float &tmin, float &tmax )
 {
 	vec3 invdir = { 1 / r.direction.x, 1 / r.direction.y, 1 / r.direction.z };
-	float t[6];
-	t[0] = ( bb.bmin3.x - r.origin.x ) * invdir.x;
-	t[1] = ( bb.bmax3.x - r.origin.x ) * invdir.x;
-	t[2] = ( bb.bmin3.y - r.origin.y ) * invdir.y;
-	t[3] = ( bb.bmax3.y - r.origin.y ) * invdir.y;
-	t[4] = ( bb.bmin3.z - r.origin.z ) * invdir.z;
-	t[5] = ( bb.bmax3.z - r.origin.z ) * invdir.z;
+	vec3 vmin = (bb.bmin3 - r.origin) * invdir;
+	vec3 vmax = (bb.bmax3 - r.origin) * invdir;
 
-	tmax = std::min( std::min( std::max( t[0], t[1] ), std::max( t[2], t[3] ) ), std::max( t[4], t[5] ) );
+	tmax = std::min( std::min( std::max( vmin.x, vmax.x ), std::max( vmin.y, vmax.y ) ), std::max( vmin.z, vmax.z ) );
 
 	if ( tmax < 0 )
 		return false;
 
-	tmin = std::max( std::max( std::min( t[0], t[1] ), std::min( t[2], t[3] ) ), std::min( t[4], t[5] ) );
+	tmin = std::max( std::max( std::min( vmin.x, vmax.x ), std::min( vmin.y, vmax.y ) ), std::min( vmin.z, vmax.z ) );
 	if ( tmin > tmax )
 		return false;
 
