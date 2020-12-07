@@ -164,7 +164,7 @@ bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float
 
 void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 {
-	printf( "Constructing BVH..." );
+	printf( "Constructing BVH...\n" );
 	// Create index array
 	this->triangles = triangles;
 	indices = new uint[triangleCount];
@@ -185,8 +185,8 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
  	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
 
 	root->Subdivide( this );
-	printf( "Maximum number of nodes: %i", nr_nodes_max );
-	printf( "Used number of nodes: %i", nr_nodes );
+	printf( "Maximum number of nodes: %i\n", nr_nodes_max );
+	printf( "Used number of nodes: %i\n", nr_nodes );
 }
 
 aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
