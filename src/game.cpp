@@ -248,11 +248,9 @@ Color Game::Trace(Ray r, uint depth)
 
 	Primitive* obj = Intersect( &r );
 
-	#ifdef USEPATHTRACE
-		Light* light = IntersectLights( &r );
-		if ( light != nullptr )
-			return light->color;
-	#endif
+	Light* light = IntersectLights( &r );
+	if ( light != nullptr )
+		return light->color;
 
 	// No intersection point found
 	if ( obj == nullptr )
