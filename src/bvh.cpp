@@ -165,7 +165,7 @@ bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float
 void BVHNode::Print(BVH* bvh, uint depth)
 {
 	// Indent with 2 spaces for each step
-	for (int i = 0; i < depth; i++)
+	for (uint i = 0; i < depth; i++)
 		std::cout << "  ";
 
 	if ( count == 0 ) 
@@ -180,7 +180,7 @@ void BVHNode::Print(BVH* bvh, uint depth)
 	{
 		std::cout << "Leaf Node " << depth << std::endl;
 		depth++;
-		for (int i = 0; i < depth; i++)
+		for (uint i = 0; i < depth; i++)
 			std::cout << "  ";
 		for ( size_t i = 0; i < count; i++ )
 			std::cout << bvh->indices[firstleft + i] << " ";
