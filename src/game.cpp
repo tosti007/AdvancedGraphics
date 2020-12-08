@@ -29,7 +29,7 @@ void Game::InitFromTinyObj( const std::string filename )
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
+	std::vector<tinyobj::material_t> obj_materials;
 	std::string warn;
 	std::string err;
 
@@ -41,7 +41,7 @@ void Game::InitFromTinyObj( const std::string filename )
 		basedir = filename.substr(0,found + 1);
 	}
 
-	bool ret = tinyobj::LoadObj( &attrib, &shapes, &materials, &warn, &err, filename.c_str(), basedir.c_str(), true, false );
+	bool ret = tinyobj::LoadObj( &attrib, &shapes, &obj_materials, &warn, &err, filename.c_str(), basedir.c_str(), true, false );
 	if ( !warn.empty() )
 		std::cout << warn << std::endl;
 	if ( !err.empty() )
@@ -51,9 +51,10 @@ void Game::InitFromTinyObj( const std::string filename )
 
 	std::cout << "Loading texture maps" << std::endl;
 
-	for (size_t t = 0; t < materials.size(); t++)
+	for (size_t t = 0; t < obj_materials.size(); t++)
 	{
-		std::string tname =  materials[t].diffuse_texname;
+		auto mat = obj_materials[t];
+		std::string tname =  mat.diffuse_texname;
 		auto search = textures.find(tname);
     	if (search == textures.end()) {
 			std::string tname_full = basedir + tname;
@@ -74,7 +75,7 @@ void Game::InitFromTinyObj( const std::string filename )
 	{
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
-			Triangle::FromTinyObj(current, &attrib, &shapes[s].mesh, f, materials, textures);
+			Triangle::FromTinyObj(current, &attrib, &shapes[s].mesh, f, obj_materials, textures);
 			current++;
 		}
 	}

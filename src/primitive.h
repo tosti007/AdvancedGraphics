@@ -13,6 +13,7 @@ struct Material
 {
     float speculative, refractive, density;
 
+    inline Material() : Material(0, 0, 0) {}   
     inline Material(float s, float r, float d) :
         speculative(clamp(s, 0.0f, 1.0f)),
         refractive(std::max(r, 0.0f)),
