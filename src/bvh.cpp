@@ -34,13 +34,14 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 		BVHNode farNode = leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
 
 		// first check nearest node
-		bool found = nearNode.Traverse( bvh, r, depth++ );
+		depth++;
+		bool found = nearNode.Traverse( bvh, r, depth );
 		// early out
 		if ( found && r->t < bound )
 			return found;
 
 		// then far node
-		return farNode.Traverse( bvh, r, depth++ );
+		return farNode.Traverse( bvh, r, depth );
 	}
 	if ( intL )
 		return bvh->pool[firstleft].Traverse( bvh, r, depth++ );
