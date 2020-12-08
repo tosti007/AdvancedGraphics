@@ -133,8 +133,10 @@ void Game::Init(int argc, char **argv)
 			triangles[i].material = materials[0];
 	}
 
-	bvh = new BVH();
-	bvh->ConstructBVH(triangles, nr_triangles);
+	#ifdef USERBVH 
+		bvh = new BVH();
+		bvh->ConstructBVH(triangles, nr_triangles);
+	#endif
 }
 
 // -----------------------------------------------------------
@@ -164,19 +166,17 @@ bool Game::CheckOcclusion( Ray *r )
 
 bool Game::Intersect( Ray* r )
 {
-	bool found = bvh->Traverse(r);
-
+	bool found = false; 
+	
 	for (uint i = 0; i < nr_spheres; i++)
-	{
 		found |= spheres[i].Intersect(r);
-	}
 
-	/*
-	for (uint i = 0; i < nr_triangles; i++)
-	{
-		found |= triangles[i].Intersect(r);
-	}
-	*/
+	#ifdef USERBVH 
+		found |= bvh->Traverse(r);
+	#else
+		for (uint i = 0; i < nr_triangles; i++)
+			found |= triangles[i].Intersect(r);
+	#endif
 
 	return found;
 }

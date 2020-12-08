@@ -37,7 +37,10 @@ public:
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
-	BVH* bvh;
+
+	#ifdef USERBVH 
+		BVH* bvh;
+	#endif
 
 	Material** materials;
 	uint nr_materials;
