@@ -27,7 +27,7 @@ public:
 	void KeyDown( int key, byte repeat ) { if (view->KeyDown(key, repeat)) CameraChanged(); }
 
 	bool CheckOcclusion( Ray *r );
-	Primitive* Intersect( Ray* r );
+	bool Intersect( Ray* r );
 	Light* IntersectLights( Ray* r );
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Trace( Ray r, uint depth );

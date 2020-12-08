@@ -162,21 +162,19 @@ bool Game::CheckOcclusion( Ray *r )
 	return false;
 }
 
-Primitive* Game::Intersect( Ray* r )
+bool Game::Intersect( Ray* r )
 {
-	Primitive* found = bvh->Traverse(r);
+	bool found = bvh->Traverse(r);
 
 	for (uint i = 0; i < nr_spheres; i++)
 	{
-		if(spheres[i].Intersect(r))
-			found = spheres + i;
+		found |= spheres[i].Intersect(r);
 	}
 
 	/*
 	for (uint i = 0; i < nr_triangles; i++)
 	{
-		if(triangles[i].Intersect(r))
-			found = triangles + i;
+		found |= triangles[i].Intersect(r);
 	}
 	*/
 
@@ -246,14 +244,14 @@ Color Game::Trace(Ray r, uint depth)
 	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
 
-	Primitive* obj = Intersect( &r );
+	bool intersects = Intersect( &r );
 
 	Light* light = IntersectLights( &r );
 	if ( light != nullptr )
 		return light->color;
 
 	// No intersection point found
-	if ( obj == nullptr )
+	if ( !intersects )
 	{
 		if (sky == nullptr)
 			return SKYDOME_DEFAULT_COLOR;
@@ -263,7 +261,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
-	vec3 interNormal = obj->NormalAt( interPoint );
+	vec3 interNormal = r.obj->NormalAt( interPoint );
 	float angle = -dot( r.direction, interNormal );
 	bool backfacing = angle < 0.0f;
 	if ( backfacing )
@@ -275,16 +273,16 @@ Color Game::Trace(Ray r, uint depth)
 	bool reflect = false;
 	bool refract = false;
 
-	if (obj->material->HasRefract())
+	if (r.obj->material->HasRefract())
 	{
-		refract = RandomFloat() < obj->material->refractive;
-	} else if (obj->material->HasReflect())
+		refract = RandomFloat() < r.obj->material->refractive;
+	} else if (r.obj->material->HasReflect())
 	{
-		reflect = RandomFloat() < obj->material->speculative;
+		reflect = RandomFloat() < r.obj->material->speculative;
 	}
 
 	if (refract) {
-		float n = backfacing ? obj->material->refractive : 1.0f / obj->material->refractive;
+		float n = backfacing ? r.obj->material->refractive : 1.0f / r.obj->material->refractive;
 		float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 		if (k < 0)
@@ -296,7 +294,7 @@ Color Game::Trace(Ray r, uint depth)
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return obj->ColorAt( interPoint ) * Trace( refractiveRay, depth + 1 );
+			return r.obj->ColorAt( interPoint ) * Trace( refractiveRay, depth + 1 );
 		}
 	}
 
@@ -310,7 +308,7 @@ Color Game::Trace(Ray r, uint depth)
 		reflectRay.Offset( 1e-3 );
 		// Total Internal Reflection
 		Color reflectCol = Trace( reflectRay, depth + 1 );
-		return obj->ColorAt( interPoint ) * reflectCol;
+		return r.obj->ColorAt( interPoint ) * reflectCol;
 	}
 
 	// Random bounce
@@ -319,7 +317,7 @@ Color Game::Trace(Ray r, uint depth)
 
 	// irradiance
 	Color ei = Trace( newRay, depth + 1 ) * dot( interNormal, random_dir );
-	Color BRDF = obj->ColorAt( interPoint ) * INVPI;
+	Color BRDF = r.obj->ColorAt( interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
 
