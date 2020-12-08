@@ -8,7 +8,7 @@ void GrowWithTriangle( aabb* bb, const Triangle* tri)
 	bb->Grow( tri->p2 );
 }
 
-bool BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
+bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 {
 	// if node is a leaf
 	if ( count > 0 )
@@ -43,10 +43,10 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 		// then far node
 		return farNode.Traverse( bvh, r, depth );
 	}
-	if ( intL )
-		return bvh->pool[firstleft].Traverse( bvh, r, depth++ );
-	if ( intR )
-		return bvh->pool[firstleft + 1].Traverse( bvh, r, depth++ );
+	if (intL)
+		return bvh->pool[firstleft].Traverse( bvh, r, ++depth );
+	if (intR)
+		return bvh->pool[firstleft + 1].Traverse( bvh, r, ++depth );
 
 	return false;
 }

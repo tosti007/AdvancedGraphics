@@ -16,7 +16,7 @@ struct BVHNode
 	aabb bounds;
 	size_t firstleft; 
 	uint count; // number of triangles
-	bool Traverse( BVH *bvh, Ray *r, int depth );
+	bool Traverse( BVH *bvh, Ray *r, uint &depth );
 	void Subdivide( BVH *bvh );
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
@@ -33,7 +33,7 @@ struct BVH
 	uint nr_triangles;
 	uint *indices;
 
-	inline bool Traverse( Ray *r ) { if (nr_triangles > 0) return root->Traverse(this, r, 0); return false; }
+	inline bool Traverse( Ray *r, uint &depth ) { if (nr_triangles > 0) return root->Traverse(this, r, depth); return false; }
 	void ConstructBVH( Triangle *triangles, uint triangleCount );
 	void Print();
 	static aabb ComputeBounds( const Triangle *triangles, int firstleft, uint count );

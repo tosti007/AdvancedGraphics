@@ -174,7 +174,7 @@ bool Game::CheckOcclusion( Ray *r )
 	return false;
 }
 
-bool Game::Intersect( Ray* r )
+bool Game::Intersect( Ray* r, uint &depth )
 {
 	bool found = false; 
 	
@@ -182,7 +182,7 @@ bool Game::Intersect( Ray* r )
 		found |= spheres[i].Intersect(r);
 
 	#ifdef USERBVH 
-		found |= bvh->Traverse(r);
+		found |= bvh->Traverse(r, depth);
 	#else
 		for (uint i = 0; i < nr_triangles; i++)
 			found |= triangles[i].Intersect(r);
@@ -257,7 +257,8 @@ Color Game::Trace(Ray r, uint depth)
 	Light* light = IntersectLights( &r );
 
 	// No intersection point found
-	if ( !Intersect( &r ) )
+	uint bvhDepth = 0;
+	if ( !Intersect( &r, bvhDepth ) )
 	{
 		if ( light != nullptr )
 			return light->color;
@@ -265,6 +266,9 @@ Color Game::Trace(Ray r, uint depth)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
 	}
+
+	// uncomment to see normal color
+	return bvhDepth * 0x003300;
 
 	// As al our debuging objects are close, 1000 is a safe value.
 	assert(r.t <= 1000);
