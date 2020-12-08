@@ -348,9 +348,11 @@ void Game::Tick( float deltaTime )
 	vec3 p0 = view->TopLeft();
 	Pixel* buf = screen->GetBuffer();
 
-	int dist_x_max = screen->GetWidth() / 2;
-	int dist_y_max = screen->GetHeight() / 2;
-	float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
+	#ifdef USEVIGNETTING
+		int dist_x_max = screen->GetWidth() / 2;
+		int dist_y_max = screen->GetHeight() / 2;
+		float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
+	#endif
 		
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
@@ -383,7 +385,10 @@ void Game::Tick( float deltaTime )
 		#endif
 		color.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
-		color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
+
+		#ifdef USEVIGNETTING
+			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
+		#endif
 
 		*buf = color.ToPixel(*buf, unmoved_frames);
 

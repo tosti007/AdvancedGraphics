@@ -59,6 +59,7 @@
 
 // Anti-aliasing 4x
 //#define SSAA
+//#define USEVIGNETTING
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
