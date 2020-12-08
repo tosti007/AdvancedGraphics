@@ -8,17 +8,15 @@ void GrowWithTriangle( aabb* bb, const Triangle* tri)
 	bb->Grow( tri->p2 );
 }
 
-Triangle *BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
+bool BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 {
 	// if node is a leaf
 	if ( count > 0 )
 	{
-		Triangle* found = nullptr;
+		bool found = false;
 		for ( size_t i = 0; i < count; i++ )
 		{
-			Triangle *tri = &bvh->triangles[bvh->indices[firstleft + i]];
-			if (tri->Intersect( r ))
-				found = tri;
+			found |= bvh->triangles[bvh->indices[firstleft + i]].Intersect( r );
 		}
 		return found;
 	}
@@ -36,23 +34,20 @@ Triangle *BVHNode::Traverse( BVH *bvh, Ray *r, int depth )
 		BVHNode farNode = leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
 
 		// first check nearest node
-		Triangle* found = nearNode.Traverse( bvh, r, depth++ );
+		bool found = nearNode.Traverse( bvh, r, depth++ );
 		// early out
-		if ( found != nullptr && r->t < bound )
+		if ( found && r->t < bound )
 			return found;
 
 		// then far node
-		Triangle* found2 = farNode.Traverse( bvh, r, depth++ );
-		if ( found2 != nullptr )
-			return found2;
-		return found;
+		return farNode.Traverse( bvh, r, depth++ );
 	}
-	else if ( intL )
+	if ( intL )
 		return bvh->pool[firstleft].Traverse( bvh, r, depth++ );
-	else if ( intR )
+	if ( intR )
 		return bvh->pool[firstleft + 1].Traverse( bvh, r, depth++ );
 
-	return nullptr;
+	return false;
 }
 
 void Swap( uint *a, uint *b )
