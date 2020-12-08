@@ -26,7 +26,7 @@ Color Primitive::ColorAt( vec3 point )
     }
     int idx = TextureAt(point);
     if (idx < 0 || idx >= texture->GetWidth() * texture->GetHeight())
-        return DEFAULT_OBJECT_COLOR;
+        return color;
     return texture->GetBuffer()[idx];
 }
 
