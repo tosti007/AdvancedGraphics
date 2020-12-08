@@ -266,6 +266,12 @@ Color Game::Trace(Ray r, uint depth)
 		return SKYDOME_DEFAULT_COLOR;
 	}
 
+	// As al our debuging objects are close, 1000 is a safe value.
+	assert(r.t <= 1000);
+	assert(r.obj != nullptr);
+	assert(r.obj->material >= 0);
+	assert(r.obj->material < nr_materials);
+
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
