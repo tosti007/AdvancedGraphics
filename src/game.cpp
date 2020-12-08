@@ -61,15 +61,16 @@ void Game::InitFromTinyObj( const std::string filename )
 	std::cout << "Loading texture maps" << std::endl;
 
 	// load materials
-	nr_materials = obj_materials.size();
+	nr_materials = obj_materials.size() + 1;
 	materials = new Material[nr_materials];
+	materials[0] = Material(0, 0, 0);
 	for (size_t t = 0; t < obj_materials.size(); t++)
 	{
 		auto mat = obj_materials[t];
 		auto ior = mat.ior;
 		if (ior == 1)
 			ior = 0;
-		materials[t] = Material(1 - mat.shininess, ior, mat.dissolve);
+		materials[t + 1] = Material(1 - mat.shininess, ior, mat.dissolve);
 		std::string tname =  mat.diffuse_texname;
 		auto search = textures.find(tname);
     	if (search == textures.end()) {
