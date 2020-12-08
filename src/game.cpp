@@ -244,19 +244,16 @@ Color Game::Trace(Ray r, uint depth)
 	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
 
-	bool intersects = Intersect( &r );
-
 	Light* light = IntersectLights( &r );
-	if ( light != nullptr )
-		return light->color;
 
 	// No intersection point found
-	if ( !intersects )
+	if ( !Intersect( &r ) )
 	{
-		if (sky == nullptr)
-			return SKYDOME_DEFAULT_COLOR;
-		else
+		if ( light != nullptr )
+			return light->color;
+		if (sky != nullptr)
 			return sky->FindColor(r.direction);
+		return SKYDOME_DEFAULT_COLOR;
 	}
 
 	// intersection point found
