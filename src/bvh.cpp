@@ -161,6 +161,32 @@ bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float
 	return true;
 }
 
+void BVHNode::Print(BVH* bvh, uint depth)
+{
+	// Indent with 2 spaces for each step
+	for (int i = 0; i < depth; i++)
+		std::cout << "  ";
+
+	if ( count == 0 ) 
+	{
+		// Not leaf
+		std::cout << "Intermediate Node " << depth << std::endl;
+		depth++;
+		bvh->pool[firstleft].Print( bvh, depth );
+		bvh->pool[firstleft + 1].Print( bvh, depth );
+	} 
+	else
+	{
+		std::cout << "Leaf Node " << depth << std::endl;
+		depth++;
+		for (int i = 0; i < depth; i++)
+			std::cout << "  ";
+		for ( size_t i = 0; i < count; i++ )
+			std::cout << bvh->indices[firstleft + i] << " ";
+		std::cout << std::endl;
+	}
+}
+
 void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 {
 	printf( "Constructing BVH...\n" );
@@ -189,6 +215,12 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	root->Subdivide( this );
 	printf( "Maximum number of nodes: %i\n", nr_nodes_max );
 	printf( "Used number of nodes: %i\n", nr_nodes );
+}
+
+void BVH::Print()
+{
+	std::cout << "BVH:" << std::endl;
+	root->Print(this, 1);
 }
 
 aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
