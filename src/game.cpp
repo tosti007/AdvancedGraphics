@@ -13,15 +13,24 @@
 
 void Game::InitDefaultScene()
 {
+	// load materials
+	nr_materials = 4;
+	materials = new Material[nr_materials] {
+		Material(   0,   0, 0 ),	// Diffuse
+		Material( 0.3,   0, 0 ),	// Diffuse & reflective
+		Material( 0.2, 1.5, 0.15 ), // Glass
+		Material(   1,   0, 0 )		// Mirror
+	};
+
 	nr_triangles = 0;
 	nr_spheres = 6;
 	spheres = new Sphere[nr_spheres] {
-		Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
-		Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
-		Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, materials[2] ),
-		Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, materials[0] ),
-		Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, materials[0] )
+		Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, 0 ),
+		Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, 0 ),
+		Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, 0 )
 	};
 }
 
@@ -51,9 +60,16 @@ void Game::InitFromTinyObj( const std::string filename )
 
 	std::cout << "Loading texture maps" << std::endl;
 
+	// load materials
+	nr_materials = obj_materials.size();
+	materials = new Material[nr_materials];
 	for (size_t t = 0; t < obj_materials.size(); t++)
 	{
 		auto mat = obj_materials[t];
+		auto ior = mat.ior;
+		if (ior == 1)
+			ior = 0;
+		materials[t] = Material(1 - mat.shininess, ior, mat.dissolve);
 		std::string tname =  mat.diffuse_texname;
 		auto search = textures.find(tname);
     	if (search == textures.end()) {
@@ -92,15 +108,6 @@ void Game::Init(int argc, char **argv)
 	// load skybox
 	sky = new SkyDome();
 
-	// load materials
-	nr_materials = 4;
-	materials = new Material *[nr_materials] {
-		new Material(   0,   0, 0 ),	// Diffuse
-		new Material( 0.3,   0, 0 ),	// Diffuse & reflective
-		new Material( 0.2, 1.5, 0.15 ), // Glass
-		new Material(   1,   0, 0 )		// Mirror
-	};
-
 	// load lights
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
@@ -125,13 +132,13 @@ void Game::Init(int argc, char **argv)
 
 	for (uint i = 0; i < nr_spheres; i++)
 	{
-		if(spheres[i].material == nullptr)
-			spheres[i].material = materials[0];
+		if(spheres[i].material < 0)
+			spheres[i].material = 0;
 	}
 	for (uint i = 0; i < nr_triangles; i++)
 	{
-		if(triangles[i].material == nullptr)
-			triangles[i].material = materials[0];
+		if(triangles[i].material < 0)
+			triangles[i].material = 0;
 	}
 
 	#ifdef USERBVH 
@@ -272,16 +279,16 @@ Color Game::Trace(Ray r, uint depth)
 	bool reflect = false;
 	bool refract = false;
 
-	if (r.obj->material->HasRefract())
+	if (materials[r.obj->material].HasRefract())
 	{
-		refract = RandomFloat() < r.obj->material->refractive;
-	} else if (r.obj->material->HasReflect())
+		refract = RandomFloat() < materials[r.obj->material].refractive;
+	} else if (materials[r.obj->material].HasReflect())
 	{
-		reflect = RandomFloat() < r.obj->material->speculative;
+		reflect = RandomFloat() < materials[r.obj->material].speculative;
 	}
 
 	if (refract) {
-		float n = backfacing ? r.obj->material->refractive : 1.0f / r.obj->material->refractive;
+		float n = backfacing ? materials[r.obj->material].refractive : 1.0f / materials[r.obj->material].refractive;
 		float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 		if (k < 0)

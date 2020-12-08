@@ -42,7 +42,7 @@ public:
 		BVH* bvh;
 	#endif
 
-	Material** materials;
+	Material* materials;
 	uint nr_materials;
 	std::map<std::string, Surface*> textures;
 

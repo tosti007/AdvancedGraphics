@@ -30,7 +30,7 @@ Color Primitive::ColorAt( vec3 point )
     return texture->GetBuffer()[idx];
 }
 
-Sphere::Sphere( vec3 p, float r, Color c, Material* m ) :
+Sphere::Sphere( vec3 p, float r, Color c, int m ) :
     Primitive( c, m ),
 	position( p ),
 	radius( r )
@@ -64,7 +64,7 @@ int Sphere::TextureAt ( vec3 point )
     return y * texture->GetWidth() + x;
 }
 
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m ) :
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, int m ) :
     Primitive( c, m ),
 	p0( v0 ),
 	p1( v1 ),
@@ -163,9 +163,10 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
 
     // Read material types from file
-	if ( mesh->material_ids[f] >= 0 )
+    tri->material = mesh->material_ids[f];
+	if ( tri->material >= 0 )
 	{
-        auto thismat = materials[mesh->material_ids[f]];
+        auto thismat = materials[tri->material];
         std::cout << "NAME: " << thismat.name << std::endl;
 		auto diffuse = thismat.diffuse;
 		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
@@ -191,10 +192,10 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
         tri->t1 = TinyObjGetVector2(idx1.texcoord_index, &attrib->texcoords);
         tri->t2 = TinyObjGetVector2(idx2.texcoord_index, &attrib->texcoords);
 
-	    if ( mesh->material_ids[f] >= 0 )
+	    if ( tri->material >= 0 )
         {
             // Lets just only support diffuse
-            auto matoffset = materials[mesh->material_ids[f]].diffuse_texopt.origin_offset;
+            auto matoffset = materials[tri->material].diffuse_texopt.origin_offset;
             vec2 offset(matoffset[0], matoffset[1]);
             tri->t0 += offset;
             tri->t1 += offset;

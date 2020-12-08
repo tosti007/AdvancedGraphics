@@ -31,11 +31,11 @@ struct Material
 class Primitive
 {
     public:
-    Material* material;
+    int material;
     Surface* texture;
 
-    inline Primitive() = default;
-    inline Primitive( Color c, Material* m) : material(m), texture(nullptr), color(c) {}
+    inline Primitive() : material(-1), texture(nullptr) {}
+    inline Primitive( Color c, int m) : material(m), texture(nullptr), color(c) {}
 
     // If a negative value is returned, no intersection is found.
     virtual float IntersectionDistance(Ray* r) = 0;
@@ -59,8 +59,8 @@ class Sphere : public Primitive
     float radius;
 
     Sphere() = default;
-	inline Sphere( vec3 p, float r, Color c ) : Sphere(p, r, c, NULL) {}
-	Sphere( vec3 p, float r, Color c, Material* m );
+	inline Sphere( vec3 p, float r, Color c ) : Sphere(p, r, c, -1) {}
+	Sphere( vec3 p, float r, Color c, int m );
     float IntersectionDistance(Ray* r);
     vec3 NormalAt( vec3 point );
     int TextureAt ( vec3 point );
@@ -74,10 +74,10 @@ class Triangle : public Primitive
     vec2 t0, t1, t2;
 
     Triangle() = default;
-    inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c) : Triangle( v0, v1, v2, c, NULL) {}
-	inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c, Material* m ) : Triangle(v0, v1, v2, ComputeNormal(v0, v1, v2), c, m) {}
-	inline Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c ) : Triangle( v0, v1, v2, n, c, NULL ) {}
-	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, Material* m);
+    inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c) : Triangle( v0, v1, v2, c, -1) {}
+	inline Triangle( vec3 v0, vec3 v1, vec3 v2, Color c, int m ) : Triangle(v0, v1, v2, ComputeNormal(v0, v1, v2), c, m) {}
+	inline Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c ) : Triangle( v0, v1, v2, n, c, -1 ) {}
+	Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, int m);
     float IntersectionDistance(Ray* r);
 
 	vec3 NormalAt( vec3 point );
