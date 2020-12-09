@@ -13,6 +13,7 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 	// if node is a leaf
 	if ( count > 0 )
 	{
+		assert(firstleft + count <= bvh->nr_triangles);
 		bool found = false;
 		for ( size_t i = 0; i < count; i++ )
 		{
@@ -20,6 +21,9 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 		}
 		return found;
 	}
+
+	assert(firstleft <= bvh->nr_nodes);
+	assert(firstleft + 1 <= bvh->nr_nodes);
 
 	float tminL, tmaxL, tminR, tmaxR;
 	bool intL = AABBIntersection( r, bvh->pool[firstleft].bounds, tminL, tmaxL );
