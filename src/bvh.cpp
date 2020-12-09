@@ -82,6 +82,8 @@ void BVHNode::Subdivide( BVH *bvh )
 	uint rightCount = 0;
 	aabb leftbox = aabb();
 	aabb rightbox = aabb();
+	leftbox.Reset();
+	rightbox.Reset();
 
 	int index = firstleft - 1;
 	// Move over all triangle indices inside the node
@@ -142,6 +144,9 @@ void BVHNode::Subdivide( BVH *bvh )
 		right->bounds = rightbox;
 
 		this->firstleft = leftidx;
+
+		left->RecomputeBounds(bvh);
+		right->RecomputeBounds(bvh);
 
 		// Go in recursion on both child nodes
 		left->Subdivide( bvh );
