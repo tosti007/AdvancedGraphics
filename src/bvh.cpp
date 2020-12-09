@@ -149,6 +149,23 @@ void BVHNode::Subdivide( BVH *bvh )
 	}
 }
 
+void BVHNode::RecomputeBounds( const BVH* bvh )
+{
+	bounds.Reset();
+	if (count > 0)
+	{
+		// Leaf node
+		for ( size_t i = firstleft; i < firstleft + count; i++ )
+			GrowWithTriangle(&bounds, &bvh->triangles[i]);
+	}
+	else
+	{
+		// Intermediate node
+		bounds.Grow(bvh->pool[firstleft].bounds);
+		bounds.Grow(bvh->pool[firstleft + 1].bounds);
+	}
+}
+
 bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax )
 {
 	vec3 invdir = { 1 / r->direction.x, 1 / r->direction.y, 1 / r->direction.z };
@@ -215,7 +232,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	root = &pool[nr_nodes++];
  	root->firstleft = 0;
  	root->count = triangleCount;
- 	root->bounds = ComputeBounds( triangles, root->firstleft, root->count );
+ 	root->RecomputeBounds(this);
 
 	root->Subdivide( this );
 	printf( "Maximum number of nodes: %i\n", nr_nodes_max );
@@ -226,12 +243,4 @@ void BVH::Print()
 {
 	std::cout << "BVH:" << std::endl;
 	root->Print(this, 1);
-}
-
-aabb BVH::ComputeBounds( const Triangle *triangles, int firstleft, uint count )
-{
-	aabb bb;
-	for ( size_t i = firstleft; i < firstleft + count; i++ )
-		GrowWithTriangle(&bb, &triangles[i]);
-	return bb;
 }

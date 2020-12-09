@@ -18,6 +18,7 @@ struct BVHNode
 	uint count; // number of triangles
 	bool Traverse( BVH *bvh, Ray *r, uint &depth );
 	void Subdivide( BVH *bvh );
+	void RecomputeBounds( const BVH *bvh );
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
 };
@@ -36,7 +37,6 @@ struct BVH
 	inline bool Traverse( Ray *r, uint &depth ) { if (nr_triangles > 0) return root->Traverse(this, r, depth); return false; }
 	void ConstructBVH( Triangle *triangles, uint triangleCount );
 	void Print();
-	static aabb ComputeBounds( const Triangle *triangles, int firstleft, uint count );
 };
 
 }; // namespace AdvancedGraphics
