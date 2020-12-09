@@ -33,7 +33,7 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 	if ( intL && intR )
 	{
 		bool leftIsNearNode = tminL < tminR;
-		int bound = leftIsNearNode ? tminR : tminL;
+		float bound = leftIsNearNode ? tminR : tminL;
 		BVHNode nearNode = leftIsNearNode ? bvh->pool[firstleft] : bvh->pool[firstleft + 1];
 		BVHNode farNode = leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
 
