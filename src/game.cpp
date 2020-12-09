@@ -104,7 +104,7 @@ void Game::InitFromTinyObj( const std::string filename )
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
-	view = new Camera(vec3(0, 0, 0), vec3(0, 0, 1));
+	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
 
 	// load skybox
 	sky = new SkyDome();
