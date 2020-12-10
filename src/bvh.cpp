@@ -109,6 +109,10 @@ void BVHNode::Subdivide( BVH *bvh )
 			rightbox.Grow( bb );
 		}
 	}
+	// Early out if split does nothing
+	if (leftCount == 0 || rightCount == 0)
+		return;
+
 	// compute costs for new individual child nodes
 	float leftArea = leftbox.Area();
 	float rightArea = rightbox.Area();
