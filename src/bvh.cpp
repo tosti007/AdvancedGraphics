@@ -45,7 +45,9 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 			return found;
 
 		// then far node
-		return farNode.Traverse( bvh, r, depth );
+		found |= farNode.Traverse( bvh, r, depth );
+		
+		return found;
 	}
 	if (intL)
 		return bvh->pool[firstleft].Traverse( bvh, r, ++depth );
@@ -235,6 +237,8 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	// allocate space for BVH Nodes with max possible nodes
 	nr_nodes_max = triangleCount * 2 - 1;
 	pool = new BVHNode[nr_nodes_max];
+	printf( "Maximum number of nodes: %i\n", nr_nodes_max - 1 );
+
 	// leave dummy value on location 0 for cache alignment
 	nr_nodes = 1;
  
@@ -244,8 +248,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
  	root->RecomputeBounds(this);
 
 	root->Subdivide( this );
-	printf( "Maximum number of nodes: %i\n", nr_nodes_max );
-	printf( "Used number of nodes: %i\n", nr_nodes );
+	printf( "Used number of nodes: %i\n", nr_nodes - 1 );
 }
 
 void BVH::Print()
