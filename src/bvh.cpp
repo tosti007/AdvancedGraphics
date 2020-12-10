@@ -41,7 +41,7 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 		depth++;
 		bool found = nearNode.Traverse( bvh, r, depth );
 		// early out
-		if ( found && r->t < bound )
+		if ( found && r->t <= bound )
 			return found;
 
 		// then far node
