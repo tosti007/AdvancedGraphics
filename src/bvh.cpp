@@ -177,7 +177,7 @@ void BVHNode::RecomputeBounds( const BVH* bvh )
 
 bool BVHNode::AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax )
 {
-	vec3 invdir = { 1 / r->direction.x, 1 / r->direction.y, 1 / r->direction.z };
+	vec3 invdir( 1 / r->direction.x, 1 / r->direction.y, 1 / r->direction.z );
 	vec3 vmin = (bb.bmin3 - r->origin) * invdir;
 	vec3 vmax = (bb.bmax3 - r->origin) * invdir;
 
