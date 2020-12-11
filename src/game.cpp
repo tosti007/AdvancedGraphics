@@ -142,7 +142,7 @@ void Game::Init(int argc, char **argv)
 			triangles[i].material = 0;
 	}
 
-	#ifdef USERBVH 
+	#ifdef USEBVH 
 	if ( nr_triangles > 0 )
 	{
 		bvh = new BVH();
@@ -184,7 +184,7 @@ bool Game::Intersect( Ray* r, uint &depth )
 	for (uint i = 0; i < nr_spheres; i++)
 		found |= spheres[i].Intersect(r);
 
-	#ifdef USERBVH 
+	#ifdef USEBVH 
 		found |= bvh->Traverse(r, depth);
 	#else
 		for (uint i = 0; i < nr_triangles; i++)
