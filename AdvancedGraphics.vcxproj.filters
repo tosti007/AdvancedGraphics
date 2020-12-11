@@ -75,7 +75,7 @@
     <ClInclude Include="src\skydome.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="bvh.h">
+    <ClInclude Include="src/bvh.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -130,7 +130,7 @@
     <ClCompile Include="src\vectors.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bvh.h" />
+    <ClInclude Include="src/bvh.h" />
     <ClInclude Include="src/game.h" />
     <ClInclude Include="src/precomp.h" />
     <ClInclude Include="src/surface.h" />
