@@ -38,7 +38,7 @@ public:
 	Camera* view;
 	SkyDome* sky;
 
-	#ifdef USERBVH 
+	#ifdef USEBVH 
 		BVH* bvh;
 	#endif
 

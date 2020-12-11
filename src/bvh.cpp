@@ -81,6 +81,128 @@ void BVHNode::Subdivide( BVH *bvh )
 void BVHNode::BinnedSAH( BVH *bvh )
 {
 	int nr_bins = 8;
+
+	// Calculate cost of node before split (For SAH)
+	float currentCost = bounds.Area() * count;
+
+	// Keep track current and lowest bounds, counts and costs
+	float splitCost, lowestCost = currentCost;
+	float currentleftcount, currentrightcount, bestLeftCount, bestRightCount;
+	aabb currentleftbox = aabb(), currentrightbox = aabb(), bestLeftBox = aabb(), bestRightBox = aabb();
+
+	uint *idxs = new uint[count];
+	uint *bestIdx = new uint[count];
+
+	// Loop over every axis
+	for ( size_t a = 0; a < 3; a++ )
+	{
+		float edgeMin = bounds.bmin[a];
+		float edgeMax = bounds.bmax[a];
+		float edgeLength = edgeMax - edgeMin;
+		float binLength = edgeLength / nr_bins;
+
+		// Loop over every bin on the axis
+		for ( size_t b = 0; b < nr_bins; b++ )
+		{
+			// Get all triangles in the node
+			for ( size_t k = 0; k < count; k++ )
+				idxs[k] = bvh->indices[k];
+
+			// (Re)set counts and bounds
+			currentrightcount = 0;
+			currentleftcount = 0;
+			currentleftbox.Reset();
+			currentrightbox.Reset();
+
+			// Split at the binlocation
+			float splitLocation = edgeMin + b * binLength;
+
+			int index = -1;
+			for ( size_t i = count; i < firstleft + count; i++ )
+			{
+				const Triangle *tri = &bvh->triangles[bvh->indices[i]];
+				aabb bb = aabb();
+				GrowWithTriangle( &bb, tri );
+
+				if (bb.Center(a) < splitLocation)
+				{
+					currentleftcount++;
+					currentleftbox.Grow( bb );
+					index++;
+					// sort in place
+					Swap( &idxs[index], &idxs[i - firstleft] );
+				}
+				else
+				{
+					currentrightcount++;
+					currentrightbox.Grow( bb );
+				}
+			}
+
+			// Compute area of the current left and right bounding boxes
+			float leftArea = currentleftbox.Area();
+			float rightArea = currentrightbox.Area();
+			if ( isinf( leftArea ) )
+				leftArea = 0;
+			if ( isinf( rightArea ) )
+				rightArea = 0;
+
+			// Compute the cost of the current split
+			// TODO: Add cost for extra aabb traversal
+			float splitCost = rightArea * currentrightcount + leftArea * currentleftcount;
+
+			// If found splitcost is lower than lowest cost up till now
+			if (splitCost < lowestCost)
+			{
+				// Save the split
+				bestRightBox = currentrightbox;
+				bestLeftBox = currentleftbox;
+				bestRightCount = currentrightcount;
+				bestLeftCount = currentleftcount;
+				for ( size_t k = 0; k < count; k++ )
+					bestIdx[k] = idxs[k];
+
+				lowestCost = splitCost;
+			}
+		}
+	}
+
+	// now do the actual split with the best found split if its lower than the parents cost
+	if (lowestCost < currentCost)
+	{
+		for ( size_t k = 0; k < count; k++ )
+			bvh->indices[firstleft + k] = bestIdx[k];
+
+		// Do actual split
+		BVHNode *left, *right;
+
+		// not a leaf node, so it doesn't have any triangles
+		this->count = 0;
+		// Save this
+		int leftidx = bvh->nr_nodes;
+		this->firstleft = firstleft; //bvh->nr_nodes;
+
+		left = &bvh->pool[bvh->nr_nodes++];
+		right = &bvh->pool[bvh->nr_nodes++];
+
+		// Assign triangles to new nodes
+		left->firstleft = firstleft;
+		left->count = bestLeftCount;
+		left->bounds = bestLeftBox;
+
+		right->firstleft = firstleft + bestLeftCount;
+		right->count = bestRightCount;
+		right->bounds = bestRightBox;
+
+		this->firstleft = leftidx;
+
+		left->RecomputeBounds( bvh );
+		right->RecomputeBounds( bvh );
+
+		// Go in recursion on both child nodes
+		left->Subdivide( bvh );
+		right->Subdivide( bvh );
+	}
 }
 
 void BVHNode::SAH( BVH *bvh )
@@ -110,14 +232,12 @@ void BVHNode::SAH( BVH *bvh )
 		aabb bb = aabb();
 		GrowWithTriangle( &bb, tri );
 
-		float ac = bb.Center( axis );
-
-		if ( ac < splitLocation )
+		if ( bb.Center( axis ) < splitLocation )
 		{
 			leftCount++;
 			leftbox.Grow( bb );
 			index++;
-			// Sort in place
+			// Sort in place:: TODO: Might swap indices if the splitcost is not actually lower than parentcost, Maybe fix: save local idxs
 			Swap( &bvh->indices[index], &bvh->indices[i] );
 		}
 		else
