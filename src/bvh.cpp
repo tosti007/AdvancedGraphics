@@ -70,6 +70,21 @@ void BVHNode::Subdivide( BVH *bvh )
 	if ( count <= 3 )
 		return;
 
+	#ifdef BINNING
+	BinnedSAH( bvh );
+	#else
+	SAH( bvh );
+	#endif
+
+}
+
+void BVHNode::BinnedSAH( BVH *bvh )
+{
+	int nr_bins = 8;
+}
+
+void BVHNode::SAH( BVH *bvh )
+{
 	// Calculate cost of node before split (For SAH)
 	float currentCost = bounds.Area() * count;
 
@@ -93,7 +108,7 @@ void BVHNode::Subdivide( BVH *bvh )
 	{
 		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 		aabb bb = aabb();
-		GrowWithTriangle(&bb, tri);
+		GrowWithTriangle( &bb, tri );
 
 		float ac = bb.Center( axis );
 
@@ -112,7 +127,7 @@ void BVHNode::Subdivide( BVH *bvh )
 		}
 	}
 	// Early out if split does nothing
-	if (leftCount == 0 || rightCount == 0)
+	if ( leftCount == 0 || rightCount == 0 )
 		return;
 
 	// compute costs for new individual child nodes
@@ -126,7 +141,7 @@ void BVHNode::Subdivide( BVH *bvh )
 	// TODO: Add cost for extra aabb traversal
 	float splitCost = rightArea * rightCount + leftArea * leftCount;
 
-	if (splitCost < currentCost)
+	if ( splitCost < currentCost )
 	{
 		// Do actual split
 		BVHNode *left, *right;
@@ -151,8 +166,8 @@ void BVHNode::Subdivide( BVH *bvh )
 
 		this->firstleft = leftidx;
 
-		left->RecomputeBounds(bvh);
-		right->RecomputeBounds(bvh);
+		left->RecomputeBounds( bvh );
+		right->RecomputeBounds( bvh );
 
 		// Go in recursion on both child nodes
 		left->Subdivide( bvh );
