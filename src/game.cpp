@@ -143,9 +143,12 @@ void Game::Init(int argc, char **argv)
 	}
 
 	#ifdef USERBVH 
+	if ( nr_triangles > 0 )
+	{
 		bvh = new BVH();
 		bvh->ConstructBVH(triangles, nr_triangles);
 		bvh->Print();
+	}
 	#endif
 }
 
