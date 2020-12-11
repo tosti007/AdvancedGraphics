@@ -257,7 +257,7 @@ Color Game::Trace(Ray r, uint depth)
 	Light* light = IntersectLights( &r );
 
 	// No intersection point found
-	uint bvhDepth = 0;
+	uint bvhDepth = 1;
 	if ( !Intersect( &r, bvhDepth ) )
 	{
 		if ( light != nullptr )
@@ -268,7 +268,7 @@ Color Game::Trace(Ray r, uint depth)
 	}
 
 	// uncomment to see normal color
-	return bvhDepth * 0x003300;
+	//return bvhDepth * 0x003300;
 
 	// As al our debuging objects are close, 1000 is a safe value.
 	assert(r.t <= 1000);
