@@ -55,6 +55,7 @@ struct vec3
 		return vec3( y * operand.z - z * operand.y, z * operand.x - x * operand.z, x * operand.y - y * operand.x );
 	}
 	float dot( const vec3& operand ) const { return x * operand.x + y * operand.y + z * operand.z; }
+	inline void Print() const { std::cout << x << "," << y << "," << z; }
 };
 
 struct vec4
