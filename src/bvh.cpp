@@ -118,7 +118,7 @@ void BVHNode::BinnedSAH( BVH *bvh )
 			float splitLocation = edgeMin + b * binLength;
 
 			int index = -1;
-			for ( size_t i = count; i < firstleft + count; i++ )
+			for ( size_t i = firstleft; i < firstleft + count; i++ )
 			{
 				const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 				aabb bb = aabb();
@@ -167,7 +167,7 @@ void BVHNode::BinnedSAH( BVH *bvh )
 		}
 	}
 
-	// now do the actual split with the best found split if its lower than the parents cost
+	// If found split is lower than the parents cost
 	if (lowestCost < currentCost)
 	{
 		for ( size_t k = 0; k < count; k++ )
