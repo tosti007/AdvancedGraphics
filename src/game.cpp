@@ -1,5 +1,6 @@
 #include <stdarg.h> // For variable number of arguments
 #include <math.h>
+#include <chrono>
 
 #include "precomp.h" // include (only) this in every .cpp file
 #include "game.h"
@@ -146,7 +147,14 @@ void Game::Init(int argc, char **argv)
 	if ( nr_triangles > 0 )
 	{
 		bvh = new BVH();
-		bvh->ConstructBVH(triangles, nr_triangles);
+
+		auto start = std::chrono::steady_clock::now();
+
+		bvh->ConstructBVH( triangles, nr_triangles );
+
+		auto end = std::chrono::steady_clock::now();
+		std::chrono::duration<double> elapsed_ms = (end - start) * 0.001;
+		std::cout << "Construction time: " << elapsed_ms.count() << " ms.\n";
 		bvh->Print();
 	}
 	#endif
