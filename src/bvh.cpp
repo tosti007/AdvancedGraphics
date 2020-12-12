@@ -249,10 +249,6 @@ void BVHNode::SAH( BVH *bvh )
 	// compute costs for new individual child nodes
 	float leftArea = leftbox.Area();
 	float rightArea = rightbox.Area();
-	if ( isinf( leftArea ) )
-		leftArea = 0;
-	if ( isinf( rightArea ) )
-		rightArea = 0;
 
 	// TODO: Add cost for extra aabb traversal
 	float splitCost = rightArea * rightCount + leftArea * leftCount;
