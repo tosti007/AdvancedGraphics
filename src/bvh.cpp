@@ -207,9 +207,6 @@ void BVHNode::BinnedSAH( BVH *bvh )
 
 void BVHNode::SAH( BVH *bvh )
 {
-	// Calculate cost of node before split (For SAH)
-	float currentCost = bounds.Area() * count;
-
 	// Find longest axis for split, TODO: Binning
 	int axis = this->bounds.LongestAxis();
 
@@ -253,6 +250,8 @@ void BVHNode::SAH( BVH *bvh )
 	// TODO: Add cost for extra aabb traversal
 	float splitCost = rightArea * rightCount + leftArea * leftCount;
 
+	// Calculate cost of node before split (For SAH)
+	float currentCost = bounds.Area() * count;
 	if ( splitCost < currentCost )
 	{
 		// Save this
