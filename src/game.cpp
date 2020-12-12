@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "light.h"
 #include "utils.h"
+#include "timer.h"
 
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
@@ -148,13 +149,10 @@ void Game::Init(int argc, char **argv)
 	{
 		bvh = new BVH();
 
-		auto start = std::chrono::steady_clock::now();
-
+		timer t;
 		bvh->ConstructBVH( triangles, nr_triangles );
+		std::cout << "Construction time: " << t.elapsed() << " ms." << std::endl;
 
-		auto end = std::chrono::steady_clock::now();
-		std::chrono::duration<double> elapsed_ms = (end - start) * 0.001;
-		std::cout << "Construction time: " << elapsed_ms.count() << " ms.\n";
 		if (bvh->nr_nodes < 100)
 			bvh->Print();
 	}
