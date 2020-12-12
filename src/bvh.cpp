@@ -219,8 +219,7 @@ void BVHNode::SAH( BVH *bvh )
 	// Counts and aabbs for new child nodes
 	uint leftCount = 0;
 	uint rightCount = 0;
-	aabb leftbox = aabb();
-	aabb rightbox = aabb();
+	aabb leftbox, rightbox;
 	leftbox.Reset();
 	rightbox.Reset();
 
@@ -260,15 +259,11 @@ void BVHNode::SAH( BVH *bvh )
 
 	if ( splitCost < currentCost )
 	{
-		// Do actual split
-		BVHNode *left, *right;
-
-		// not a leaf node, so it doesn't have any triangles
-		this->count = 0;
 		// Save this
 		int leftidx = bvh->nr_nodes;
-		this->firstleft = firstleft; //bvh->nr_nodes;
 
+		// Do actual split
+		BVHNode *left, *right;
 		left = &bvh->pool[bvh->nr_nodes++];
 		right = &bvh->pool[bvh->nr_nodes++];
 
@@ -281,10 +276,8 @@ void BVHNode::SAH( BVH *bvh )
 		right->count = rightCount;
 		right->bounds = rightbox;
 
+		this->count = 0;
 		this->firstleft = leftidx;
-
-		left->RecomputeBounds( bvh );
-		right->RecomputeBounds( bvh );
 
 		// Go in recursion on both child nodes
 		left->Subdivide( bvh );
