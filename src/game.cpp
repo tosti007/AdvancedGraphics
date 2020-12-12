@@ -153,7 +153,7 @@ void Game::Init(int argc, char **argv)
 		bvh->ConstructBVH( triangles, nr_triangles );
 		std::cout << "Construction time: " << t.elapsed() << " ms." << std::endl;
 
-		if (bvh->nr_nodes < 100)
+		if (bvh->nr_nodes < 100 && nr_triangles < 100)
 			bvh->Print();
 	}
 	#endif
