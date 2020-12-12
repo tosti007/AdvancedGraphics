@@ -67,7 +67,7 @@ void Swap( uint *a, uint *b )
 void BVHNode::Subdivide( BVH *bvh )
 {
 	// Max number of primitives per leaf
-	if ( count <= 3 )
+	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
 	#ifdef BINNING
