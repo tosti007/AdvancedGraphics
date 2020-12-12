@@ -87,7 +87,7 @@ void BVHNode::BinnedSAH( BVH *bvh )
 
 	// Keep track current and lowest bounds, counts and costs
 	float splitCost, lowestCost = currentCost;
-	float currentleftcount, currentrightcount, bestLeftCount, bestRightCount;
+	uint currentleftcount, currentrightcount, bestLeftCount, bestRightCount;
 	aabb currentleftbox = aabb(), currentrightbox = aabb(), bestLeftBox = aabb(), bestRightBox = aabb();
 
 	uint *idxs = new uint[count];
