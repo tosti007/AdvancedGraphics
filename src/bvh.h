@@ -18,11 +18,12 @@ struct BVHNode
 	uint count; // number of triangles
 	bool Traverse( BVH *bvh, Ray *r, uint &depth );
 	void Subdivide( BVH *bvh );
-	void BinnedSAH( BVH *bvh );
-	void SAH( BVH *bvh );
 	void RecomputeBounds( const BVH *bvh );
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
+  private:
+	void Subdivide_Binned( BVH *bvh );
+	void Subdivide_Median( BVH *bvh );
 };
 
 struct BVH

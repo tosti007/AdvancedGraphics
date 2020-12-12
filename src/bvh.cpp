@@ -71,14 +71,14 @@ void BVHNode::Subdivide( BVH *bvh )
 		return;
 
 	#ifdef BINNING
-	BinnedSAH( bvh );
+	Subdivide_Binned( bvh );
 	#else
-	SAH( bvh );
+	Subdivide_Median( bvh );
 	#endif
 
 }
 
-void BVHNode::BinnedSAH( BVH *bvh )
+void BVHNode::Subdivide_Binned( BVH *bvh )
 {
 	int nr_bins = 8;
 
@@ -205,7 +205,7 @@ void BVHNode::BinnedSAH( BVH *bvh )
 	}
 }
 
-void BVHNode::SAH( BVH *bvh )
+void BVHNode::Subdivide_Median( BVH *bvh )
 {
 	// Find longest axis for split, TODO: Binning
 	int axis = this->bounds.LongestAxis();
