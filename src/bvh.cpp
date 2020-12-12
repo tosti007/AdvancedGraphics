@@ -224,7 +224,6 @@ void BVHNode::SAH( BVH *bvh )
 	leftbox.Reset();
 	rightbox.Reset();
 
-	int index = firstleft - 1;
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
@@ -234,11 +233,9 @@ void BVHNode::SAH( BVH *bvh )
 
 		if ( bb.Center( axis ) < splitLocation )
 		{
+			Swap( &bvh->indices[firstleft + leftCount], &bvh->indices[i] );
 			leftCount++;
 			leftbox.Grow( bb );
-			index++;
-			// Sort in place:: TODO: Might swap indices if the splitcost is not actually lower than parentcost, Maybe fix: save local idxs
-			Swap( &bvh->indices[index], &bvh->indices[i] );
 		}
 		else
 		{
