@@ -78,6 +78,128 @@ void BVHNode::Subdivide( BVH *bvh )
 
 }
 
+void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
+{
+	std::cout << "ITERATION " << bvh->nr_nodes << std::endl;
+
+	const int nr_bins = 8;
+	// Find longest axis and location for split
+	int axis = this->bounds.LongestAxis();
+	float binLength = bounds.Extend( axis ) / nr_bins;
+
+	uint counts[nr_bins];
+	aabb boxes[nr_bins];
+	for (int i = 0; i < nr_bins; i++){
+		counts[i] = 0;
+		boxes[i].Reset();
+	}
+	
+	// Populate step
+	size_t currentleft = firstleft;
+	for ( int b = 0; b < nr_bins - 1; b++)
+	{
+		for ( size_t i = currentleft; i < firstleft + count; i++ )
+		{
+			const Triangle *tri = &bvh->triangles[bvh->indices[i]];
+			aabb bb = aabb();
+			GrowWithTriangle( &bb, tri );
+
+			if (b == nr_bins - 1)
+			{
+				counts[b] += 1;
+				boxes[b].Grow( bb );
+			}
+			else if ( bb.Center( axis ) < binLength * ( b + 1 ) )
+			{
+				Swap( &bvh->indices[currentleft + counts[b]], &bvh->indices[i] );
+				counts[b] += 1;
+				boxes[b].Grow( bb );
+			}
+		}
+		currentleft += counts[b];
+		if (counts[b] > 0)
+		{
+			std::cout << "Populated bin " << b << " with:" << std::endl; 
+			std::cout << "Count:    " << counts[b] << std::endl; 
+			std::cout << "AABB min: "; boxes[b].bmin3.Print(); std::cout << std::endl; 
+			std::cout << "AABB max: "; boxes[b].bmax3.Print(); std::cout << std::endl; 
+			std::cout << std::endl; 
+		}
+	}
+	assert(currentleft == firstleft + count);
+
+	// Sweep step
+	float splitCostBest = INFINITY;
+	uint leftCountBest, rightCountBest;
+	aabb leftBoxBest, rightBoxBest;
+
+	uint leftCount, rightCount;
+	aabb leftBox, rightBox;
+	leftBox.Reset();
+
+	for ( int b = 0; b < nr_bins - 1; b++)
+	{
+		if (counts[b] == 0)
+			continue;
+
+		leftBox.Grow(boxes[b]);
+		leftCount += counts[b];
+
+		rightCount = 0;
+		rightBox.Reset();
+
+		for ( int b2 = b + 1; b2 < nr_bins; b2++)
+		{
+			rightBox.Grow(boxes[b2]);
+			rightCount += counts[b2];
+		}
+
+		float splitCost = rightBox.Area() * rightCount + leftBox.Area() * leftCount;
+		if ( splitCost < splitCostBest )
+		{
+			std::cout << "Sweep compare " << b << " " << splitCost << " better than " << splitCostBest << std::endl;
+			splitCostBest = splitCost;
+			leftCountBest = leftCount;
+			rightCountBest = rightCount;
+			leftBoxBest = leftBox;
+			rightBoxBest = rightBox;
+		}
+		else 
+		{
+			std::cout << "Sweep compare " << b << " " << splitCost << " worse than " << splitCostBest << std::endl;
+		}
+	}
+
+	// Set step
+	float currentCost = bounds.Area() * count;
+	if ( splitCostBest < currentCost )
+	{
+		// Save this
+		int leftidx = bvh->nr_nodes;
+
+		// Do actual split
+		BVHNode *left, *right;
+		left = &bvh->pool[bvh->nr_nodes++];
+		right = &bvh->pool[bvh->nr_nodes++];
+
+		// Assign triangles to new nodes
+		left->firstleft = firstleft;
+		left->count = leftCountBest;
+		left->bounds = leftBoxBest;
+
+		right->firstleft = firstleft + leftCountBest;
+		right->count = rightCountBest;
+		right->bounds = rightBoxBest;
+
+		this->count = 0;
+		this->firstleft = leftidx;
+
+		// Go in recursion on both child nodes
+		left->Subdivide( bvh );
+		right->Subdivide( bvh );
+	}
+}
+
 void BVHNode::Subdivide_Binned( BVH *bvh )
 {
 	int nr_bins = 8;

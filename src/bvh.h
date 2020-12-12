@@ -22,6 +22,7 @@ struct BVHNode
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
   private:
+	void Subdivide_Binned_Simple( BVH* bvh );
 	void Subdivide_Binned( BVH *bvh );
 	void Subdivide_Median( BVH *bvh );
 };
