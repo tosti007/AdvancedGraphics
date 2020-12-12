@@ -155,7 +155,8 @@ void Game::Init(int argc, char **argv)
 		auto end = std::chrono::steady_clock::now();
 		std::chrono::duration<double> elapsed_ms = (end - start) * 0.001;
 		std::cout << "Construction time: " << elapsed_ms.count() << " ms.\n";
-		bvh->Print();
+		if (bvh->nr_nodes < 100)
+			bvh->Print();
 	}
 	#endif
 }
