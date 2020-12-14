@@ -75,7 +75,7 @@ void Game::InitFromTinyObj( const std::string filename )
 		materials[t + 1] = Material(1 - mat.shininess, ior, mat.dissolve);
 		std::string tname =  mat.diffuse_texname;
 		auto search = textures.find(tname);
-    	if (search == textures.end()) {
+    	if (search != textures.end()) {
 			std::string tname_full = basedir + tname;
 			std::cout << "Load " << tname_full << std::endl;
 			textures[tname] = new Surface(tname_full.c_str());

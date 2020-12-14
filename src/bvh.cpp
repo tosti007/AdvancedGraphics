@@ -72,7 +72,7 @@ void BVHNode::Subdivide( BVH *bvh )
 	#ifdef BINNING
 	Subdivide_Binned( bvh );
 	#else
-	Subdivide_SAH( bvh );
+	Subdivide_SAH_Binned( bvh );
 	//Subdivide_Median( bvh );
 	#endif
 }
@@ -326,17 +326,6 @@ void BVHNode::Subdivide_Binned( BVH *bvh )
 	}
 }
 
-void BVHNode::Subdivide_Median( BVH *bvh )
-{
-	// Find longest axis for split, TODO: Binning
-	int axis = this->bounds.LongestAxis();
-
-	// Middle split, TODO: becomes better
-	float splitLocation = bounds.Center( axis );
-
-	Divide( bvh, axis, splitLocation );
-}
-
 bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 {
 	bool foundLowerCost = false;
@@ -344,9 +333,6 @@ bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 	uint leftCount = 0;
 	uint rightCount = 0;
 	aabb leftbox, rightbox;
-
-	uint bestLeftCount = 0;
-	uint bestRightCount = 0;
 
 	float LowestCost = bounds.Area() * count;
 	// Try every axis
@@ -363,6 +349,71 @@ bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 			rightbox.Reset();
 			leftCount = 0;
 			rightCount = 0;
+			// Divide every triangle on this split location
+			for ( size_t j = firstleft; j < firstleft + count; j++ )
+			{
+				const Triangle *tri = &bvh->triangles[bvh->indices[j]];
+				aabb bb = aabb();
+				GrowWithTriangle( &bb, tri );
+				if ( bb.Center( a ) < splitLocation )
+				{
+					leftCount++;
+					leftbox.Grow( bb );
+				}
+				else
+				{
+					rightCount++;
+					rightbox.Grow( bb );
+				}
+			}
+			// Early out if split does nothing
+			if ( leftCount == 0 || rightCount == 0 )
+				continue;
+
+			float newCost = rightbox.Area() * rightCount + leftbox.Area() * leftCount;
+			if ( newCost < LowestCost )
+			{
+				foundLowerCost = true;
+				LowestCost = newCost;
+				bestSplitLocation = splitLocation;
+				bestAxis = a;
+			}
+		}
+	}
+	return foundLowerCost;
+}
+
+bool BVHNode::SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation )
+{
+	int nr_bins = 8;
+
+	bool foundLowerCost = false;
+
+	// Counts and aabbs for new child nodes
+	uint leftCount = 0;
+	uint rightCount = 0;
+	aabb leftbox, rightbox;
+
+	float LowestCost = bounds.Area() * count;
+	// Try every axis
+	for ( size_t a = 0; a < 3; a++ )
+	{
+		float edgeMin = bounds.bmin[a];
+		float edgeMax = bounds.bmax[a];
+		float edgeLength = edgeMax - edgeMin;
+		float binLength = edgeLength / nr_bins;
+
+		// Try every bin
+		for ( size_t b = 0; b < nr_bins; b++ )
+		{
+			leftbox.Reset();
+			rightbox.Reset();
+			leftCount = 0;
+			rightCount = 0;
+
+			// Split at the binlocation
+			float splitLocation = edgeMin + b * binLength;
+
 			// Divide every triangle on this split location
 			for ( size_t j = firstleft; j < firstleft + count; j++ )
 			{
@@ -466,11 +517,30 @@ void BVHNode::Divide( BVH *bvh, int &axis, float &splitLocation )
 	}
 }
 
+void BVHNode::Subdivide_Median( BVH *bvh )
+{
+	// Find longest axis for split, TODO: Binning
+	int axis = this->bounds.LongestAxis();
+
+	// Middle split, TODO: becomes better
+	float splitLocation = bounds.Center( axis );
+
+	Divide( bvh, axis, splitLocation );
+}
+
 void BVHNode::Subdivide_SAH( BVH *bvh )
 {
 	int axis;
 	float splitLocation;
 	if ( SAH( bvh, axis, splitLocation ) )
+		Divide( bvh, axis, splitLocation );
+}
+
+void BVHNode::Subdivide_SAH_Binned( BVH *bvh )
+{
+	int axis;
+	float splitLocation;
+	if ( SAH_Binned( bvh, axis, splitLocation ) )
 		Divide( bvh, axis, splitLocation );
 }
 

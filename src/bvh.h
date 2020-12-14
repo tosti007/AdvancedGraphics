@@ -26,7 +26,10 @@ struct BVHNode
 	void Subdivide_Binned( BVH *bvh );
 	void Subdivide_Median( BVH *bvh );
 	void Subdivide_SAH( BVH *bvh );
+	void Subdivide_SAH_Binned( BVH *bvh );
+
 	bool SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation );
+	bool SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation );
 	void Divide( BVH *bvh, int &bestAxis, float &bestSplitLocation );
 };
 
