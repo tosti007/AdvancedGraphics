@@ -72,8 +72,8 @@ void BVHNode::Subdivide( BVH *bvh )
 	#ifdef BINNING
 	Subdivide_Binned( bvh );
 	#else
-	Subdivide_SAH( bvh );
-	//Subdivide_Median( bvh );
+	//Subdivide_SAH( bvh );
+	Subdivide_Median( bvh );
 	#endif
 }
 
@@ -334,71 +334,7 @@ void BVHNode::Subdivide_Median( BVH *bvh )
 	// Middle split, TODO: becomes better
 	float splitLocation = bounds.Center( axis );
 
-	// Counts and aabbs for new child nodes
-	uint leftCount = 0;
-	uint rightCount = 0;
-	aabb leftbox, rightbox;
-	leftbox.Reset();
-	rightbox.Reset();
-
-	// Move over all triangle indices inside the node
-	for ( size_t i = firstleft; i < firstleft + count; i++ )
-	{
-		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
-		aabb bb = aabb();
-		GrowWithTriangle( &bb, tri );
-
-		if ( bb.Center( axis ) < splitLocation )
-		{
-			Swap( &bvh->indices[firstleft + leftCount], &bvh->indices[i] );
-			leftCount++;
-			leftbox.Grow( bb );
-		}
-		else
-		{
-			rightCount++;
-			rightbox.Grow( bb );
-		}
-	}
-	// Early out if split does nothing
-	if ( leftCount == 0 || rightCount == 0 )
-		return;
-
-	// compute costs for new individual child nodes
-	float leftArea = leftbox.Area();
-	float rightArea = rightbox.Area();
-
-	// TODO: Add cost for extra aabb traversal
-	float splitCost = rightArea * rightCount + leftArea * leftCount;
-
-	// Calculate cost of node before split (For SAH)
-	float currentCost = bounds.Area() * count;
-	if ( splitCost < currentCost )
-	{
-		// Save this
-		int leftidx = bvh->nr_nodes;
-
-		// Do actual split
-		BVHNode *left, *right;
-		left = &bvh->pool[bvh->nr_nodes++];
-		right = &bvh->pool[bvh->nr_nodes++];
-
-		// Assign triangles to new nodes
-		left->firstleft = firstleft;
-		left->count = leftCount;
-		left->bounds = leftbox;
-
-		right->firstleft = firstleft + leftCount;
-		right->count = rightCount;
-		right->bounds = rightbox;
-
-		this->count = 0;
-		this->firstleft = leftidx;
-
-		// Go in recursion on both child nodes
-		left->Subdivide( bvh );
-		right->Subdivide( bvh );
-	}
+	Divide( bvh, axis, splitLocation );
 }
 
 bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
