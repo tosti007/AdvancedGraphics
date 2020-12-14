@@ -69,12 +69,10 @@ void BVHNode::Subdivide( BVH *bvh )
 	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
-	#ifdef BINNING
-	Subdivide_Binned( bvh );
-	#else
-	Subdivide_SAH_Binned( bvh );
-	//Subdivide_Median( bvh );
-	#endif
+	//Subdivide_Binned( bvh );
+
+	Subdivide_Median( bvh );
+	//Subdivide_SAH_Binned( bvh );
 }
 
 void BVHNode::Subdivide_Binned_Simple( BVH* bvh )

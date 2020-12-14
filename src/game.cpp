@@ -270,7 +270,8 @@ Color Game::Trace(Ray r, uint depth)
 	bool found = Intersect( &r, bvhDepth );
 
 	// uncomment to see normal color
-	//return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
+	return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
+	
 	// No intersection point found
 	if ( !found )
 	{
