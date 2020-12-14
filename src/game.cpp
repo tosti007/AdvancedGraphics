@@ -266,9 +266,13 @@ Color Game::Trace(Ray r, uint depth)
 
 	Light* light = IntersectLights( &r );
 
+	uint bvhDepth = 0;
+	bool found = Intersect( &r, bvhDepth );
+
+	// uncomment to see normal color
+	return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
 	// No intersection point found
-	uint bvhDepth = 1;
-	if ( !Intersect( &r, bvhDepth ) )
+	if ( !found )
 	{
 		if ( light != nullptr )
 			return light->color;
@@ -276,9 +280,6 @@ Color Game::Trace(Ray r, uint depth)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
 	}
-
-	// uncomment to see normal color
-	//return bvhDepth * 0x003300;
 
 	// As al our debuging objects are close, 1000 is a safe value.
 	assert(r.t <= 1000);

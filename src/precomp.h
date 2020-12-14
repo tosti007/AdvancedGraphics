@@ -61,7 +61,7 @@
 //#define SSAA
 //#define USEVIGNETTING
 #define USEBVH
-#define BINNING
+//#define BINNING
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
