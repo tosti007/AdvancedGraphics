@@ -72,8 +72,8 @@ void BVHNode::Subdivide( BVH *bvh )
 	#ifdef BINNING
 	Subdivide_Binned( bvh );
 	#else
-	//Subdivide_SAH( bvh );
-	Subdivide_Median( bvh );
+	Subdivide_SAH( bvh );
+	//Subdivide_Median( bvh );
 	#endif
 }
 
@@ -470,8 +470,8 @@ void BVHNode::Subdivide_SAH( BVH *bvh )
 {
 	int axis;
 	float splitLocation;
-	SAH( bvh, axis, splitLocation );
-	Divide( bvh, axis, splitLocation );
+	if ( SAH( bvh, axis, splitLocation ) )
+		Divide( bvh, axis, splitLocation );
 }
 
 void BVHNode::RecomputeBounds( const BVH* bvh )
