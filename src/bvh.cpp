@@ -91,6 +91,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	*/
 	int axis = this->bounds.LongestAxis();
 	float binLength = bounds.Extend( axis ) / nr_bins;
+	float binLengthInv = 1 / binLength;
 
 	uint counts[nr_bins];
 	aabb boxes[nr_bins];
@@ -100,33 +101,21 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	}
 	
 	// Populate step
-	size_t currentleft = firstleft;
-	for ( int b = 0; b < nr_bins; b++)
+	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		for ( size_t i = currentleft; i < firstleft + count; i++ )
-		{
-			aabb bb = triangle_bounds[bvh->indices[i]];
-
-			if (b == nr_bins - 1)
-			{
-				counts[b] += 1;
-				boxes[b].Grow( bb );
-			}
-			else if ( bb.Center( axis ) < bounds.bmin[axis] + binLength * ( b + 1 ) )
-			{
-				Swap( &bvh->indices[currentleft + counts[b]], &bvh->indices[i] );
-				counts[b] += 1;
-				boxes[b].Grow( bb );
-			}
-		}
-		currentleft += counts[b];
+		aabb bb = triangle_bounds[bvh->indices[i]];
+		int bin = (bb.Center(axis) - bounds.bmin[axis]) * binLengthInv;
+		if ( bin >= nr_bins ) // For values where center == max bin edge
+			bin = nr_bins - 1;
+		counts[bin]++;
+		boxes[bin].Grow(bb);
 	}
-	assert(currentleft == firstleft + count);
 
 	// Sweep step
-	float splitCostBest = INFINITY;
+	float splitCostBest = bounds.Area() * count;
 	uint leftCountBest, rightCountBest;
 	aabb leftBoxBest, rightBoxBest;
+	int splitBinBest = -1;
 
 	uint leftCount, rightCount;
 	aabb leftBox, rightBox;
@@ -161,37 +150,50 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 			rightCountBest = rightCount;
 			leftBoxBest = leftBox;
 			rightBoxBest = rightBox;
+			splitBinBest = b;
 		}
 	}
 
-	// Set step
-	float currentCost = bounds.Area() * count;
-	if ( splitCostBest < currentCost )
+	if (splitBinBest < 0)
+		return;
+
+	float splitLocation = bounds.bmin[axis] + (splitBinBest + 1) * binLength;
+	leftCount = 0;
+	// Move over all triangle indices inside the node
+	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		// Save this
-		int leftidx = bvh->nr_nodes;
+		aabb bb = triangle_bounds[bvh->indices[i]];
 
-		// Do actual split
-		BVHNode *left, *right;
-		left = &bvh->pool[bvh->nr_nodes++];
-		right = &bvh->pool[bvh->nr_nodes++];
-
-		// Assign triangles to new nodes
-		left->firstleft = firstleft;
-		left->count = leftCountBest;
-		left->bounds = leftBoxBest;
-
-		right->firstleft = firstleft + leftCountBest;
-		right->count = rightCountBest;
-		right->bounds = rightBoxBest;
-
-		this->count = 0;
-		this->firstleft = leftidx;
-
-		// Go in recursion on both child nodes
-		left->Subdivide( bvh, triangle_bounds );
-		right->Subdivide( bvh, triangle_bounds );
+		if ( bb.Center( axis ) < splitLocation )
+		{
+			Swap( &bvh->indices[firstleft + leftCount], &bvh->indices[i] );
+			leftCount++;
+		}
 	}
+
+	// Save this
+	int leftidx = bvh->nr_nodes;
+
+	// Do actual split
+	BVHNode *left, *right;
+	left = &bvh->pool[bvh->nr_nodes++];
+	right = &bvh->pool[bvh->nr_nodes++];
+
+	// Assign triangles to new nodes
+	left->firstleft = firstleft;
+	left->count = leftCountBest;
+	left->bounds = leftBoxBest;
+
+	right->firstleft = firstleft + leftCountBest;
+	right->count = rightCountBest;
+	right->bounds = rightBoxBest;
+
+	this->count = 0;
+	this->firstleft = leftidx;
+
+	// Go in recursion on both child nodes
+	left->Subdivide( bvh, triangle_bounds );
+	right->Subdivide( bvh, triangle_bounds );
 }
 
 void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
