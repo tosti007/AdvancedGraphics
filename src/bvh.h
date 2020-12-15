@@ -17,20 +17,20 @@ struct BVHNode
 	size_t firstleft; 
 	uint count; // number of triangles
 	bool Traverse( BVH *bvh, Ray *r, uint &depth );
-	void Subdivide( BVH *bvh );
+	void Subdivide( BVH *bvh, aabb* triangle_bounds );
 	void RecomputeBounds( const BVH *bvh );
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
   private:
-	void Subdivide_Binned_Simple( BVH* bvh );
-	void Subdivide_Binned( BVH *bvh );
-	void Subdivide_Median( BVH *bvh );
-	void Subdivide_SAH( BVH *bvh );
-	void Subdivide_SAH_Binned( BVH *bvh );
+	void Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds );
+	void Subdivide_Binned( BVH *bvh, aabb* triangle_bounds );
+	void Subdivide_Median( BVH *bvh, aabb* triangle_bounds );
+	void Subdivide_SAH( BVH *bvh, aabb* triangle_bounds );
+	void Subdivide_SAH_Binned( BVH *bvh, aabb* triangle_bounds );
 
-	bool SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation );
-	bool SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation );
-	void Divide( BVH *bvh, int &bestAxis, float &bestSplitLocation );
+	bool SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
+	bool SAH_Binned( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
+	void Divide( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
 };
 
 struct BVH

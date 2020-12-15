@@ -63,19 +63,18 @@ void Swap( uint *a, uint *b )
 	*b = t;
 }
 
-void BVHNode::Subdivide( BVH *bvh )
+void BVHNode::Subdivide( BVH *bvh, aabb* triangle_bounds )
 {
 	// Max number of primitives per leaf
 	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
-	//Subdivide_Binned( bvh );
-
-	Subdivide_Median( bvh );
-	//Subdivide_SAH_Binned( bvh );
+	// Subdivide_Binned_Simple( bvh, triangle_bounds );
+	Subdivide_Median( bvh, triangle_bounds );
+	// Subdivide_SAH_Binned( bvh, triangle_bounds );
 }
 
-void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
+void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 {
 	const int nr_bins = 8;
 	// Find longest axis and location for split
@@ -194,12 +193,12 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 		this->firstleft = leftidx;
 
 		// Go in recursion on both child nodes
-		left->Subdivide( bvh );
-		right->Subdivide( bvh );
+		left->Subdivide( bvh, triangle_bounds );
+		right->Subdivide( bvh, triangle_bounds );
 	}
 }
 
-void BVHNode::Subdivide_Binned( BVH *bvh )
+void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 {
 	int nr_bins = 8;
 
@@ -322,12 +321,12 @@ void BVHNode::Subdivide_Binned( BVH *bvh )
 		right->RecomputeBounds( bvh );
 
 		// Go in recursion on both child nodes
-		left->Subdivide( bvh );
-		right->Subdivide( bvh );
+		left->Subdivide( bvh, triangle_bounds );
+		right->Subdivide( bvh, triangle_bounds );
 	}
 }
 
-bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
+bool BVHNode::SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation )
 {
 	bool foundLowerCost = false;
 	// Counts and aabbs for new child nodes
@@ -386,7 +385,7 @@ bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 	return foundLowerCost;
 }
 
-bool BVHNode::SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation )
+bool BVHNode::SAH_Binned( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation )
 {
 	int nr_bins = 8;
 
@@ -452,7 +451,7 @@ bool BVHNode::SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 	return foundLowerCost;
 }
 
-void BVHNode::Divide( BVH *bvh, int &axis, float &splitLocation )
+void BVHNode::Divide( BVH *bvh, aabb* triangle_bounds, int &axis, float &splitLocation )
 {
 	// Counts and aabbs for new child nodes
 	uint leftCount = 0;
@@ -517,12 +516,12 @@ void BVHNode::Divide( BVH *bvh, int &axis, float &splitLocation )
 		this->firstleft = leftidx;
 
 		// Go in recursion on both child nodes
-		left->Subdivide( bvh );
-		right->Subdivide( bvh );
+		left->Subdivide( bvh, triangle_bounds );
+		right->Subdivide( bvh, triangle_bounds );
 	}
 }
 
-void BVHNode::Subdivide_Median( BVH *bvh )
+void BVHNode::Subdivide_Median( BVH *bvh, aabb* triangle_bounds )
 {
 	// Find longest axis for split, TODO: Binning
 	int axis = this->bounds.LongestAxis();
@@ -530,23 +529,23 @@ void BVHNode::Subdivide_Median( BVH *bvh )
 	// Middle split, TODO: becomes better
 	float splitLocation = bounds.Center( axis );
 
-	Divide( bvh, axis, splitLocation );
+	Divide( bvh, triangle_bounds, axis, splitLocation );
 }
 
-void BVHNode::Subdivide_SAH( BVH *bvh )
+void BVHNode::Subdivide_SAH( BVH *bvh, aabb* triangle_bounds )
 {
 	int axis;
 	float splitLocation;
-	if ( SAH( bvh, axis, splitLocation ) )
-		Divide( bvh, axis, splitLocation );
+	if ( SAH( bvh, triangle_bounds, axis, splitLocation ) )
+		Divide( bvh, triangle_bounds, axis, splitLocation );
 }
 
-void BVHNode::Subdivide_SAH_Binned( BVH *bvh )
+void BVHNode::Subdivide_SAH_Binned( BVH *bvh, aabb* triangle_bounds )
 {
 	int axis;
 	float splitLocation;
-	if ( SAH_Binned( bvh, axis, splitLocation ) )
-		Divide( bvh, axis, splitLocation );
+	if ( SAH_Binned( bvh, triangle_bounds, axis, splitLocation ) )
+		Divide( bvh, triangle_bounds, axis, splitLocation );
 }
 
 void BVHNode::RecomputeBounds( const BVH* bvh )
@@ -636,7 +635,16 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
  	root->count = triangleCount;
  	root->RecomputeBounds(this);
 
-	root->Subdivide( this );
+	aabb triangle_bounds[triangleCount];
+	for (uint t = 0; t < triangleCount; t++)
+	{
+		aabb *bb = triangle_bounds + t;
+		const Triangle *tri = triangles + t;
+		bb->Reset();
+		GrowWithTriangle( bb, tri );
+	}
+
+	root->Subdivide( this, triangle_bounds );
 	printf( "Used number of nodes: %i\n", nr_nodes - 1 );
 }
 
