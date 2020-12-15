@@ -82,9 +82,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	aabb parentbounds; parentbounds.Reset();
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
-		aabb bb = aabb();
-		GrowWithTriangle( &bb, tri );
+		aabb bb = triangle_bounds[bvh->indices[i]];
 		parentbounds.Grow(bb.Center());
 	}
 	int axis = parentbounds.LongestAxis();
@@ -106,10 +104,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	{
 		for ( size_t i = currentleft; i < firstleft + count; i++ )
 		{
-			const Triangle *tri = &bvh->triangles[bvh->indices[i]];
-			aabb bb = aabb();
-			bb.Reset();
-			GrowWithTriangle( &bb, tri );
+			aabb bb = triangle_bounds[bvh->indices[i]];
 
 			if (b == nr_bins - 1)
 			{
@@ -240,10 +235,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 			int index = -1;
 			for ( size_t i = firstleft; i < firstleft + count; i++ )
 			{
-				const Triangle *tri = &bvh->triangles[bvh->indices[i]];
-				aabb bb = aabb();
-				bb.Reset();
-				GrowWithTriangle( &bb, tri );
+				aabb bb = triangle_bounds[bvh->indices[i]];
 
 				if (bb.Center(a) < splitLocation)
 				{
@@ -341,10 +333,7 @@ bool BVHNode::SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSp
 		// Try every vertex center as a split location
 		for ( size_t i = firstleft; i < firstleft + count; i++ )
 		{
-			const Triangle *triForSplit = &bvh->triangles[bvh->indices[i]];
-			aabb bbForSplit = aabb();
-			bbForSplit.Reset();
-			GrowWithTriangle( &bbForSplit, triForSplit );
+			aabb bbForSplit = triangle_bounds[bvh->indices[i]];
 			float splitLocation = bbForSplit.Center( a );
 			leftbox.Reset();
 			rightbox.Reset();
@@ -353,10 +342,7 @@ bool BVHNode::SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSp
 			// Divide every triangle on this split location
 			for ( size_t j = firstleft; j < firstleft + count; j++ )
 			{
-				const Triangle *tri = &bvh->triangles[bvh->indices[j]];
-				aabb bb = aabb();
-				bb.Reset();
-				GrowWithTriangle( &bb, tri );
+				aabb bb = triangle_bounds[bvh->indices[j]];
 				if ( bb.Center( a ) < splitLocation )
 				{
 					leftCount++;
@@ -419,10 +405,7 @@ bool BVHNode::SAH_Binned( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float 
 			// Divide every triangle on this split location
 			for ( size_t j = firstleft; j < firstleft + count; j++ )
 			{
-				const Triangle *tri = &bvh->triangles[bvh->indices[j]];
-				aabb bb = aabb();
-				bb.Reset();
-				GrowWithTriangle( &bb, tri );
+				aabb bb = triangle_bounds[bvh->indices[j]];
 				if ( bb.Center( a ) < splitLocation )
 				{
 					leftCount++;
@@ -463,10 +446,7 @@ void BVHNode::Divide( BVH *bvh, aabb* triangle_bounds, int &axis, float &splitLo
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
-		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
-		aabb bb = aabb();
-		bb.Reset();
-		GrowWithTriangle( &bb, tri );
+		aabb bb = triangle_bounds[bvh->indices[i]];
 
 		if ( bb.Center( axis ) < splitLocation )
 		{
