@@ -424,7 +424,7 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
  	root->count = triangleCount;
  	root->RecomputeBounds(this);
 
-	aabb triangle_bounds[triangleCount];
+	aabb *triangle_bounds = new aabb[triangleCount];
 	for (uint t = 0; t < triangleCount; t++)
 	{
 		aabb *bb = triangle_bounds + t;

@@ -74,8 +74,10 @@ void Game::InitFromTinyObj( const std::string filename )
 			ior = 0;
 		materials[t + 1] = Material(1 - mat.shininess, ior, mat.dissolve);
 		std::string tname =  mat.diffuse_texname;
+		if ( tname.empty() )
+			continue;
 		auto search = textures.find(tname);
-    	if (search != textures.end()) {
+    	if (search == textures.end()) {
 			std::string tname_full = basedir + tname;
 			std::cout << "Load " << tname_full << std::endl;
 			textures[tname] = new Surface(tname_full.c_str());
@@ -270,7 +272,7 @@ Color Game::Trace(Ray r, uint depth)
 	bool found = Intersect( &r, bvhDepth );
 
 	// uncomment to see normal color
-	return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
+	//return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
 	
 	// No intersection point found
 	if ( !found )

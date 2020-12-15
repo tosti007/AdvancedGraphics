@@ -173,11 +173,12 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
 
 		//Material mat = Material( thismat.specular[0], thismat.transmittance[0], thismat.emission[0] );
 		//tri->material = &mat;
-
-        auto tex = textures.find(thismat.diffuse_texname);
-        if (tex != textures.end()) {
-           tri->texture = tex->second;
-        }
+		if (!thismat.diffuse_texname.empty() )
+		{
+			auto tex = textures.find( thismat.diffuse_texname );
+			if ( tex != textures.end() )
+				tri->texture = tex->second;
+		}
 	}
 	else
 		tri->color = DEFAULT_OBJECT_COLOR;
