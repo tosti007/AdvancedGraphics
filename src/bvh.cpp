@@ -87,10 +87,12 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 		parentbounds.Grow(bb.Center());
 	}
 	int axis = parentbounds.LongestAxis();
-	float binLength = parentbounds.Extend( axis ) / nr_bins;
+	float edgeMin = parentbounds.bmin[axis];
+	float binLength = (parentbounds.bmax[axis] - edgeMin) / nr_bins;
 	*/
 	int axis = this->bounds.LongestAxis();
-	float binLength = bounds.Extend( axis ) / nr_bins;
+	float edgeMin = bounds.bmin[axis];
+	float binLength = (bounds.bmax[axis] - edgeMin) / nr_bins;
 	float binLengthInv = 1 / binLength;
 
 	uint counts[nr_bins];
@@ -104,7 +106,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
 		aabb bb = triangle_bounds[bvh->indices[i]];
-		int bin = (bb.Center(axis) - bounds.bmin[axis]) * binLengthInv;
+		int bin = (bb.Center(axis) - edgeMin) * binLengthInv;
 		if ( bin >= nr_bins ) // For values where center == max bin edge
 			bin = nr_bins - 1;
 		counts[bin]++;
@@ -157,7 +159,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	if (splitBinBest < 0)
 		return;
 
-	float splitLocation = bounds.bmin[axis] + (splitBinBest + 1) * binLength;
+	float splitLocation = edgeMin + (splitBinBest + 1) * binLength;
 	leftCount = 0;
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
