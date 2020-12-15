@@ -22,14 +22,11 @@ struct BVHNode
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
   private:
-	void Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds );
-	void Subdivide_Binned( BVH *bvh, aabb* triangle_bounds );
+	void Subdivide_Binned( BVH* bvh, aabb* triangle_bounds );
 	void Subdivide_Median( BVH *bvh, aabb* triangle_bounds );
 	void Subdivide_SAH( BVH *bvh, aabb* triangle_bounds );
-	void Subdivide_SAH_Binned( BVH *bvh, aabb* triangle_bounds );
 
 	bool SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
-	bool SAH_Binned( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
 	void Divide( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation );
 };
 

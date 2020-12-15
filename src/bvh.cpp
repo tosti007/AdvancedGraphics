@@ -69,12 +69,11 @@ void BVHNode::Subdivide( BVH *bvh, aabb* triangle_bounds )
 	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
-	// Subdivide_Binned_Simple( bvh, triangle_bounds );
-	Subdivide_Median( bvh, triangle_bounds );
-	// Subdivide_SAH_Binned( bvh, triangle_bounds );
+	Subdivide_Binned( bvh, triangle_bounds );
+	// Subdivide_Median( bvh, triangle_bounds );
 }
 
-void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
+void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 {
 	const int nr_bins = 8;
 	// Find longest axis and location for split
@@ -199,131 +198,6 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	right->Subdivide( bvh, triangle_bounds );
 }
 
-void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
-{
-	int nr_bins = 8;
-
-	// Calculate cost of node before split (For SAH)
-	float currentCost = bounds.Area() * count;
-
-	// Keep track current and lowest bounds, counts and costs
-	float splitCost, lowestCost = currentCost;
-	uint currentleftcount, currentrightcount, bestLeftCount, bestRightCount;
-	aabb currentleftbox = aabb(), currentrightbox = aabb(), bestLeftBox = aabb(), bestRightBox = aabb();
-
-	uint *idxs = new uint[count];
-	uint *bestIdx = new uint[count];
-
-	// Loop over every axis
-	for ( size_t a = 0; a < 3; a++ )
-	{
-		float edgeMin = bounds.bmin[a];
-		float edgeMax = bounds.bmax[a];
-		float edgeLength = edgeMax - edgeMin;
-		float binLength = edgeLength / nr_bins;
-
-		// Loop over every bin on the axis
-		for ( size_t b = 0; b < nr_bins; b++ )
-		{
-			// Get all triangles in the node
-			for ( size_t k = 0; k < count; k++ )
-				idxs[k] = bvh->indices[k];
-
-			// (Re)set counts and bounds
-			currentrightcount = 0;
-			currentleftcount = 0;
-			currentleftbox.Reset();
-			currentrightbox.Reset();
-
-			// Split at the binlocation
-			float splitLocation = edgeMin + b * binLength;
-
-			int index = -1;
-			for ( size_t i = firstleft; i < firstleft + count; i++ )
-			{
-				aabb bb = triangle_bounds[bvh->indices[i]];
-
-				if (bb.Center(a) < splitLocation)
-				{
-					currentleftcount++;
-					currentleftbox.Grow( bb );
-					index++;
-					// sort in place
-					Swap( &idxs[index], &idxs[i - firstleft] );
-				}
-				else
-				{
-					currentrightcount++;
-					currentrightbox.Grow( bb );
-				}
-			}
-
-			// Compute area of the current left and right bounding boxes
-			float leftArea = currentleftbox.Area();
-			float rightArea = currentrightbox.Area();
-			if ( isinf( leftArea ) )
-				leftArea = 0;
-			if ( isinf( rightArea ) )
-				rightArea = 0;
-
-			// Compute the cost of the current split
-			// TODO: Add cost for extra aabb traversal
-			float splitCost = rightArea * currentrightcount + leftArea * currentleftcount;
-
-			// If found splitcost is lower than lowest cost up till now
-			if (splitCost < lowestCost)
-			{
-				// Save the split
-				bestRightBox = currentrightbox;
-				bestLeftBox = currentleftbox;
-				bestRightCount = currentrightcount;
-				bestLeftCount = currentleftcount;
-				for ( size_t k = 0; k < count; k++ )
-					bestIdx[k] = idxs[k];
-
-				lowestCost = splitCost;
-			}
-		}
-	}
-
-	// If found split is lower than the parents cost
-	if (lowestCost < currentCost)
-	{
-		for ( size_t k = 0; k < count; k++ )
-			bvh->indices[firstleft + k] = bestIdx[k];
-
-		// Do actual split
-		BVHNode *left, *right;
-
-		// not a leaf node, so it doesn't have any triangles
-		this->count = 0;
-		// Save this
-		int leftidx = bvh->nr_nodes;
-		this->firstleft = firstleft; //bvh->nr_nodes;
-
-		left = &bvh->pool[bvh->nr_nodes++];
-		right = &bvh->pool[bvh->nr_nodes++];
-
-		// Assign triangles to new nodes
-		left->firstleft = firstleft;
-		left->count = bestLeftCount;
-		left->bounds = bestLeftBox;
-
-		right->firstleft = firstleft + bestLeftCount;
-		right->count = bestRightCount;
-		right->bounds = bestRightBox;
-
-		this->firstleft = leftidx;
-
-		left->RecomputeBounds( bvh );
-		right->RecomputeBounds( bvh );
-
-		// Go in recursion on both child nodes
-		left->Subdivide( bvh, triangle_bounds );
-		right->Subdivide( bvh, triangle_bounds );
-	}
-}
-
 bool BVHNode::SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation )
 {
 	bool foundLowerCost = false;
@@ -345,69 +219,6 @@ bool BVHNode::SAH( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSp
 			rightbox.Reset();
 			leftCount = 0;
 			rightCount = 0;
-			// Divide every triangle on this split location
-			for ( size_t j = firstleft; j < firstleft + count; j++ )
-			{
-				aabb bb = triangle_bounds[bvh->indices[j]];
-				if ( bb.Center( a ) < splitLocation )
-				{
-					leftCount++;
-					leftbox.Grow( bb );
-				}
-				else
-				{
-					rightCount++;
-					rightbox.Grow( bb );
-				}
-			}
-			// Early out if split does nothing
-			if ( leftCount == 0 || rightCount == 0 )
-				continue;
-
-			float newCost = rightbox.Area() * rightCount + leftbox.Area() * leftCount;
-			if ( newCost < LowestCost )
-			{
-				foundLowerCost = true;
-				LowestCost = newCost;
-				bestSplitLocation = splitLocation;
-				bestAxis = a;
-			}
-		}
-	}
-	return foundLowerCost;
-}
-
-bool BVHNode::SAH_Binned( BVH *bvh, aabb* triangle_bounds, int &bestAxis, float &bestSplitLocation )
-{
-	int nr_bins = 8;
-
-	bool foundLowerCost = false;
-
-	// Counts and aabbs for new child nodes
-	uint leftCount = 0;
-	uint rightCount = 0;
-	aabb leftbox, rightbox;
-
-	float LowestCost = bounds.Area() * count;
-	// Try every axis
-	for ( size_t a = 0; a < 3; a++ )
-	{
-		float edgeMin = bounds.bmin[a];
-		float edgeMax = bounds.bmax[a];
-		float edgeLength = edgeMax - edgeMin;
-		float binLength = edgeLength / nr_bins;
-
-		// Try every bin
-		for ( size_t b = 0; b < nr_bins; b++ )
-		{
-			leftbox.Reset();
-			rightbox.Reset();
-			leftCount = 0;
-			rightCount = 0;
-
-			// Split at the binlocation
-			float splitLocation = edgeMin + b * binLength;
-
 			// Divide every triangle on this split location
 			for ( size_t j = firstleft; j < firstleft + count; j++ )
 			{
@@ -523,14 +334,6 @@ void BVHNode::Subdivide_SAH( BVH *bvh, aabb* triangle_bounds )
 	int axis;
 	float splitLocation;
 	if ( SAH( bvh, triangle_bounds, axis, splitLocation ) )
-		Divide( bvh, triangle_bounds, axis, splitLocation );
-}
-
-void BVHNode::Subdivide_SAH_Binned( BVH *bvh, aabb* triangle_bounds )
-{
-	int axis;
-	float splitLocation;
-	if ( SAH_Binned( bvh, triangle_bounds, axis, splitLocation ) )
 		Divide( bvh, triangle_bounds, axis, splitLocation );
 }
 
