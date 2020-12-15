@@ -79,6 +79,18 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 {
 	const int nr_bins = 8;
 	// Find longest axis and location for split
+	/* This should yield better values, but increases computational performance by a lot.
+	aabb parentbounds; parentbounds.Reset();
+	for ( size_t i = firstleft; i < firstleft + count; i++ )
+	{
+		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
+		aabb bb = aabb();
+		GrowWithTriangle( &bb, tri );
+		parentbounds.Grow(bb.Center());
+	}
+	int axis = parentbounds.LongestAxis();
+	float binLength = parentbounds.Extend( axis ) / nr_bins;
+	*/
 	int axis = this->bounds.LongestAxis();
 	float binLength = bounds.Extend( axis ) / nr_bins;
 
