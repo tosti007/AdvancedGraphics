@@ -109,6 +109,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 		{
 			const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 			aabb bb = aabb();
+			bb.Reset();
 			GrowWithTriangle( &bb, tri );
 
 			if (b == nr_bins - 1)
@@ -242,6 +243,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh )
 			{
 				const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 				aabb bb = aabb();
+				bb.Reset();
 				GrowWithTriangle( &bb, tri );
 
 				if (bb.Center(a) < splitLocation)
@@ -342,6 +344,7 @@ bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 		{
 			const Triangle *triForSplit = &bvh->triangles[bvh->indices[i]];
 			aabb bbForSplit = aabb();
+			bbForSplit.Reset();
 			GrowWithTriangle( &bbForSplit, triForSplit );
 			float splitLocation = bbForSplit.Center( a );
 			leftbox.Reset();
@@ -353,6 +356,7 @@ bool BVHNode::SAH( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 			{
 				const Triangle *tri = &bvh->triangles[bvh->indices[j]];
 				aabb bb = aabb();
+				bb.Reset();
 				GrowWithTriangle( &bb, tri );
 				if ( bb.Center( a ) < splitLocation )
 				{
@@ -418,6 +422,7 @@ bool BVHNode::SAH_Binned( BVH *bvh, int &bestAxis, float &bestSplitLocation )
 			{
 				const Triangle *tri = &bvh->triangles[bvh->indices[j]];
 				aabb bb = aabb();
+				bb.Reset();
 				GrowWithTriangle( &bb, tri );
 				if ( bb.Center( a ) < splitLocation )
 				{
@@ -461,6 +466,7 @@ void BVHNode::Divide( BVH *bvh, int &axis, float &splitLocation )
 	{
 		const Triangle *tri = &bvh->triangles[bvh->indices[i]];
 		aabb bb = aabb();
+		bb.Reset();
 		GrowWithTriangle( &bb, tri );
 
 		if ( bb.Center( axis ) < splitLocation )
