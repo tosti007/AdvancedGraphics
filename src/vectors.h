@@ -219,6 +219,10 @@ struct aabb
 		if (Extend( 2 ) > Extend( a )) a = 2;
 		return a;
 	}
+	void Print() const
+	{
+		bmin3.Print(); std::cout << std::endl; bmax3.Print();
+	}
 
 	// data members
 	union { __m128 bmin4 = _mm_set_ps( 1e34f, 1e34f, 1e34f, 0 ); float bmin[4]; vec3 bmin3; };
