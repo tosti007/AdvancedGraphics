@@ -78,7 +78,8 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 {
 	const int nr_bins = 8;
 	// Find longest axis and location for split
-	/* This should yield better values, but increases computational performance by a lot.
+	/*
+	// This should yield better values, but increases computational performance by a lot.
 	aabb parentbounds; parentbounds.Reset();
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
