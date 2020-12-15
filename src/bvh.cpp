@@ -77,8 +77,6 @@ void BVHNode::Subdivide( BVH *bvh )
 
 void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 {
-	std::cout << "ITERATION " << bvh->nr_nodes << std::endl;
-
 	const int nr_bins = 8;
 	// Find longest axis and location for split
 	int axis = this->bounds.LongestAxis();
@@ -93,7 +91,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 	
 	// Populate step
 	size_t currentleft = firstleft;
-	for ( int b = 0; b < nr_bins - 1; b++)
+	for ( int b = 0; b < nr_bins; b++)
 	{
 		for ( size_t i = currentleft; i < firstleft + count; i++ )
 		{
@@ -106,7 +104,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 				counts[b] += 1;
 				boxes[b].Grow( bb );
 			}
-			else if ( bb.Center( axis ) < binLength * ( b + 1 ) )
+			else if ( bb.Center( axis ) < bounds.bmin[axis] + binLength * ( b + 1 ) )
 			{
 				Swap( &bvh->indices[currentleft + counts[b]], &bvh->indices[i] );
 				counts[b] += 1;
@@ -114,14 +112,6 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 			}
 		}
 		currentleft += counts[b];
-		if (counts[b] > 0)
-		{
-			std::cout << "Populated bin " << b << " with:" << std::endl; 
-			std::cout << "Count:    " << counts[b] << std::endl; 
-			std::cout << "AABB min: "; boxes[b].bmin3.Print(); std::cout << std::endl; 
-			std::cout << "AABB max: "; boxes[b].bmax3.Print(); std::cout << std::endl; 
-			std::cout << std::endl; 
-		}
 	}
 	assert(currentleft == firstleft + count);
 
@@ -132,6 +122,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 
 	uint leftCount, rightCount;
 	aabb leftBox, rightBox;
+	leftCount = 0;
 	leftBox.Reset();
 
 	for ( int b = 0; b < nr_bins - 1; b++)
@@ -151,19 +142,17 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh )
 			rightCount += counts[b2];
 		}
 
+		if (leftCount == 0 || rightCount == 0)
+			continue;
+
 		float splitCost = rightBox.Area() * rightCount + leftBox.Area() * leftCount;
 		if ( splitCost < splitCostBest )
 		{
-			std::cout << "Sweep compare " << b << " " << splitCost << " better than " << splitCostBest << std::endl;
 			splitCostBest = splitCost;
 			leftCountBest = leftCount;
 			rightCountBest = rightCount;
 			leftBoxBest = leftBox;
 			rightBoxBest = rightBox;
-		}
-		else 
-		{
-			std::cout << "Sweep compare " << b << " " << splitCost << " worse than " << splitCostBest << std::endl;
 		}
 	}
 
