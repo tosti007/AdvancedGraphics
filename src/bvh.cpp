@@ -159,6 +159,7 @@ void BVHNode::Subdivide_Binned_Simple( BVH* bvh, aabb* triangle_bounds )
 	if (splitBinBest < 0)
 		return;
 
+	// Divide step
 	float splitLocation = edgeMin + (splitBinBest + 1) * binLength;
 	leftCount = 0;
 	// Move over all triangle indices inside the node
