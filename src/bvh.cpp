@@ -141,8 +141,8 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 			rightCount += counts[b2];
 		}
 
-		if (leftCount == 0 || rightCount == 0)
-			continue;
+		if (rightCount == 0)
+			break;
 
 		float splitCost = rightBox.Area() * rightCount + leftBox.Area() * leftCount;
 		if ( splitCost < splitCostBest )
