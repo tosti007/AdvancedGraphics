@@ -196,6 +196,13 @@ struct aabb
 		return ((va[0] >= 0) && (va[1] >= 0) && (va[2] >= 0) &&
 			(vb[0] >= 0) && (vb[1] >= 0) && (vb[2] >= 0));
 	}
+	bool Contains ( const vec3& v) const
+	{
+		vec3 va = v - bmin3;
+		vec3 vb = bmax3 - v;
+		return ((va.x >= 0) && (va.y >= 0) && (va.z >= 0) &&
+			(vb.x >= 0) && (vb.y >= 0) && (vb.z >= 0));
+	}
 	__inline void Grow( const aabb& bb ) { bmin4 = _mm_min_ps( bmin4, bb.bmin4 ); bmax4 = _mm_max_ps( bmax4, bb.bmax4 ); }
 	__inline void Grow( const __m128& p ) { bmin4 = _mm_min_ps( bmin4, p ); bmax4 = _mm_max_ps( bmax4, p ); }
 	__inline void Grow( const __m128 min4, const __m128 max4 ) { bmin4 = _mm_min_ps( bmin4, min4 ); bmax4 = _mm_max_ps( bmax4, max4 ); }
