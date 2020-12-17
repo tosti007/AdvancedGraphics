@@ -115,6 +115,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	// Sweep step
 	float splitCostBest = bounds.Area() * count;
 	uint leftCountBest, rightCountBest;
+	leftCountBest = 0; rightCountBest = 0; 
 	aabb leftBoxBest, rightBoxBest;
 	int splitBinBest = -1;
 
