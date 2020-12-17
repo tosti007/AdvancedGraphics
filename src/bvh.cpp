@@ -100,13 +100,13 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 		counts[i] = 0;
 		boxes[i].Reset();
 	}
-	
+
 	// Populate step
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
 		aabb bb = triangle_bounds[bvh->indices[i]];
 		int bin = (bb.Center(axis) - edgeMin) * binLengthInv;
-		if ( bin >= nr_bins ) // For values where center == max bin edge
+		if ( bin == nr_bins ) // For values where center == max bin edge
 			bin = nr_bins - 1;
 		counts[bin]++;
 		boxes[bin].Grow(bb);
@@ -115,7 +115,6 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	// Sweep step
 	float splitCostBest = bounds.Area() * count;
 	uint leftCountBest, rightCountBest;
-	leftCountBest = 0; rightCountBest = 0; 
 	aabb leftBoxBest, rightBoxBest;
 	int splitBinBest = -1;
 
@@ -156,18 +155,22 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 		}
 	}
 
-	if (splitBinBest < 0 || leftCountBest == 0 || rightCountBest == 0)
+	if (splitBinBest < 0 )
 		return;
 
 	// Divide step
-	float splitLocation = edgeMin + (splitBinBest + 1) * binLength;
 	leftCount = 0;
 	// Move over all triangle indices inside the node
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
 	{
 		aabb bb = triangle_bounds[bvh->indices[i]];
+		// We need to recalculate the bin id instead of computing a splitplane
+		// This is because the bin id test and splitplane test 
+		// might not agree for items right on the splitplane
+		// TRUST ME WE TRIED
+		int bin = (bb.Center(axis) - edgeMin) * binLengthInv;
 
-		if ( bb.Center( axis ) < splitLocation )
+		if ( bin <= splitBinBest )
 		{
 			Swap( &bvh->indices[firstleft + leftCount], &bvh->indices[i] );
 			leftCount++;
