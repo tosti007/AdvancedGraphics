@@ -155,7 +155,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 		}
 	}
 
-	if (splitBinBest < 0)
+	if (splitBinBest < 0 || leftCountBest == 0 || rightCountBest == 0)
 		return;
 
 	// Divide step
