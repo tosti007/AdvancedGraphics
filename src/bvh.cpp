@@ -337,14 +337,14 @@ void BVHNode::Subdivide_SAH( BVH *bvh, aabb* triangle_bounds )
 		Divide( bvh, triangle_bounds, axis, splitLocation );
 }
 
-void BVHNode::RecomputeBounds( const BVH* bvh )
+void BVHNode::RecomputeBounds( const BVH* bvh, aabb* triangle_bounds )
 {
 	bounds.Reset();
 	if (count > 0)
 	{
 		// Leaf node
 		for ( size_t i = firstleft; i < firstleft + count; i++ )
-			GrowWithTriangle(&bounds, &bvh->triangles[i]);
+			bounds.Grow(triangle_bounds[bvh->indices[i]]);
 	}
 	else
 	{
@@ -416,14 +416,6 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 	pool = new BVHNode[nr_nodes_max];
 	printf( "Maximum number of nodes: %i\n", nr_nodes_max - 1 );
 
-	// leave dummy value on location 0 for cache alignment
-	nr_nodes = 1;
- 
-	root = &pool[nr_nodes++];
- 	root->firstleft = 0;
- 	root->count = triangleCount;
- 	root->RecomputeBounds(this);
-
 	aabb *triangle_bounds = new aabb[triangleCount];
 	for (uint t = 0; t < triangleCount; t++)
 	{
@@ -432,6 +424,14 @@ void BVH::ConstructBVH( Triangle *triangles, uint triangleCount )
 		bb->Reset();
 		GrowWithTriangle( bb, tri );
 	}
+
+	// leave dummy value on location 0 for cache alignment
+	nr_nodes = 1;
+ 
+	root = &pool[nr_nodes++];
+ 	root->firstleft = 0;
+ 	root->count = triangleCount;
+ 	root->RecomputeBounds(this, triangle_bounds);
 
 	root->Subdivide( this, triangle_bounds );
 	printf( "Used number of nodes: %i\n", nr_nodes - 1 );
