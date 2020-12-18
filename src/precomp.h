@@ -61,6 +61,7 @@
 //#define SSAA
 //#define USEVIGNETTING
 #define USEBVH
+//#define VISUALIZEBVH
 // Number of bins to use for BVH
 //  - For full SAH use 0
 //  - For median split use 2
