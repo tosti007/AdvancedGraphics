@@ -69,14 +69,17 @@ void BVHNode::Subdivide( BVH *bvh, aabb* triangle_bounds )
 	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
+#if BVHBINS == 0
+	Subdivide_SAH( bvh, triangle_bounds );
+#elif BVHBINS == 2
+	Subdivide_Median( bvh, triangle_bounds );
+#else
 	Subdivide_Binned( bvh, triangle_bounds );
-	// Subdivide_Median( bvh, triangle_bounds );
-	// Subdivide_SAH( bvh, triangle_bounds );
+#endif
 }
 
 void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 {
-	const int nr_bins = 8;
 	// Find longest axis and location for split
 	/*
 	// This should yield better values, but increases computational performance by a bit.
@@ -88,16 +91,16 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	}
 	int axis = parentbounds.LongestAxis();
 	float edgeMin = parentbounds.bmin[axis];
-	float binLength = (parentbounds.bmax[axis] - edgeMin) / nr_bins;
+	float binLength = (parentbounds.bmax[axis] - edgeMin) / BVHBINS;
 	*/
 	int axis = this->bounds.LongestAxis();
 	float edgeMin = bounds.bmin[axis];
-	float binLength = (bounds.bmax[axis] - edgeMin) / nr_bins;
+	float binLength = (bounds.bmax[axis] - edgeMin) / BVHBINS;
 	float binLengthInv = 1 / binLength;
 
-	uint counts[nr_bins];
-	aabb boxes[nr_bins];
-	for (int i = 0; i < nr_bins; i++){
+	uint counts[BVHBINS];
+	aabb boxes[BVHBINS];
+	for (int i = 0; i < BVHBINS; i++){
 		counts[i] = 0;
 		boxes[i].Reset();
 	}
@@ -107,8 +110,8 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	{
 		aabb bb = triangle_bounds[bvh->indices[i]];
 		int bin = (bb.Center(axis) - edgeMin) * binLengthInv;
-		if ( bin == nr_bins ) // For values where center == max bin edge
-			bin = nr_bins - 1;
+		if ( bin == BVHBINS ) // For values where center == max bin edge
+			bin = BVHBINS - 1;
 		counts[bin]++;
 		boxes[bin].Grow(bb);
 	}
@@ -124,7 +127,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	leftCount = 0;
 	leftBox.Reset();
 
-	for ( int b = 0; b < nr_bins - 1; b++)
+	for ( int b = 0; b < BVHBINS - 1; b++)
 	{
 		if (counts[b] == 0)
 			continue;
@@ -135,7 +138,7 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 		rightCount = 0;
 		rightBox.Reset();
 
-		for ( int b2 = b + 1; b2 < nr_bins; b2++)
+		for ( int b2 = b + 1; b2 < BVHBINS; b2++)
 		{
 			rightBox.Grow(boxes[b2]);
 			rightCount += counts[b2];

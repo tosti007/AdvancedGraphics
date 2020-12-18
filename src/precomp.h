@@ -61,6 +61,11 @@
 //#define SSAA
 //#define USEVIGNETTING
 #define USEBVH
+// Number of bins to use for BVH
+//  - For full SAH use 0
+//  - For median split use 2
+//  - For any other amount of bins use n
+#define BVHBINS 8
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
