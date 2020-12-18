@@ -71,6 +71,7 @@ void BVHNode::Subdivide( BVH *bvh, aabb* triangle_bounds )
 
 	Subdivide_Binned( bvh, triangle_bounds );
 	// Subdivide_Median( bvh, triangle_bounds );
+	// Subdivide_SAH( bvh, triangle_bounds );
 }
 
 void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
