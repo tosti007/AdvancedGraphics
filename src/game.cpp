@@ -271,7 +271,6 @@ Color Game::Trace(Ray r, uint depth)
 	uint bvhDepth = 0;
 	bool found = Intersect( &r, bvhDepth );
 
-	// uncomment to see normal color
 	#ifdef VISUALIZEBVH
 		return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
 	#endif
