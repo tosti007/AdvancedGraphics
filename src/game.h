@@ -61,6 +61,8 @@ public:
 	void InitSkyBox();
 
 	uint unmoved_frames = 0;
+	float frames_time = 0;
+	float frames_fps = 0;
 	void CameraChanged();
 };
 

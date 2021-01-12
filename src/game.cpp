@@ -449,9 +449,16 @@ void Game::Tick()
 	
 	Print(32, 3, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
 	
-	float fps = 1000.0f / timer::elapsed(dt);
-	Print(32, 4, "FPS: %f", fps);
-	std::cout << "FPS: " << fps << std::endl;
+	float elapsed = timer::elapsed(dt);
+	frames_time += elapsed;
+	if (frames_time > 500)
+	{
+		frames_fps = 1000.0f / elapsed;
+		frames_time = 0;
+	}
+
+	Print(32, 4, "FPS: %f", frames_fps);
+	std::cout << "FPS: " << frames_fps << std::endl;
 }
 
 void Game::CameraChanged()
