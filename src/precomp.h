@@ -54,7 +54,7 @@
 #define SCRHEIGHT 512
 
 #define DEFAULT_OBJECT_COLOR Color(1, 0, 0)
-#define MAX_NR_ITERATIONS 4
+#define MAX_NR_ITERATIONS 2
 #define NR_LIGHT_SAMPLES 1
 
 // Anti-aliasing 4x

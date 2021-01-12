@@ -117,7 +117,7 @@ void Game::SetTarget( Surface* surface )
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
-	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
+	view = new Camera(vec3(0, -10, -0.1), vec3(-1, 0, 0));
 
 	// load skybox
 	sky = new SkyDome();
@@ -126,7 +126,7 @@ void Game::Init(int argc, char **argv)
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( 3, 3, 5 ), 1, Color( 50, 50, 50 ) )
+		new SphereLight( vec3( -5, 0, 0 ), 5, Color( 50, 50, 50 ) )
 	};
 
 	// load model
@@ -387,7 +387,6 @@ float randArray[8] = {
 // -----------------------------------------------------------
 void Game::Tick()
 {
-	printf("Game Tick\n");
 	timer::TimePoint dt = timer::get();
 
 	vec3 p0 = view->TopLeft();
@@ -455,10 +454,10 @@ void Game::Tick()
 	{
 		frames_fps = 1000.0f / elapsed;
 		frames_time = 0;
+		std::cout << "FPS: " << frames_fps << std::endl;
 	}
 
 	Print(32, 4, "FPS: %f", frames_fps);
-	std::cout << "FPS: " << frames_fps << std::endl;
 }
 
 void Game::CameraChanged()
