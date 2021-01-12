@@ -394,25 +394,25 @@ void Game::Tick()
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		#ifdef SSAA
-		// 4 rays with random offsett, then compute average
-		Color color;
-		for ( size_t i = 0; i < 4; i++ )
-		{
-			float u = ((float)x + randArray[i]) / screen->GetWidth();
-			float v = ( (float)y + randArray[i+4] ) / screen->GetHeight();
-			vec3 dir = p0 + u * view->right + v * view->down;
-			dir.normalize();
-			Ray r = Ray( view->position, dir );
-			Color rayColor = Trace( r, 0 );
-			color += rayColor;
-		}
-		color *= 0.25;
+		Pixel* buff = &buf[x + y * screen->GetWidth()];
 		float u = (float)x / screen->GetWidth();
 		float v = (float)y / screen->GetHeight();
+
+		#ifdef SSAA
+			// 4 rays with random offsett, then compute average
+			Color color;
+			for ( size_t i = 0; i < 4; i++ )
+			{
+				float u2 = ((float)x + randArray[i]) / screen->GetWidth();
+				float v2 = ((float)y + randArray[i+4] ) / screen->GetHeight();
+				vec3 dir = p0 + u2 * view->right + v2 * view->down;
+				dir.normalize();
+				Ray r = Ray( view->position, dir );
+				Color rayColor = Trace( r, 0 );
+				color += rayColor;
+			}
+			color *= 0.25;
 		#else
-			float u = (float)x / screen->GetWidth();
-			float v = (float)y / screen->GetHeight();
 			vec3 dir = p0 + u * view->right + v * view->down;
 			dir.normalize();
 
@@ -427,7 +427,6 @@ void Game::Tick()
 			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 		#endif
 
-		auto buff = &buf[x + y * screen->GetWidth()];
 		*buff = color.ToPixel( *buff, unmoved_frames );
 	}
 	unmoved_frames++;
