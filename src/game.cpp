@@ -376,9 +376,10 @@ float randArray[8] = {
 // -----------------------------------------------------------
 // Main application tick function
 // -----------------------------------------------------------
-void Game::Tick( float deltaTime )
+void Game::Tick()
 {
 	printf("Game Tick\n");
+	timer::TimePoint dt = timer::get();
 
 	vec3 p0 = view->TopLeft();
 	Pixel* buf = screen->GetBuffer();
@@ -440,7 +441,9 @@ void Game::Tick( float deltaTime )
 	
 	Print(32, 3, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
 	
-	Print(32, 4, "FPS: %f", 1.0f / deltaTime);
+	float fps = 1000.0f / timer::elapsed(dt);
+	Print(32, 4, "FPS: %f", fps);
+	std::cout << "FPS: " << fps << std::endl;
 }
 
 void Game::CameraChanged()

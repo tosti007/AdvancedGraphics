@@ -12,7 +12,6 @@
 #endif
 
 #include "precomp.h"
-#include "timer.h"
 #include "game.h"
 
 using namespace AdvancedGraphics;
@@ -193,7 +192,6 @@ int main( int argc, char **argv )
 	game = new Game();
 	game->SetTarget( surface );
 	game->Init(argc, argv);
-	timer::TimePoint tp = timer::get();
 
 	while (!exitapp)
 	{
@@ -252,9 +250,7 @@ int main( int argc, char **argv )
 				break;
 			}
 		}
-		// calculate frame time and pass it to game->Tick
-		game->Tick( timer::elapsed(tp) );
-		tp = timer::get();
+		game->Tick();
 	}
 	game->Shutdown();
 	SDL_Quit();

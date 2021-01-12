@@ -18,7 +18,7 @@ public:
 	void SetTarget( Surface* surface ) { screen = surface; }
 	void Init(int argc, char **argv);
 	void Shutdown();
-	void Tick( float deltaTime );
+	void Tick();
 	
 	void MouseUp( int button ) { if (view->MouseUp(button)) CameraChanged(); }
 	void MouseDown( int button ) { if (view->MouseDown(button)) CameraChanged(); }
