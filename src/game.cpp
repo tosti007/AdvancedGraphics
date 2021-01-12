@@ -389,6 +389,7 @@ void Game::Tick( float deltaTime )
 		float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
 	#endif
 		
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
@@ -425,9 +426,8 @@ void Game::Tick( float deltaTime )
 			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 		#endif
 
-		*buf = color.ToPixel(*buf, unmoved_frames);
-
-		buf++;
+		auto buff = &buf[x + y * screen->GetWidth()];
+		*buff = color.ToPixel( *buff, unmoved_frames );
 	}
 	unmoved_frames++;
 
