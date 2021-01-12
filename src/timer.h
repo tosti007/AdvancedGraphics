@@ -6,11 +6,8 @@ struct timer
 	typedef Clock::time_point TimePoint;
 	typedef std::chrono::microseconds MicroSeconds;
 
-	TimePoint start;
-	inline timer() : start( get() ) {}
-
 	/// Returns the elapsed time, in milliseconds.
-	inline float elapsed() const
+	static inline float elapsed(TimePoint start)
 	{
 		auto diff = get() - start;
 		auto duration_us = std::chrono::duration_cast<MicroSeconds>( diff );
@@ -20,6 +17,4 @@ struct timer
 	{
 		return Clock::now();
 	}
-
-	inline void reset() { start = get(); }
 };

@@ -151,9 +151,9 @@ void Game::Init(int argc, char **argv)
 	{
 		bvh = new BVH();
 
-		timer t;
+		timer::TimePoint t = timer::get();
 		bvh->ConstructBVH( triangles, nr_triangles );
-		std::cout << "Construction time: " << t.elapsed() << " ms." << std::endl;
+		std::cout << "Construction time: " << timer::elapsed(t) << " ms." << std::endl;
 
 		if (bvh->nr_nodes < 100 && nr_triangles < 100)
 			bvh->Print();
@@ -440,7 +440,7 @@ void Game::Tick( float deltaTime )
 	
 	Print(32, 3, "Dwn: %f %f %f", view->down.x, view->down.y, view->down.z);
 	
-	Print(32, 4, "FPS: %f", 1 / deltaTime);
+	Print(32, 4, "FPS: %f", 1.0f / deltaTime);
 }
 
 void Game::CameraChanged()

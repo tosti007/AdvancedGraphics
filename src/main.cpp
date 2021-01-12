@@ -193,8 +193,7 @@ int main( int argc, char **argv )
 	game = new Game();
 	game->SetTarget( surface );
 	game->Init(argc, argv);
-	timer t;
-	t.reset();
+	timer::TimePoint tp = timer::get();
 
 	while (!exitapp)
 	{
@@ -254,8 +253,8 @@ int main( int argc, char **argv )
 			}
 		}
 		// calculate frame time and pass it to game->Tick
-		game->Tick( t.elapsed() );
-		t.reset();
+		game->Tick( timer::elapsed(tp) );
+		tp = timer::get();
 	}
 	game->Shutdown();
 	SDL_Quit();
