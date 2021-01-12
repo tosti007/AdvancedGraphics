@@ -28,7 +28,7 @@ struct Color {
 	void Vignetting( int dist_x, int dist_y, float dist_total_max );
 	void ChromaticAbberation(vec2 uv);
 	Pixel ToPixel();
-	Pixel ToPixel(Pixel origional, uint weight);
+	Pixel ToPixel(uint weight);
 
 	void operator *= ( const float& a ) { r *= a; g *= a; b *= a; }
 	void operator *= ( const Color& a ) { r *= a.r; g *= a.g; b *= a.b; }

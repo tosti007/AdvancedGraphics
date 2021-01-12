@@ -15,7 +15,7 @@ namespace AdvancedGraphics {
 class Game
 {
 public:
-	void SetTarget( Surface* surface ) { screen = surface; }
+	void SetTarget( Surface* surface );
 	void Init(int argc, char **argv);
 	void Shutdown();
 	void Tick();
@@ -34,6 +34,7 @@ public:
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
+    Color* colors = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;

@@ -105,6 +105,15 @@ void Game::InitFromTinyObj( const std::string filename )
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
+void Game::SetTarget( Surface* surface )
+{ 
+	screen = surface;
+	if (colors != nullptr)
+		free(colors);
+	colors = new Color[screen->GetWidth() * screen->GetHeight()];
+	CameraChanged();
+}
+
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
@@ -382,19 +391,19 @@ void Game::Tick()
 	timer::TimePoint dt = timer::get();
 
 	vec3 p0 = view->TopLeft();
-	Pixel* buf = screen->GetBuffer();
 
 	#ifdef USEVIGNETTING
 		int dist_x_max = screen->GetWidth() / 2;
 		int dist_y_max = screen->GetHeight() / 2;
 		float dist_total_max = 1 / sqrtf(dist_x_max * dist_x_max + dist_y_max * dist_y_max);
 	#endif
-		
+	
+	unmoved_frames++;
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		Pixel* buff = &buf[x + y * screen->GetWidth()];
+		uint id = x + y * screen->GetWidth();
 		float u = (float)x / screen->GetWidth();
 		float v = (float)y / screen->GetHeight();
 
@@ -427,9 +436,9 @@ void Game::Tick()
 			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 		#endif
 
-		*buff = color.ToPixel( *buff, unmoved_frames );
+		colors[id] += color;
+		screen->GetBuffer()[id] = colors[id].ToPixel( unmoved_frames );
 	}
-	unmoved_frames++;
 
 	// Write debug output
 	Print(32, 0, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
@@ -448,5 +457,13 @@ void Game::Tick()
 void Game::CameraChanged()
 {
 	unmoved_frames = 0;
-	screen->Clear(0);
+	auto scr_buf = screen->GetBuffer();
+	int max = screen->GetWidth() * screen->GetHeight();
+	for ( int i = 0; i < max; i++ )
+	{
+		scr_buf[i] = 0;
+		colors[i].r = 0.0f;
+		colors[i].g = 0.0f;
+		colors[i].b = 0.0f;
+	}
 }
