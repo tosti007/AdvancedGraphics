@@ -15,29 +15,75 @@
 
 void Game::InitDefaultScene()
 {
-	// load materials
-	nr_materials = 0;
+	// materials
+	nr_materials = 6;
 	materials = new Material[nr_materials] {
-		// Material(   0,   0, 0 ),    // Diffuse
-		// Material( 0.3,   0, 0 ),    // Diffuse & reflective
-		// Material( 0.2, 1.5, 0.15 ), // Glass
-		// Material(   1,   0, 0 )     // Mirror
+		Material(0, 0, 1, Color(1, 1, 1), nullptr), // wall
+		Material(1, 0, 1, Color(1, 1, 1), nullptr), // mirror
+		Material(0.5f, 0.5f, 1.5f, Color(1, 1, 1), nullptr), // glass
+		Material(0, 0, 1, Color(1, 0, 0), nullptr), // red
+		Material(0, 0, 1, Color(0, 1, 0), nullptr), // green
+		Material(0, 0, 1, Color(0, 0, 1), nullptr), // blue
 	};
 
-	nr_triangles = 0;
-	nr_spheres = 0;
+	// triangles
+	float room_width = 6;
+	float room_height = 3;
+	// loa = links, onder, achter; rbv = rechts, boven, voor
+	vec3 loa = vec3(0, 0, 0), lov = vec3(0, 0, room_width);
+	vec3 lba = vec3(0, room_height, 0), lbv = vec3(0, room_height, room_width);
+	vec3 roa = vec3(room_width, 0, 0), rov = vec3(room_width, 0, room_width);
+	vec3 rba = vec3(room_width, room_height, 0), rbv = vec3(room_width, room_height, room_width);
+
+	nr_triangles = 12;
+	triangles = new Triangle[nr_triangles] {
+		Triangle(loa, lov, roa, 0), // floor 1
+		Triangle(lov, roa, rov, 0), // floor 2
+		Triangle(lba, lbv, rba, 0), // roof 1
+		Triangle(lbv, rba, rbv, 0), // roof 2
+		Triangle(loa, lba, lov, 0), // wall left 1
+		Triangle(lba, lov, lbv, 0), // wall left 2
+		Triangle(roa, rba, rov, 0), // wall right 1
+		Triangle(rba, rov, rbv, 0), // wall right 2
+		Triangle(loa, lba, roa, 0), // wall back 1
+		Triangle(lba, roa, rba, 0), // wall back 2
+		Triangle(lov, lbv, rov, 0), // wall front 1
+		Triangle(lbv, rov, rbv, 0), // wall front 2
+	};
+
+	// spheres
+	float radius = 0.5f;
+
+	nr_spheres = 3;
 	spheres = new Sphere[nr_spheres] {
-		// Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		// Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		// Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		// Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, 0 ),
-		// Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, 0 ),
-		// Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, 0 )
+		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 3),
+		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 4),
+		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 5),
+	};
+
+	view = new Camera(vec3(room_width/2, 1, 0.3f), vec3(0, 0, 1));
+	sky = nullptr;
+
+	nr_lights = 1;
+	lights = new Light *[nr_lights] {
+		new SphereLight( vec3( room_width/2, room_height, room_width/2 ), 0.5f, Color( 200, 200, 200 ) )
 	};
 }
 
 void Game::InitFromTinyObj( const std::string filename )
 {
+	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
+
+	// load skybox
+	sky = new SkyDome();
+
+	// load lights
+	// All lights should have atleast one color value != 0
+	nr_lights = 1;
+	lights = new Light *[nr_lights] {
+		new SphereLight( vec3( 0, 5, 0 ), 1, Color( 50, 50, 50 ) )
+	};
+
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> obj_materials;
@@ -105,18 +151,6 @@ void Game::SetTarget( Surface* surface )
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
-	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
-
-	// load skybox
-	sky = new SkyDome();
-
-	// load lights
-	// All lights should have atleast one color value != 0
-	nr_lights = 1;
-	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( 0, 5, 0 ), 1, Color( 50, 50, 50 ) )
-	};
-
 	default_material = new Material();
 
 	// load model
