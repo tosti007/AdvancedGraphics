@@ -270,7 +270,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return (1 / NR_LIGHT_SAMPLES) * total;
 }
 
-Color Game::Trace(Ray r, uint depth)
+Color Game::Sample(Ray r, uint depth)
 {
 	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
@@ -335,7 +335,7 @@ Color Game::Trace(Ray r, uint depth)
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return r.obj->ColorAt( interPoint ) * Trace( refractiveRay, depth + 1 );
+			return r.obj->ColorAt( interPoint ) * Sample( refractiveRay, depth + 1 );
 		}
 	}
 
@@ -348,7 +348,7 @@ Color Game::Trace(Ray r, uint depth)
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
 		// Total Internal Reflection
-		Color reflectCol = Trace( reflectRay, depth + 1 );
+		Color reflectCol = Sample( reflectRay, depth + 1 );
 		return r.obj->ColorAt( interPoint ) * reflectCol;
 	}
 
@@ -358,7 +358,7 @@ Color Game::Trace(Ray r, uint depth)
 	newRay.Offset(1e-3);
 
 	// irradiance
-	Color ei = Trace( newRay, depth + 1 ) * dot( interNormal, random_dir );
+	Color ei = Sample( newRay, depth + 1 ) * dot( interNormal, random_dir );
 	Color BRDF = r.obj->ColorAt( interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
@@ -417,7 +417,7 @@ void Game::Tick()
 				vec3 dir = p0 + u2 * view->right + v2 * view->down;
 				dir.normalize();
 				Ray r = Ray( view->position, dir );
-				Color rayColor = Trace( r, 0 );
+				Color rayColor = Sample( r, 0 );
 				color += rayColor;
 			}
 			color *= 0.25;
@@ -427,7 +427,7 @@ void Game::Tick()
 
 			Ray r = Ray( view->position, dir );
 
-			Color color = Trace( r, 0 );
+			Color color = Sample( r, 0 );
 		#endif
 		color.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
