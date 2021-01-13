@@ -478,6 +478,25 @@ void Game::Tick()
 		screen->GetBuffer()[id] = colors[id].ToPixel( unmoved_frames );
 	}
 
+	// Kernel filter
+	for ( int y = 1; y < screen->GetHeight() - 1; y++ )
+		for (int x = 1; x < screen->GetWidth() - 1; x++)
+		{
+			uint id = x + y * screen->GetWidth();
+			Color tmp = 0x000000;
+			tmp += 0.05 * colors[(x - 1) + (y - 1) * screen->GetWidth()];
+			tmp += 0.15 * colors[(x) + (y - 1) * screen->GetWidth()];
+			tmp += 0.05 * colors[(x + 1) + (y - 1) * screen->GetWidth()];
+			tmp += 0.15 * colors[(x - 1) + (y) * screen->GetWidth()];
+			tmp += 0.2 * colors[(x) + (y) * screen->GetWidth()];
+			tmp += 0.15 * colors[(x + 1) + (y) * screen->GetWidth()];
+			tmp += 0.05 * colors[(x - 1) + (y + 1) * screen->GetWidth()];
+			tmp += 0.15 * colors[(x) + (y + 1) * screen->GetWidth()];
+			tmp += 0.05 * colors[(x + 1) + (y + 1) * screen->GetWidth()];
+
+			screen->GetBuffer()[id] = tmp.ToPixel( unmoved_frames );
+		}
+
 	// Write debug output
 	Print(32, 0, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
 	
