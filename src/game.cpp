@@ -353,12 +353,11 @@ Color Game::Sample(Ray r, uint depth)
 	}
 
 	// Random bounce
-	vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
-	Ray newRay = Ray( interPoint, random_dir );
-	newRay.Offset(1e-3);
+	Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
+	randomRay.Offset(1e-3);
 
 	// irradiance
-	Color ei = Sample( newRay, depth + 1 ) * dot( interNormal, random_dir );
+	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
 	Color BRDF = r.obj->ColorAt( interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
