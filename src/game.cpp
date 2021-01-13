@@ -117,6 +117,8 @@ void Game::Init(int argc, char **argv)
 		new SphereLight( vec3( 0, 5, 0 ), 1, Color( 50, 50, 50 ) )
 	};
 
+	default_material = new Material();
+
 	// load model
 	switch (argc)
 	{
@@ -281,8 +283,8 @@ Color Game::Sample(Ray r, uint depth)
 	// As al our debuging objects are close, 1000 is a safe value.
 	// assert(r.t <= 1000);
 	assert(r.obj != nullptr);
-	assert(r.obj->material >= 0);
-	assert(r.obj->material < nr_materials);
+	assert(r.obj->material >= -1);
+	assert(r.obj->material < (int)nr_materials);
 
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
@@ -296,19 +298,23 @@ Color Game::Sample(Ray r, uint depth)
 		angle *= -1;
 	}
 
+	Material* mat = default_material;
+	if (r.obj->material >= 0) 
+		mat = &materials[r.obj->material];
+
 	bool reflect = false;
 	bool refract = false;
 
-	if (materials[r.obj->material].HasRefraction())
+	if (mat->HasRefraction())
 	{
-		refract = RandomFloat() < materials[r.obj->material].GetRefraction();
-	} else if (materials[r.obj->material].HasReflection())
+		refract = RandomFloat() < mat->GetRefraction();
+	} else if (mat->HasReflection())
 	{
-		reflect = RandomFloat() < materials[r.obj->material].GetReflection();
+		reflect = RandomFloat() < mat->GetReflection();
 	}
 
 	if (refract) {
-		float n = materials[r.obj->material].GetIoR();
+		float n = mat->GetIoR();
 		if (backfacing) n = 1.0f / n;
 		float k = 1 - ( n * n * ( 1 - angle * angle ) );
 

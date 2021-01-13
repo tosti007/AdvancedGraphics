@@ -43,6 +43,7 @@ public:
 		BVH* bvh;
 	#endif
 
+	Material* default_material;
 	Material* materials;
 	uint nr_materials;
 

@@ -20,7 +20,7 @@ public:
         refraction(std::max(0.0f, fract)),
         ior(std::max(0.0f, ir))
         {
-            assert(flect + fract < 1.0f);
+            assert(flect + fract <= 1.0f);
         }
 
     // TODO: Replace this with an epsilon?
