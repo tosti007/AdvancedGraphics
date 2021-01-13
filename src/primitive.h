@@ -43,6 +43,7 @@ public:
         return texture->GetBuffer()[idx];
     }
 
+	static void FromTinyObj( Material *res, std::string basedir, tinyobj::material_t mat );
 private:
     Color color;
     Surface* texture;

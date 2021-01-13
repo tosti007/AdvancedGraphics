@@ -3,6 +3,21 @@
 #include "precomp.h" // include (only) this in every .cpp file
 #include "primitive.h"
 
+void Material::FromTinyObj( Material *res, std::string basedir, tinyobj::material_t mat )
+{
+    res->texture = nullptr;
+    if ( !mat.diffuse_texname.empty() ) {
+        std::string tname_full = basedir + mat.diffuse_texname;
+        res->texture = new Surface(tname_full.c_str());
+    }
+
+    res->color = Color(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
+
+    res->reflection = 1 - std::min(mat.shininess, 1.0f); // let's discard any higher numbers
+    res->refraction = 1 - mat.dissolve;
+    res->ior = mat.ior;
+}
+
 bool Primitive::Intersect(Ray* r)
 {
     float t = IntersectionDistance(r);

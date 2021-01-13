@@ -65,18 +65,11 @@ void Game::InitFromTinyObj( const std::string filename )
 	// load materials
 	nr_materials = obj_materials.size();
 	materials = new Material[nr_materials];
+	Material* current_mat = materials;
 	for (size_t t = 0; t < obj_materials.size(); t++)
 	{
-		auto mat = obj_materials[t];
-
-		Surface* tex = nullptr;
-    	if ( !mat.diffuse_texname.empty() ) {
-			std::string tname_full = basedir + mat.diffuse_texname;
-			tex = new Surface(tname_full.c_str());
-    	}
-
-		Color col = Color(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
-		materials[t] = Material(1 - mat.shininess, 1 - mat.dissolve, mat.ior, col, tex);
+		Material::FromTinyObj(current_mat, basedir, obj_materials[t]);
+		current_mat++;
 	}
 
 	nr_spheres = 0;
@@ -112,7 +105,7 @@ void Game::SetTarget( Surface* surface )
 void Game::Init(int argc, char **argv)
 {
 	printf("Initializing Game\n");
-	view = new Camera(vec3(0, -10, -0.1), vec3(-1, 0, 0));
+	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
 
 	// load skybox
 	sky = new SkyDome();
@@ -121,7 +114,7 @@ void Game::Init(int argc, char **argv)
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( -5, 0, 0 ), 5, Color( 50, 50, 50 ) )
+		new SphereLight( vec3( 0, 5, 0 ), 1, Color( 50, 50, 50 ) )
 	};
 
 	// load model
