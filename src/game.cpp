@@ -76,7 +76,7 @@ void Game::InitFromTinyObj( const std::string filename )
     	}
 
 		Color col = Color(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
-		materials[t] = Material(mat.shininess, mat.dissolve, mat.ior, col, tex);
+		materials[t] = Material(mat.shininess, 1 - mat.dissolve, mat.ior, col, tex);
 	}
 
 	nr_spheres = 0;
