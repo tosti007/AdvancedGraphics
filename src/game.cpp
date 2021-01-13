@@ -295,7 +295,7 @@ Color Game::Trace(Ray r, uint depth)
 	}
 
 	// As al our debuging objects are close, 1000 is a safe value.
-	assert(r.t <= 1000);
+	// assert(r.t <= 1000);
 	assert(r.obj != nullptr);
 	assert(r.obj->material >= 0);
 	assert(r.obj->material < nr_materials);
@@ -355,6 +355,7 @@ Color Game::Trace(Ray r, uint depth)
 	// Random bounce
 	vec3 random_dir = RandomPointOnHemisphere( 1, interNormal );
 	Ray newRay = Ray( interPoint, random_dir );
+	newRay.Offset(1e-3);
 
 	// irradiance
 	Color ei = Trace( newRay, depth + 1 ) * dot( interNormal, random_dir );
