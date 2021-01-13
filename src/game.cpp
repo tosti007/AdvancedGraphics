@@ -72,7 +72,8 @@ void Game::InitDefaultScene()
 
 void Game::InitFromTinyObj( const std::string filename )
 {
-	view = new Camera(vec3(0, 0, -3), vec3(0, 0, 1));
+	view = new Camera( vec3( -15, -10, -0.1 ), vec3( 1, 0, 0 ) );
+
 
 	// load skybox
 	sky = new SkyDome();
@@ -81,7 +82,7 @@ void Game::InitFromTinyObj( const std::string filename )
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( 0, 5, 0 ), 1, Color( 50, 50, 50 ) )
+		new SphereLight( vec3( -5, 10, 0 ), 8, Color( 50, 50, 50 ) )
 	};
 
 	tinyobj::attrib_t attrib;
@@ -201,11 +202,8 @@ bool Game::CheckOcclusion( Ray *r )
 			return true;
 	}
 	// Check triangles
-	for ( uint i = 0; i < nr_triangles; i++ )
-	{
-		if (triangles[i].Occludes( r ))
-			return true;
-	}
+	uint depth = 0;
+	bvh->Traverse( r, depth, true );
 	// Check lights
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
@@ -308,7 +306,7 @@ Color Game::Sample(Ray r, uint depth)
 	if ( !found )
 	{
 		if ( light != nullptr )
-			return 0x000000;  //light->color;
+			return light->color; // NEE: 0x000000
 		if (sky != nullptr)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
@@ -399,7 +397,7 @@ Color Game::Sample(Ray r, uint depth)
 
 	// irradiance
 	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
-	return PI * 2.0f * BRDF * ei;
+	return PI * 2.0f * BRDF * ei; // + rLightCol;
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
