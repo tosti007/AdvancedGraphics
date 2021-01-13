@@ -63,25 +63,20 @@ void Game::InitFromTinyObj( const std::string filename )
 	std::cout << "Loading texture maps" << std::endl;
 
 	// load materials
-	nr_materials = obj_materials.size() + 1;
+	nr_materials = obj_materials.size();
 	materials = new Material[nr_materials];
-	materials[0] = Material(0, 0, 0);
 	for (size_t t = 0; t < obj_materials.size(); t++)
 	{
 		auto mat = obj_materials[t];
-		auto ior = mat.ior;
-		if (ior == 1)
-			ior = 0;
-		materials[t + 1] = Material(1 - mat.shininess, ior, mat.dissolve);
-		std::string tname =  mat.diffuse_texname;
-		if ( tname.empty() )
-			continue;
-		auto search = textures.find(tname);
-    	if (search == textures.end()) {
-			std::string tname_full = basedir + tname;
-			std::cout << "Load " << tname_full << std::endl;
-			textures[tname] = new Surface(tname_full.c_str());
+
+		Surface* tex = nullptr;
+    	if ( !mat.diffuse_texname.empty() ) {
+			std::string tname_full = basedir + mat.diffuse_texname;
+			tex = new Surface(tname_full.c_str());
     	}
+
+		Color col = Color(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
+		materials[t] = Material(mat.shininess, mat.dissolve, mat.ior, col, tex);
 	}
 
 	nr_spheres = 0;
@@ -96,7 +91,7 @@ void Game::InitFromTinyObj( const std::string filename )
 	{
 		for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++)
 		{
-			Triangle::FromTinyObj(current, &attrib, &shapes[s].mesh, f, obj_materials, textures);
+			Triangle::FromTinyObj(current, &attrib, &shapes[s].mesh, f, obj_materials);
 			current++;
 		}
 	}
@@ -142,17 +137,6 @@ void Game::Init(int argc, char **argv)
 			std::cout << argc << " arguments not accepted!" << std::endl;
 			exit(1);
 			break;
-	}
-
-	for (uint i = 0; i < nr_spheres; i++)
-	{
-		if(spheres[i].material < 0)
-			spheres[i].material = 0;
-	}
-	for (uint i = 0; i < nr_triangles; i++)
-	{
-		if(triangles[i].material < 0)
-			triangles[i].material = 0;
 	}
 
 	#ifdef USEBVH 
@@ -314,16 +298,17 @@ Color Game::Sample(Ray r, uint depth)
 	bool reflect = false;
 	bool refract = false;
 
-	if (materials[r.obj->material].HasRefract())
+	if (materials[r.obj->material].HasRefraction())
 	{
-		refract = RandomFloat() < materials[r.obj->material].refractive;
-	} else if (materials[r.obj->material].HasReflect())
+		refract = RandomFloat() < materials[r.obj->material].GetRefraction();
+	} else if (materials[r.obj->material].HasReflection())
 	{
-		reflect = RandomFloat() < materials[r.obj->material].speculative;
+		reflect = RandomFloat() < materials[r.obj->material].GetReflection();
 	}
 
 	if (refract) {
-		float n = backfacing ? materials[r.obj->material].refractive : 1.0f / materials[r.obj->material].refractive;
+		float n = materials[r.obj->material].GetIoR();
+		if (backfacing) n = 1.0f / n;
 		float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 		if (k < 0)
@@ -335,7 +320,7 @@ Color Game::Sample(Ray r, uint depth)
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return r.obj->ColorAt( interPoint ) * Sample( refractiveRay, depth + 1 );
+			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, depth + 1 );
 		}
 	}
 
@@ -347,7 +332,7 @@ Color Game::Sample(Ray r, uint depth)
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
 		Color reflectCol = Sample( reflectRay, depth + 1 );
-		return r.obj->ColorAt( interPoint ) * reflectCol;
+		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
 	// Random bounce
@@ -356,7 +341,7 @@ Color Game::Sample(Ray r, uint depth)
 
 	// irradiance
 	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
-	Color BRDF = r.obj->ColorAt( interPoint ) * INVPI;
+	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
 

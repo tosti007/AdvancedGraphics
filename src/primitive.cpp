@@ -19,19 +19,8 @@ bool Primitive::Occludes(Ray* r)
     return true;
 }
 
-Color Primitive::ColorAt( vec3 point )
-{
-    if (texture == nullptr) {
-        return color;
-    }
-    int idx = TextureAt(point);
-    if (idx < 0 || idx >= texture->GetWidth() * texture->GetHeight())
-        return color;
-    return texture->GetBuffer()[idx];
-}
-
-Sphere::Sphere( vec3 p, float r, Color c, int m ) :
-    Primitive( c, m ),
+Sphere::Sphere( vec3 p, float r, int m ) :
+    Primitive( m ),
 	position( p ),
 	radius( r )
 {
@@ -54,18 +43,16 @@ vec3 Sphere::NormalAt( vec3 point )
 	return (1 / radius) * (point - position);
 }
 
-int Sphere::TextureAt ( vec3 point )
+vec2 Sphere::TextureAt ( vec3 point )
 {
     vec3 direction = point - position;
     float u = (1 + atan2f( direction.x, -direction.z ) * INVPI) / 2;
     float v = acosf( direction.y ) * INVPI;
-    uint x = texture->GetWidth() * u;
-    uint y = texture->GetHeight() * v;
-    return y * texture->GetWidth() + x;
+    return vec2(u, v);
 }
 
-Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, Color c, int m ) :
-    Primitive( c, m ),
+Triangle::Triangle( vec3 v0, vec3 v1, vec3 v2, vec3 n, int m ) :
+    Primitive( m ),
 	p0( v0 ),
 	p1( v1 ),
 	p2( v2 ),
@@ -114,7 +101,7 @@ vec3 Triangle::ComputeNormal( vec3 v0, vec3 v1, vec3 v2 )
     return cross(v1 - v0, v2 - v0).normalized();
 }
 
-int Triangle::TextureAt( vec3 point )
+vec2 Triangle::TextureAt( vec3 point )
 {
     vec3 p0p1 = p1 - p0;
     vec3 p0p2 = p2 - p0;
@@ -128,12 +115,7 @@ int Triangle::TextureAt( vec3 point )
     float v = -normal.dot(qvec);
     if (v < 0 || u + v > 1) return -1;
 
-    vec2 uv = t0 + t1 * u + t2 * v;
-
-    int x = uv.x * texture->GetWidth();
-    int y = uv.y * texture->GetHeight();
-
-    return x + y * texture->GetWidth();
+    return t0 + t1 * u + t2 * v;
 }
 
 vec3 TinyObjGetVector3(int idx, std::vector<tinyobj::real_t>* values) {
@@ -153,7 +135,7 @@ vec2 TinyObjGetVector2(int idx, std::vector<tinyobj::real_t>* values) {
     return vec2(vx, vy);
 }
 
-void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials, std::map<std::string, Surface*> textures )
+void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::mesh_t *mesh, size_t f, std::vector<tinyobj::material_t> materials )
 {
     // This MUST hold for our custom Triangle implementaion, if it isnt, then this face is no triangle, but e.g. a quad.
     assert(mesh->num_face_vertices[f] == 3);
@@ -162,30 +144,12 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
     tinyobj::index_t idx1 = mesh->indices[3 * f + 1];
     tinyobj::index_t idx2 = mesh->indices[3 * f + 2];
 
-    // Read material types from file
     tri->material = mesh->material_ids[f];
-	if ( tri->material >= 0 )
-	{
-        auto thismat = materials[tri->material];
-        std::cout << "NAME: " << thismat.name << std::endl;
-		auto diffuse = thismat.diffuse;
-		tri->color = Color( diffuse[0], diffuse[1], diffuse[2] );
-
-		//Material mat = Material( thismat.specular[0], thismat.transmittance[0], thismat.emission[0] );
-		//tri->material = &mat;
-		if (!thismat.diffuse_texname.empty() )
-		{
-			auto tex = textures.find( thismat.diffuse_texname );
-			if ( tex != textures.end() )
-				tri->texture = tex->second;
-		}
-	}
-	else
-		tri->color = DEFAULT_OBJECT_COLOR;
-
     tri->p0 = TinyObjGetVector3(idx0.vertex_index, &attrib->vertices);
     tri->p1 = TinyObjGetVector3(idx1.vertex_index, &attrib->vertices);
     tri->p2 = TinyObjGetVector3(idx2.vertex_index, &attrib->vertices);
+    // Since we need only the full face normal let's just compute it ourselves.
+    tri->normal = ComputeNormal(tri->p0, tri->p1, tri->p2);
 
     if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0)
     {
@@ -207,11 +171,4 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
         tri->t1 -= tri->t0;
         tri->t2 -= tri->t0;
     }
-
-    // I think colors are defined on a per-vertex base.
-    // Since we need only the full face normal let's just compute it ourselves.
-    tri->normal = ComputeNormal(tri->p0, tri->p1, tri->p2);
-
-    // I think colors are defined on a per-vertex base, hence I don't currently know how to handle this. 
-    // Color c = (Color)TinyObjGetVector(idx.vertex_index, &attrib.colors);
 }

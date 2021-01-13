@@ -45,7 +45,6 @@ public:
 
 	Material* materials;
 	uint nr_materials;
-	std::map<std::string, Surface*> textures;
 
 	Light** lights;
 	uint nr_lights;
