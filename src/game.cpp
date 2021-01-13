@@ -306,7 +306,7 @@ Color Game::Sample(Ray r, uint depth)
 	if ( !found )
 	{
 		if ( light != nullptr )
-			return light->color; // NEE: 0x000000
+			return 0x000000; // When not using NEE: light->color
 		if (sky != nullptr)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
@@ -374,22 +374,23 @@ Color Game::Sample(Ray r, uint depth)
 		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
-	//// Direct light for NEE
-	//Light &rLight = *lights[RandomIndex( nr_lights )];
-	//vec3 rLightPoint = rLight.PointOnLight();
-	//float rLightDist = ( rLightPoint - interPoint ).length();
-	//float rLightArea = rLight.Area();
-	//vec3 rLightNormal = rLight.NormalAt(rLightPoint);
-	//
-	//vec3 rLightDir = normalize(rLightPoint - interPoint);
-	//Ray rLightRay = Ray( interPoint, rLightDir );
-	//rLightRay.t = rLightDist;
-	//Color rLightCol = 0x000000;
-	//if (interNormal.dot(rLightDir) > 0 && rLightNormal.dot(-rLightDir) && CheckOcclusion(&rLightRay))
-	//{
-	//	float solidAngle = ( ( rLightNormal.dot(-rLightDir)) * rLightArea) / (rLightDist * rLightDist);
-	//	rLightCol = rLight.color * solidAngle * BRDF * interNormal.dot( rLightDir );
-	//}
+	// Direct light for NEE
+	Light &rLight = *lights[RandomIndex( nr_lights )];
+	vec3 rLightPoint = rLight.PointOnLight();
+	
+	vec3 rLightDir = normalize(rLightPoint - interPoint);
+	vec3 rLightNormal = rLight.NormalAt(rLightPoint);
+	float rLightDist = ( rLightPoint - interPoint ).length();
+	float rLightArea = rLight.Area();
+
+	Ray rLightRay = Ray( interPoint, rLightDir );
+	rLightRay.t = rLightDist;
+	Color rLightCol = 0x000000;
+	if (interNormal.dot(rLightDir) > 0 && rLightNormal.dot(-rLightDir) && !CheckOcclusion(&rLightRay))
+	{
+		float solidAngle = ( ( rLightNormal.dot(-rLightDir)) * rLightArea) / (rLightDist * rLightDist);
+		rLightCol = rLight.color * solidAngle * BRDF * interNormal.dot( rLightDir );
+	}
 
 	// Random bounce
 	Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
@@ -397,7 +398,7 @@ Color Game::Sample(Ray r, uint depth)
 
 	// irradiance
 	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
-	return PI * 2.0f * BRDF * ei; // + rLightCol;
+	return PI * 2.0f * BRDF * ei + rLightCol;
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
