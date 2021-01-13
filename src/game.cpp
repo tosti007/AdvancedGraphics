@@ -341,13 +341,11 @@ Color Game::Sample(Ray r, uint depth)
 
 	if (reflect)
 	{
-		// TODO: why does inverting the angle fix it?
-		angle *= -1;
-		// create reflect ray
+		// Total Internal Reflection
+		angle *= -1; // TODO: why does inverting the angle fix it?
 		Ray reflectRay = Ray( interPoint, r.direction );
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
-		// Total Internal Reflection
 		Color reflectCol = Sample( reflectRay, depth + 1 );
 		return r.obj->ColorAt( interPoint ) * reflectCol;
 	}
