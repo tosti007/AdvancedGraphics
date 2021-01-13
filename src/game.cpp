@@ -164,16 +164,23 @@ void Game::Shutdown()
 
 bool Game::CheckOcclusion( Ray *r )
 {
-	// if any intersection found, return, don't need to know location
+	// If any intersection found, return, don't need to know location
+	// Check Spheres
 	for ( uint i = 0; i < nr_spheres; i++ )
 	{
 		if (spheres[i].Occludes( r ))
 			return true;
 	}
-
+	// Check triangles
 	for ( uint i = 0; i < nr_triangles; i++ )
 	{
 		if (triangles[i].Occludes( r ))
+			return true;
+	}
+	// Check lights
+	for ( size_t i = 0; i < nr_lights; i++ )
+	{
+		if ( lights[i]->Occludes( r ) )
 			return true;
 	}
 	return false;
@@ -187,7 +194,7 @@ bool Game::Intersect( Ray* r, uint &depth )
 		found |= spheres[i].Intersect(r);
 
 	#ifdef USEBVH 
-		found |= bvh->Traverse(r, depth);
+		found |= bvh->Traverse(r, depth, false);
 	#else
 		for (uint i = 0; i < nr_triangles; i++)
 			found |= triangles[i].Intersect(r);
@@ -272,7 +279,7 @@ Color Game::Sample(Ray r, uint depth)
 	if ( !found )
 	{
 		if ( light != nullptr )
-			return light->color;
+			return 0x000000;  //light->color;
 		if (sky != nullptr)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
@@ -287,6 +294,7 @@ Color Game::Sample(Ray r, uint depth)
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
+	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
 	float angle = -dot( r.direction, interNormal );
 	bool backfacing = angle < 0.0f;
 	if ( backfacing )
@@ -335,13 +343,29 @@ Color Game::Sample(Ray r, uint depth)
 		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
+	//// Direct light for NEE
+	//Light &rLight = *lights[RandomIndex( nr_lights )];
+	//vec3 rLightPoint = rLight.PointOnLight();
+	//float rLightDist = ( rLightPoint - interPoint ).length();
+	//float rLightArea = rLight.Area();
+	//vec3 rLightNormal = rLight.NormalAt(rLightPoint);
+	//
+	//vec3 rLightDir = normalize(rLightPoint - interPoint);
+	//Ray rLightRay = Ray( interPoint, rLightDir );
+	//rLightRay.t = rLightDist;
+	//Color rLightCol = 0x000000;
+	//if (interNormal.dot(rLightDir) > 0 && rLightNormal.dot(-rLightDir) && CheckOcclusion(&rLightRay))
+	//{
+	//	float solidAngle = ( ( rLightNormal.dot(-rLightDir)) * rLightArea) / (rLightDist * rLightDist);
+	//	rLightCol = rLight.color * solidAngle * BRDF * interNormal.dot( rLightDir );
+	//}
+
 	// Random bounce
 	Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
 	randomRay.Offset(1e-3);
 
 	// irradiance
 	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
-	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
 	return PI * 2.0f * BRDF * ei;
 }
 

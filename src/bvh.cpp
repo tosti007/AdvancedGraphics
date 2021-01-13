@@ -8,7 +8,7 @@ void GrowWithTriangle( aabb* bb, const Triangle* tri)
 	bb->Grow( tri->p2 );
 }
 
-bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
+bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth, bool checkOcclusion )
 {
 	// if node is a leaf
 	if ( count > 0 )
@@ -17,7 +17,13 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 		bool found = false;
 		for ( size_t i = 0; i < count; i++ )
 		{
-			found |= bvh->triangles[bvh->indices[firstleft + i]].Intersect( r );
+			if ( checkOcclusion )
+			{
+				found = bvh->triangles[bvh->indices[firstleft + i]].Occludes( r );
+				if ( found ) return true;
+			}
+			else
+				found |= bvh->triangles[bvh->indices[firstleft + i]].Intersect( r );
 		}
 		return found;
 	}
@@ -38,20 +44,20 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth )
 		BVHNode farNode = leftIsNearNode ? bvh->pool[firstleft + 1] : bvh->pool[firstleft];
 
 		// first check nearest node
-		bool found = nearNode.Traverse( bvh, r, ++depth );
+		bool found = nearNode.Traverse( bvh, r, ++depth, checkOcclusion );
 		// early out
 		if ( found && r->t <= bound )
 			return found;
 
 		// then far node
-		found |= farNode.Traverse( bvh, r, ++depth );
+		found |= farNode.Traverse( bvh, r, ++depth, checkOcclusion );
 		
 		return found;
 	}
 	if (intL)
-		return bvh->pool[firstleft].Traverse( bvh, r, ++depth );
+		return bvh->pool[firstleft].Traverse( bvh, r, ++depth, checkOcclusion );
 	if (intR)
-		return bvh->pool[firstleft + 1].Traverse( bvh, r, ++depth );
+		return bvh->pool[firstleft + 1].Traverse( bvh, r, ++depth, checkOcclusion );
 
 	return false;
 }
