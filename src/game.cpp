@@ -16,23 +16,23 @@
 void Game::InitDefaultScene()
 {
 	// load materials
-	nr_materials = 4;
+	nr_materials = 0;
 	materials = new Material[nr_materials] {
-		Material(   0,   0, 0 ),	// Diffuse
-		Material( 0.3,   0, 0 ),	// Diffuse & reflective
-		Material( 0.2, 1.5, 0.15 ), // Glass
-		Material(   1,   0, 0 )		// Mirror
+		// Material(   0,   0, 0 ),    // Diffuse
+		// Material( 0.3,   0, 0 ),    // Diffuse & reflective
+		// Material( 0.2, 1.5, 0.15 ), // Glass
+		// Material(   1,   0, 0 )     // Mirror
 	};
 
 	nr_triangles = 0;
-	nr_spheres = 6;
+	nr_spheres = 0;
 	spheres = new Sphere[nr_spheres] {
-		Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
-		Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, 0 ),
-		Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, 0 ),
-		Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, 0 )
+		// Sphere( vec3( -3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		// Sphere( vec3( 0, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		// Sphere( vec3( 3, -0.5, 5 ), 1.0f, 0xffffff, 2 ),
+		// Sphere( vec3( -3, -3.5, 5 ), 2.0f, 0x999999, 0 ),
+		// Sphere( vec3( 0, -3.5, 5 ), 2.0f, 0x999999, 0 ),
+		// Sphere( vec3( 3, -3.5, 5 ), 2.0f, 0x999999, 0 )
 	};
 }
 
