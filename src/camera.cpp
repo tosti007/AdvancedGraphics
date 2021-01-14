@@ -8,13 +8,15 @@ Camera::Camera( vec3 p, vec3 d ) :
     direction(d.normalized()),
     right(cross(direction, REALDOWN).normalized()),
     down(cross(right, direction).normalized()),
-    fov(1)
+    fov(1),
+    topLeft()
 {
+    UpdateTopLeft();
 }
 
-vec3 Camera::TopLeft()
+vec3 Camera::UpdateTopLeft()
 {
-    return fov * direction - 0.5 * (right + down);
+    topLeft = fov * direction - 0.5 * (right + down);
 }
 
 bool Camera::KeyDown( int key, byte repeat )
@@ -76,5 +78,6 @@ void Camera::RotateAround( vec3 axis, float angle )
         direction = newdir;
         right = cross(direction, REALDOWN).normalized();
         down = cross(right, direction).normalized();
+        UpdateTopLeft();
     }
 }

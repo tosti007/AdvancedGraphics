@@ -12,8 +12,11 @@ struct Camera
     vec3 right, down;
     float fov;
 
+	// Cached
+	vec3 topLeft;
+
     Camera( vec3 p, vec3 d );
-    vec3 TopLeft();
+    vec3 UpdateTopLeft();
 
 	bool MouseUp( int button ) { return false; /* implement if you want to detect mouse button presses */ }
 	bool MouseDown( int button ) { return false; /* implement if you want to detect mouse button presses */ }

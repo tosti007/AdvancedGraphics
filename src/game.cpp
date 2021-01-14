@@ -440,8 +440,6 @@ void Game::Tick()
 {
 	timer::TimePoint dt = timer::get();
 
-	vec3 p0 = view->TopLeft();
-
 	#ifdef USEVIGNETTING
 		int dist_x_max = screen->GetWidth() / 2;
 		int dist_y_max = screen->GetHeight() / 2;
@@ -464,7 +462,7 @@ void Game::Tick()
 			{
 				float u2 = ((float)x + randArray[i]) / screen->GetWidth();
 				float v2 = ((float)y + randArray[i+4] ) / screen->GetHeight();
-				vec3 dir = p0 + u2 * view->right + v2 * view->down;
+				vec3 dir = view->topLeft + u2 * view->right + v2 * view->down;
 				dir.normalize();
 				Ray r = Ray( view->position, dir );
 				Color rayColor = Sample( r, 0 );
@@ -472,7 +470,7 @@ void Game::Tick()
 			}
 			color *= 0.25;
 		#else
-			vec3 dir = p0 + u * view->right + v * view->down;
+			vec3 dir = view->topLeft + u * view->right + v * view->down;
 			dir.normalize();
 
 			Ray r = Ray( view->position, dir );
