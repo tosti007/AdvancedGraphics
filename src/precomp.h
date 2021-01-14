@@ -59,6 +59,7 @@
 
 // Anti-aliasing 4x
 //#define SSAA
+//#define USENEE
 //#define USEVIGNETTING
 #define USEBVH
 //#define VISUALIZEBVH

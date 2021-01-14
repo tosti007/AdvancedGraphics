@@ -306,7 +306,11 @@ Color Game::Sample(Ray r, uint depth)
 	if ( !found )
 	{
 		if ( light != nullptr )
-			return 0x000000; // When not using NEE: light->color
+		#ifdef USENEE
+			return Color(0, 0, 0);
+		#else
+			return light->color;
+		#endif
 		if (sky != nullptr)
 			return sky->FindColor(r.direction);
 		return SKYDOME_DEFAULT_COLOR;
@@ -374,6 +378,7 @@ Color Game::Sample(Ray r, uint depth)
 		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
+	#ifdef USENEE
 	// Direct light for NEE
 	Light &rLight = *lights[RandomIndex( nr_lights )];
 	vec3 rLightPoint = rLight.PointOnLight();
@@ -391,6 +396,7 @@ Color Game::Sample(Ray r, uint depth)
 		float solidAngle = ( ( rLightNormal.dot(-rLightDir)) * rLightArea) / (rLightDist * rLightDist);
 		rLightCol = rLight.color * solidAngle * BRDF * interNormal.dot( rLightDir );
 	}
+	#endif
 
 	// Random bounce
 	Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
@@ -398,7 +404,13 @@ Color Game::Sample(Ray r, uint depth)
 
 	// irradiance
 	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
-	return PI * 2.0f * BRDF * ei + rLightCol;
+	Color result = PI * 2.0f * BRDF * ei;
+
+	#ifdef USENEE
+	result += rLightCol;
+	#endif
+
+	return result;
 }
 
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
