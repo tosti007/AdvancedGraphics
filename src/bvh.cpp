@@ -13,11 +13,11 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth, bool checkOcclusion )
 	// if node is a leaf
 	if ( count > 0 )
 	{
-		Traverse_Leaf(bvh, r, checkOcclusion);
+		return Traverse_Leaf(bvh, r, checkOcclusion);
 	}
 	else
 	{
-		Traverse_Node(bvh, r, depth, checkOcclusion);
+		return Traverse_Node(bvh, r, depth, checkOcclusion);
 	}
 }
 
