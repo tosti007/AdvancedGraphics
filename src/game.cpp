@@ -440,6 +440,11 @@ Ray ComputePrimaryRay(Surface* screen, Camera* view, int x, int y, size_t i, siz
 #ifdef SSAA
 	u += randArray[i];
 	v += randArray[i + j];
+#else
+#ifdef USESTRATIFICATION
+	u += RandomFloat();
+	v += RandomFloat();
+#endif
 #endif
 
 	u /= screen->GetWidth();
