@@ -14,7 +14,7 @@ Camera::Camera( vec3 p, vec3 d ) :
     UpdateTopLeft();
 }
 
-vec3 Camera::UpdateTopLeft()
+void Camera::UpdateTopLeft()
 {
     topLeft = fov * direction - 0.5 * (right + down);
 }
