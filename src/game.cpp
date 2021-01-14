@@ -27,13 +27,13 @@ void Game::InitDefaultScene()
 	};
 
 	// triangles
-	float room_width = 6;
-	float room_height = 3;
+	float room_size = 5;
+	float room_depth = 10;
 	// loa = links, onder, achter; rbv = rechts, boven, voor
-	vec3 loa = vec3(0, 0, 0), lov = vec3(0, 0, room_width);
-	vec3 lba = vec3(0, room_height, 0), lbv = vec3(0, room_height, room_width);
-	vec3 roa = vec3(room_width, 0, 0), rov = vec3(room_width, 0, room_width);
-	vec3 rba = vec3(room_width, room_height, 0), rbv = vec3(room_width, room_height, room_width);
+	vec3 loa = vec3(0, 0, 0), lov = vec3(0, 0, room_depth);
+	vec3 lba = vec3(0, room_size, 0), lbv = vec3(0, room_size, room_depth);
+	vec3 roa = vec3(room_size, 0, 0), rov = vec3(room_size, 0, room_depth);
+	vec3 rba = vec3(room_size, room_size, 0), rbv = vec3(room_size, room_size, room_depth);
 
 	nr_triangles = 12;
 	triangles = new Triangle[nr_triangles] {
@@ -41,10 +41,10 @@ void Game::InitDefaultScene()
 		Triangle(lov, roa, rov, 0), // floor 2
 		Triangle(lba, lbv, rba, 0), // roof 1
 		Triangle(lbv, rba, rbv, 0), // roof 2
-		Triangle(loa, lba, lov, 0), // wall left 1
-		Triangle(lba, lov, lbv, 0), // wall left 2
-		Triangle(roa, rba, rov, 0), // wall right 1
-		Triangle(rba, rov, rbv, 0), // wall right 2
+		Triangle(loa, lba, lov, 3), // wall left 1
+		Triangle(lba, lov, lbv, 3), // wall left 2
+		Triangle(roa, rba, rov, 3), // wall right 1
+		Triangle(rba, rov, rbv, 3), // wall right 2
 		Triangle(loa, lba, roa, 0), // wall back 1
 		Triangle(lba, roa, rba, 0), // wall back 2
 		Triangle(lov, lbv, rov, 0), // wall front 1
@@ -56,17 +56,17 @@ void Game::InitDefaultScene()
 
 	nr_spheres = 3;
 	spheres = new Sphere[nr_spheres] {
-		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 3),
-		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 4),
-		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 5),
+		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 4),
+		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 5),
+		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 4),
 	};
 
-	view = new Camera(vec3(room_width/2, 1, 0.3f), vec3(0, 0, 1));
+	view = new Camera(vec3(room_size/2, 1, 0.3f), vec3(0, 0, 1));
 	sky = nullptr;
 
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( room_width/2, room_height, room_width/2 ), 0.5f, Color( 200, 200, 200 ) )
+		new SphereLight( vec3( room_size/2, room_size, room_depth/2 ), 0.5f, Color( 200, 200, 200 ) )
 	};
 }
 
