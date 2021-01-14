@@ -22,6 +22,8 @@ struct BVHNode
 	bool AABBIntersection( const Ray *r, const aabb &bb, float &tmin, float &tmax );
 	void Print(BVH* bvh, uint depth);
   private:
+	bool Traverse_Leaf(BVH *bvh, Ray *r, bool checkOcclusion);
+	bool Traverse_Node(BVH *bvh, Ray *r, uint &depth, bool checkOcclusion);
 	void Subdivide_Binned( BVH* bvh, aabb* triangle_bounds );
 	void Subdivide_Median( BVH *bvh, aabb* triangle_bounds );
 	void Subdivide_SAH( BVH *bvh, aabb* triangle_bounds );

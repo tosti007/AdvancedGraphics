@@ -13,21 +13,34 @@ bool BVHNode::Traverse( BVH *bvh, Ray *r, uint &depth, bool checkOcclusion )
 	// if node is a leaf
 	if ( count > 0 )
 	{
-		assert(firstleft + count <= bvh->nr_triangles);
-		bool found = false;
-		for ( size_t i = 0; i < count; i++ )
-		{
-			if ( checkOcclusion )
-			{
-				found = bvh->triangles[bvh->indices[firstleft + i]].Occludes( r );
-				if ( found ) return true;
-			}
-			else
-				found |= bvh->triangles[bvh->indices[firstleft + i]].Intersect( r );
-		}
-		return found;
+		Traverse_Leaf(bvh, r, checkOcclusion);
 	}
+	else
+	{
+		Traverse_Node(bvh, r, depth, checkOcclusion);
+	}
+}
 
+bool BVHNode::Traverse_Leaf( BVH *bvh, Ray *r, bool checkOcclusion )
+{
+	assert(firstleft + count <= bvh->nr_triangles);
+	bool found = false;
+	for ( size_t i = 0; i < count; i++ )
+	{
+		Triangle tri = bvh->triangles[bvh->indices[firstleft + i]];
+		if ( checkOcclusion )
+		{
+			found = tri.Occludes( r );
+			if ( found ) return true;
+		}
+		else
+			found |= tri.Intersect( r );
+	}
+	return found;
+}
+
+bool BVHNode::Traverse_Node( BVH *bvh, Ray *r, uint &depth, bool checkOcclusion )
+{
 	assert(firstleft <= bvh->nr_nodes);
 	assert(firstleft + 1 <= bvh->nr_nodes);
 
