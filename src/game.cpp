@@ -146,6 +146,9 @@ void Game::SetTarget( Surface* surface )
 	if (colors != nullptr)
 		free(colors);
 	colors = new Color[screen->GetWidth() * screen->GetHeight()];
+	if ( firstNormals != nullptr )
+		free( firstNormals );
+	firstNormals = new vec3[screen->GetWidth() * screen->GetHeight()];
 	CameraChanged();
 }
 
@@ -287,7 +290,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return (1 / NR_LIGHT_SAMPLES) * total;
 }
 
-Color Game::Sample(Ray r, bool specularRay, uint depth)
+Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 {
 	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
@@ -327,6 +330,11 @@ Color Game::Sample(Ray r, bool specularRay, uint depth)
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
+
+	// Save interNormal for filtering
+	if (depth == 0)
+		firstNormals[pixelId] = interNormal;
+
 	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
 	float angle = -dot( r.direction, interNormal );
 	bool backfacing = angle < 0.0f;
@@ -366,7 +374,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth)
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
-			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, true, depth + 1 );
+			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, true, depth + 1, pixelId );
 		}
 	}
 
@@ -377,7 +385,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth)
 		Ray reflectRay = Ray( interPoint, r.direction );
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
-		Color reflectCol = Sample( reflectRay, true, depth + 1 );
+		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
 		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
@@ -411,7 +419,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth)
 	randomRay.Offset(1e-3);
 
 	// irradiance
-	Color ei = Sample( randomRay, false, depth + 1 ) * dot( interNormal, randomRay.direction );
+	Color ei = Sample( randomRay, false, depth + 1, pixelId ) * dot( interNormal, randomRay.direction );
 	Color result = PI * 2.0f * BRDF * ei;
 
 	#ifdef USENEE
@@ -497,7 +505,9 @@ void Game::Tick()
 			color *= 0.25;
 		#else
 			Ray r = ComputePrimaryRay(screen, view, x, y, 0, 0);
-			Color color = Sample( r, true, 0 );
+			Color color = Sample( r, true, 0, id );
+			//if ( !isinf( r.t ) )
+			//	firstInters[id] = r.origin + r.t * r.direction;
 		#endif
 		color.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
@@ -508,6 +518,7 @@ void Game::Tick()
 
 		colors[id] += color;
 		screen->GetBuffer()[id] = colors[id].ToPixel( unmoved_frames );
+
 	}
 
 	// Kernel filter
@@ -515,6 +526,7 @@ void Game::Tick()
 		for (int x = 1; x < screen->GetWidth() - 1; x++)
 		{
 			uint id = x + y * screen->GetWidth();
+
 			Color tmp = 0x000000;
 			tmp += 0.05 * colors[(x - 1) + (y - 1) * screen->GetWidth()];
 			tmp += 0.15 * colors[(x) + (y - 1) * screen->GetWidth()];
@@ -561,5 +573,6 @@ void Game::CameraChanged()
 		colors[i].r = 0.0f;
 		colors[i].g = 0.0f;
 		colors[i].b = 0.0f;
+		firstNormals[i] = ( 0.0f, 0.0f, 0.0f );
 	}
 }

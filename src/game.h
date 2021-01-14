@@ -30,11 +30,12 @@ public:
 	bool Intersect( Ray* r, uint &depth );
 	Light* IntersectLights( Ray* r );
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
-	Color Sample( Ray r, bool specularRay, uint depth );
+	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
     Color* colors = nullptr;
+	vec3* firstNormals = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
