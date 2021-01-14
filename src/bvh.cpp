@@ -27,14 +27,14 @@ bool BVHNode::Traverse_Leaf( BVH *bvh, Ray *r, bool checkOcclusion )
 	bool found = false;
 	for ( size_t i = 0; i < count; i++ )
 	{
-		Triangle tri = bvh->triangles[bvh->indices[firstleft + i]];
+		Triangle *tri = bvh->triangles + bvh->indices[firstleft + i];
 		if ( checkOcclusion )
 		{
-			found = tri.Occludes( r );
+			found = tri->Occludes( r );
 			if ( found ) return true;
 		}
 		else
-			found |= tri.Intersect( r );
+			found |= tri->Intersect( r );
 	}
 	return found;
 }
