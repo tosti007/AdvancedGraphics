@@ -202,8 +202,7 @@ bool Game::CheckOcclusion( Ray *r )
 			return true;
 	}
 	// Check triangles
-	uint depth = 0;
-	bvh->Traverse( r, depth, true );
+	bvh->Occludes(r);
 	// Check lights
 	for ( size_t i = 0; i < nr_lights; i++ )
 	{
@@ -221,7 +220,7 @@ bool Game::Intersect( Ray* r, uint &depth )
 		found |= spheres[i].Intersect(r);
 
 	#ifdef USEBVH 
-		found |= bvh->Traverse(r, depth, false);
+		found |= bvh->Intersect(r, depth);
 	#else
 		for (uint i = 0; i < nr_triangles; i++)
 			found |= triangles[i].Intersect(r);

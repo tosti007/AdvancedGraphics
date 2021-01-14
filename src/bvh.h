@@ -41,13 +41,24 @@ struct BVH
 	uint nr_triangles;
 	uint *indices;
 
-	inline bool Traverse( Ray *r, uint &depth, bool checkOcclusion )
-	{
-		if ( nr_triangles > 0 ) return root->Traverse( this, r, ++depth, checkOcclusion );
-		return false;
-	}
 	void ConstructBVH( Triangle *triangles, uint triangleCount );
 	void Print();
+
+	inline bool Occludes( Ray *r )
+	{
+		uint depth = 0;
+		return Traverse(r, depth, true);
+	}
+	inline bool Intersect( Ray* r, uint &depth )
+	{
+		return Traverse(r, depth, false);
+	}
+  private:
+	inline bool Traverse( Ray *r, uint &depth, bool checkOcclusion )
+	{
+		if ( nr_triangles <= 0 ) return false;
+		return root->Traverse( this, r, depth, checkOcclusion );
+	}
 };
 
 }; // namespace AdvancedGraphics
