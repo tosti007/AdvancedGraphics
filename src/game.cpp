@@ -287,7 +287,7 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 	return (1 / NR_LIGHT_SAMPLES) * total;
 }
 
-Color Game::Sample(Ray r, uint depth)
+Color Game::Sample(Ray r, bool specularRay, uint depth)
 {
 	if (depth > MAX_NR_ITERATIONS)
 		return Color(0, 0, 0);
@@ -306,7 +306,10 @@ Color Game::Sample(Ray r, uint depth)
 	{
 		if ( light != nullptr )
 		#ifdef USENEE
-			return Color(0, 0, 0);
+			if (specularRay)
+				return light->color;
+			else
+				return Color(0, 0, 0);
 		#else
 			return light->color;
 		#endif
@@ -362,7 +365,8 @@ Color Game::Sample(Ray r, uint depth)
 			refractDir.normalize();
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
-			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, depth + 1 );
+			// Does the specular bool need to be here true?
+			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, true, depth + 1 );
 		}
 	}
 
@@ -407,7 +411,7 @@ Color Game::Sample(Ray r, uint depth)
 	randomRay.Offset(1e-3);
 
 	// irradiance
-	Color ei = Sample( randomRay, depth + 1 ) * dot( interNormal, randomRay.direction );
+	Color ei = Sample( randomRay, false, depth + 1 ) * dot( interNormal, randomRay.direction );
 	Color result = PI * 2.0f * BRDF * ei;
 
 	#ifdef USENEE
@@ -484,13 +488,13 @@ void Game::Tick()
 			for ( size_t i = 0; i < 4; i++ )
 			{
 				Ray r = ComputePrimaryRay(screen, view, x, y, i, i + 4);
-				Color rayColor = Sample( r, 0 );
+				Color rayColor = Sample( r, true, 0 );
 				color += rayColor;
 			}
 			color *= 0.25;
 		#else
 			Ray r = ComputePrimaryRay(screen, view, x, y, 0, 0);
-			Color color = Sample( r, 0 );
+			Color color = Sample( r, true, 0 );
 		#endif
 		color.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
