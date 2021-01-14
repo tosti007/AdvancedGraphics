@@ -382,19 +382,24 @@ Color Game::Sample(Ray r, uint depth)
 	// Direct light for NEE
 	Light rLight = lights[RandomIndex( nr_lights )];
 	vec3 rLightPoint = rLight.PointOnLight();
-	
-	vec3 rLightDir = normalize(rLightPoint - interPoint);
 	vec3 rLightNormal = rLight.NormalAt(rLightPoint);
-	float rLightDist = ( rLightPoint - interPoint ).length();
-	float rLightArea = rLight.Area();
+	vec3 rLightDir = rLightPoint - interPoint;
+	float rLightDist = rLightDir.length();
+	rLightDir *= 1 / rLightDist;
 
-	Ray rLightRay = Ray( interPoint, rLightDir );
-	rLightRay.t = rLightDist;
-	Color rLightCol = 0x000000;
-	if (interNormal.dot(rLightDir) > 0 && rLightNormal.dot(-rLightDir) && !CheckOcclusion(&rLightRay))
+	Color rLightCol = Color(0, 0, 0);
+	float cos_i = interNormal.dot(rLightDir);
+	float cos_o = rLightNormal.dot(-rLightDir);
+	if (cos_i > 0 && cos_o > 0)
 	{
-		float solidAngle = ( ( rLightNormal.dot(-rLightDir)) * rLightArea) / (rLightDist * rLightDist);
-		rLightCol = rLight.color * solidAngle * BRDF * interNormal.dot( rLightDir );
+		Ray rLightRay = Ray( interPoint, rLightDir );
+		rLightRay.t = rLightDist;
+		if (!CheckOcclusion(&rLightRay))
+		{
+			float rLightArea = rLight.Area();
+			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
+			rLightCol = rLight.color * solidAngle * BRDF * cos_i;
+		}
 	}
 	#endif
 
