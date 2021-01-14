@@ -85,7 +85,7 @@ void Swap( uint *a, uint *b )
 void BVHNode::Subdivide( BVH *bvh, aabb* triangle_bounds )
 {
 	// Max number of primitives per leaf
-	if ( count <= 3 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
+	if ( count <= 4 || bvh->nr_nodes + 2 >= bvh->nr_nodes_max)
 		return;
 
 #if BVHBINS == 0
@@ -122,6 +122,9 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	float binLength = (bounds.bmax[axis] - edgeMin) / nr_bins;
 	*/
 	float binLengthInv = 1 / binLength;
+
+	if (binLength <= 1e-3)
+		return;
 
 	uint counts[nr_bins];
 	aabb boxes[nr_bins];

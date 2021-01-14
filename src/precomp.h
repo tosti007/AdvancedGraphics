@@ -68,7 +68,7 @@
 //  - For full SAH use 0
 //  - For median split use 2
 //  - For any other amount of bins use n
-#define BVHBINS 1024
+#define BVHBINS 8
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
