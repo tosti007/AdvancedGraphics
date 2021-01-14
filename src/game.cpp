@@ -373,15 +373,15 @@ Color Game::Sample(Ray r, uint depth)
 		Ray reflectRay = Ray( interPoint, r.direction );
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
-		Color reflectCol = Sample( reflectRay, depth + 1 );
+		Color reflectCol = Sample( reflectRay, true, depth + 1 );
 		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
 	}
 
 	#ifdef USENEE
 	// Direct light for NEE
-	Light rLight = lights[RandomIndex( nr_lights )];
-	vec3 rLightPoint = rLight.PointOnLight();
-	vec3 rLightNormal = rLight.NormalAt(rLightPoint);
+	Light *rLight = lights[RandomIndex( nr_lights )];
+	vec3 rLightPoint = rLight->PointOnLight();
+	vec3 rLightNormal = rLight->NormalAt(rLightPoint);
 	vec3 rLightDir = rLightPoint - interPoint;
 	float rLightDist = rLightDir.length();
 	rLightDir *= 1 / rLightDist;
@@ -395,9 +395,9 @@ Color Game::Sample(Ray r, uint depth)
 		rLightRay.t = rLightDist;
 		if (!CheckOcclusion(&rLightRay))
 		{
-			float rLightArea = rLight.Area();
+			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
-			rLightCol = rLight.color * solidAngle * BRDF * cos_i;
+			rLightCol = rLight->color * solidAngle * BRDF * cos_i;
 		}
 	}
 	#endif
