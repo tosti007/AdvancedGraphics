@@ -476,6 +476,9 @@ void Game::Tick()
 	#endif
 	
 	unmoved_frames++;
+	// uncomment to render just one frame 
+	//if (unmoved_frames > 1) return;
+
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
