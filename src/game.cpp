@@ -380,7 +380,7 @@ Color Game::Sample(Ray r, uint depth)
 
 	#ifdef USENEE
 	// Direct light for NEE
-	Light &rLight = *lights[RandomIndex( nr_lights )];
+	Light rLight = lights[RandomIndex( nr_lights )];
 	vec3 rLightPoint = rLight.PointOnLight();
 	
 	vec3 rLightDir = normalize(rLightPoint - interPoint);
