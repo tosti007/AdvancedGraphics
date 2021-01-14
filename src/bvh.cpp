@@ -106,7 +106,6 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 		const size_t nr_bins = BVHBINS;
 	#endif
 	// Find longest axis and location for split
-	/*
 	// This should yield better values, but increases computational performance by a bit.
 	aabb parentbounds; parentbounds.Reset();
 	for ( size_t i = firstleft; i < firstleft + count; i++ )
@@ -117,10 +116,11 @@ void BVHNode::Subdivide_Binned( BVH *bvh, aabb* triangle_bounds )
 	int axis = parentbounds.LongestAxis();
 	float edgeMin = parentbounds.bmin[axis];
 	float binLength = (parentbounds.bmax[axis] - edgeMin) / nr_bins;
-	*/
+	/*
 	int axis = this->bounds.LongestAxis();
 	float edgeMin = bounds.bmin[axis];
 	float binLength = (bounds.bmax[axis] - edgeMin) / nr_bins;
+	*/
 	float binLengthInv = 1 / binLength;
 
 	uint counts[nr_bins];
