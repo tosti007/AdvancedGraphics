@@ -59,7 +59,7 @@
 
 // Anti-aliasing 4x
 //#define SSAA
-#define USESTRATIFICATION
+//#define USESTRATIFICATION
 //#define USENEE
 //#define USEVIGNETTING
 #define USEBVH
