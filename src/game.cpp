@@ -433,6 +433,22 @@ float randArray[8] = {
 	Rand( 1 ),
 	Rand( 1 ) };
 
+Ray ComputePrimaryRay(Surface* screen, Camera* view, int x, int y, size_t i, size_t j)
+{
+	float u = x, v = y;
+
+#ifdef SSAA
+	u += randArray[i];
+	v += randArray[i + j];
+#endif
+
+	u /= screen->GetWidth();
+	v /= screen->GetHeight();
+	vec3 dir = view->topLeft + u * view->right + v * view->down;
+	dir.normalize();
+	return Ray( view->position, dir );
+}
+
 // -----------------------------------------------------------
 // Main application tick function
 // -----------------------------------------------------------
@@ -452,29 +468,19 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		uint id = x + y * screen->GetWidth();
-		float u = (float)x / screen->GetWidth();
-		float v = (float)y / screen->GetHeight();
 
 		#ifdef SSAA
 			// 4 rays with random offsett, then compute average
 			Color color;
 			for ( size_t i = 0; i < 4; i++ )
 			{
-				float u2 = ((float)x + randArray[i]) / screen->GetWidth();
-				float v2 = ((float)y + randArray[i+4] ) / screen->GetHeight();
-				vec3 dir = view->topLeft + u2 * view->right + v2 * view->down;
-				dir.normalize();
-				Ray r = Ray( view->position, dir );
+				Ray r = ComputePrimaryRay(screen, view, x, y, i, i + 4);
 				Color rayColor = Sample( r, 0 );
 				color += rayColor;
 			}
 			color *= 0.25;
 		#else
-			vec3 dir = view->topLeft + u * view->right + v * view->down;
-			dir.normalize();
-
-			Ray r = Ray( view->position, dir );
-
+			Ray r = ComputePrimaryRay(screen, view, x, y, 0, 0);
 			Color color = Sample( r, 0 );
 		#endif
 		color.GammaCorrect();
