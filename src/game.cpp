@@ -143,12 +143,9 @@ void Game::InitFromTinyObj( const std::string filename )
 void Game::SetTarget( Surface* surface )
 { 
 	screen = surface;
-	if (colors != nullptr)
-		free(colors);
-	colors = new Color[screen->GetWidth() * screen->GetHeight()];
-	if ( firstNormals != nullptr )
-		free( firstNormals );
-	firstNormals = new vec3[screen->GetWidth() * screen->GetHeight()];
+	if (pixelData != nullptr)
+		free(pixelData);
+	pixelData = new PixelData[screen->GetWidth() * screen->GetHeight()];
 	CameraChanged();
 }
 
@@ -301,7 +298,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	bool found = Intersect( &r, bvhDepth );
 
 	#ifdef VISUALIZEBVH
-		return { 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 };
+		return Color( 0, std::min( 0.02f * bvhDepth, 1.0f ), 0 );
 	#endif
 
 	// No intersection point found
@@ -330,10 +327,6 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
-
-	// Save interNormal for filtering
-	if (depth == 0)
-		firstNormals[pixelId] = interNormal;
 
 	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
 	float angle = -dot( r.direction, interNormal );
@@ -426,6 +419,12 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	result += rLightCol;
 	#endif
 
+	// Save data for filtering
+	if (depth == 0)
+	{
+		pixelData[pixelId].interNormal = interNormal;
+	}
+
 	return result;
 }
 
@@ -516,25 +515,25 @@ void Game::Tick()
 			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 		#endif
 
-		colors[id] += color;
+		pixelData[id].color += color;
 
 		// Simple kernel filter
 		if ( x >= 2 && y >= 2 )
 		{
 			Color tmp = Color( 0, 0, 0 );
-			tmp += 0.05 * colors[( x - 2 ) + ( y - 2 ) * screen->GetWidth()];
-			tmp += 0.15 * colors[( x - 1 ) + ( y - 2 ) * screen->GetWidth()];
-			tmp += 0.05 * colors[( x ) + ( y - 2 ) * screen->GetWidth()];
-			tmp += 0.15 * colors[( x - 2 ) + ( y - 1 ) * screen->GetWidth()];
-			tmp += 0.2 * colors[( x - 1 ) + ( y - 1 ) * screen->GetWidth()];
-			tmp += 0.15 * colors[( x ) + ( y - 1 ) * screen->GetWidth()];
-			tmp += 0.05 * colors[( x - 2 ) + (y)*screen->GetWidth()];
-			tmp += 0.15 * colors[( x - 1 ) + (y)*screen->GetWidth()];
-			tmp += 0.05 * colors[( x ) + (y)*screen->GetWidth()];
-			screen->GetBuffer()[( x - 1 ) + ( ( y - 1 ) * screen->GetWidth() )] = tmp.ToPixel( unmoved_frames );
+			tmp += 0.05 * pixelData[id - 2 - 2 * screen->GetWidth()].color;
+			tmp += 0.15 * pixelData[id - 1 - 2 * screen->GetWidth()].color;
+			tmp += 0.05 * pixelData[id - 2 * screen->GetWidth()].color;
+			tmp += 0.15 * pixelData[id - 2 - screen->GetWidth()].color;
+			tmp += 0.20 * pixelData[id - 1 - screen->GetWidth()].color;
+			tmp += 0.15 * pixelData[id - screen->GetWidth()].color;
+			tmp += 0.05 * pixelData[id - 2].color;
+			tmp += 0.15 * pixelData[id - 1].color;
+			tmp += 0.05 * pixelData[id].color;
+			screen->GetBuffer()[id - 1 - screen->GetWidth()] = tmp.ToPixel( unmoved_frames );
 		}
 		else
-			screen->GetBuffer()[id] = colors[id].ToPixel( unmoved_frames );
+			screen->GetBuffer()[id] = pixelData[id].color.ToPixel( unmoved_frames );
 	}
 
 	// Write debug output
@@ -561,14 +560,10 @@ void Game::Tick()
 void Game::CameraChanged()
 {
 	unmoved_frames = 0;
-	auto scr_buf = screen->GetBuffer();
 	int max = screen->GetWidth() * screen->GetHeight();
 	for ( int i = 0; i < max; i++ )
 	{
-		scr_buf[i] = 0;
-		colors[i].r = 0.0f;
-		colors[i].g = 0.0f;
-		colors[i].b = 0.0f;
-		firstNormals[i] = ( 0.0f, 0.0f, 0.0f );
+		pixelData[i].color = Color(0.0f, 0.0f, 0.0f);
+		pixelData[i].interNormal = vec3( 0.0f );
 	}
 }

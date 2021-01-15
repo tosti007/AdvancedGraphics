@@ -12,6 +12,15 @@
 
 namespace AdvancedGraphics {
 
+struct PixelData
+{
+	Color color;
+	vec3 interNormal;
+
+	inline PixelData() = default;
+	inline PixelData(Color c, vec3 N): color(c), interNormal(N) {}
+};
+
 class Game
 {
 public:
@@ -34,8 +43,7 @@ public:
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
-    Color* colors = nullptr;
-	vec3* firstNormals = nullptr;
+	PixelData* pixelData = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
