@@ -40,6 +40,7 @@ public:
 	Light* IntersectLights( Ray* r );
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
+	Color Filter( uint pixelId );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:

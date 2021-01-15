@@ -428,6 +428,21 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	return result;
 }
 
+Color Game::Filter( uint pixelId )
+{
+	Color tmp = Color( 0, 0, 0 );
+	tmp += 0.05 * pixelData[pixelId - 1 - screen->GetWidth()].color;
+	tmp += 0.15 * pixelData[pixelId     - screen->GetWidth()].color;
+	tmp += 0.05 * pixelData[pixelId + 1 - screen->GetWidth()].color;
+	tmp += 0.15 * pixelData[pixelId - 1].color;
+	tmp += 0.20 * pixelData[pixelId    ].color;
+	tmp += 0.15 * pixelData[pixelId + 1].color;
+	tmp += 0.05 * pixelData[pixelId - 1 + screen->GetWidth()].color;
+	tmp += 0.15 * pixelData[pixelId     + screen->GetWidth()].color;
+	tmp += 0.05 * pixelData[pixelId + 1 + screen->GetWidth()].color;
+	return tmp;
+}
+
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
 	va_list va;
@@ -494,7 +509,7 @@ void Game::Tick()
 
 		#ifdef SSAA
 			// 4 rays with random offsett, then compute average
-			Color color;
+			Color color(0, 0, 0);
 			for ( size_t i = 0; i < 4; i++ )
 			{
 				Ray r = ComputePrimaryRay(screen, view, x, y, i, i + 4);
@@ -516,24 +531,19 @@ void Game::Tick()
 		#endif
 
 		pixelData[id].color += color;
+	}
 
-		// Simple kernel filter
-		if ( x >= 2 && y >= 2 )
-		{
-			Color tmp = Color( 0, 0, 0 );
-			tmp += 0.05 * pixelData[id - 2 - 2 * screen->GetWidth()].color;
-			tmp += 0.15 * pixelData[id - 1 - 2 * screen->GetWidth()].color;
-			tmp += 0.05 * pixelData[id - 2 * screen->GetWidth()].color;
-			tmp += 0.15 * pixelData[id - 2 - screen->GetWidth()].color;
-			tmp += 0.20 * pixelData[id - 1 - screen->GetWidth()].color;
-			tmp += 0.15 * pixelData[id - screen->GetWidth()].color;
-			tmp += 0.05 * pixelData[id - 2].color;
-			tmp += 0.15 * pixelData[id - 1].color;
-			tmp += 0.05 * pixelData[id].color;
-			screen->GetBuffer()[id - 1 - screen->GetWidth()] = tmp.ToPixel( unmoved_frames );
-		}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
+		uint id = x + y * screen->GetWidth();
+		Color result;
+		if ( x > 0 && x < screen->GetWidth() - 1 && y > 0 && y < screen->GetHeight() - 1)
+			result = Filter(id);
 		else
-			screen->GetBuffer()[id] = pixelData[id].color.ToPixel( unmoved_frames );
+			result = pixelData[id].color;
+		screen->GetBuffer()[id] = result.ToPixel( unmoved_frames );
 	}
 
 	// Write debug output
