@@ -443,6 +443,32 @@ Color Game::Filter( uint pixelId )
 	return tmp;
 }
 
+Color Game::BilateralFilter( uint pixelId, int size )
+{
+	vec3 &centerNormal = pixelData[pixelId].interNormal;
+	int center = size / 2;
+
+	// Compute weights
+	float *weights = new float[size * size];
+	float totalWeight = 0;
+	for ( int x = -center; x < center + 1; x++ )
+		for ( int y = -center; y < center + 1; y++ )
+		{
+			float weight = centerNormal.dot( pixelData[pixelId + x + y * screen->GetWidth()].interNormal );
+			weights[(x + center) + (y + center) * size] = weight;
+			totalWeight += weight;
+		}
+	
+	float invTotalWeight = 1 / totalWeight;
+
+	// Apply kernel
+	Color tmp = Color( 0, 0, 0 );
+	for ( int x = -center; x < center + 1; x++ )
+		for (int y = -center; y < center + 1; y++)
+			tmp += weights[(center + 1) + (center + 1) * size] * invTotalWeight * pixelData[pixelId + x + y * screen->GetWidth()].color;
+
+	return tmp;
+}
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
 	va_list va;
@@ -539,8 +565,8 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 		Color result;
-		if ( x > 0 && x < screen->GetWidth() - 1 && y > 0 && y < screen->GetHeight() - 1)
-			result = Filter(id);
+		if ( x > 3 && x < screen->GetWidth() - 4 && y > 3 && y < screen->GetHeight() - 4)
+			result = BilateralFilter(id, 9);
 		else
 			result = pixelData[id].color;
 		screen->GetBuffer()[id] = result.ToPixel( unmoved_frames );
