@@ -568,16 +568,21 @@ void Game::Tick()
 		pixelData[id].color += color;
 	}
 
+	// Apply filter technique
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		uint id = x + y * screen->GetWidth();
+		Color allColor = pixelData[id].color;
+		//Color normalized = normalize( allColor );
+		Color BRDFColor = pixelData[id].BRDF;
+		Color illumination = allColor - BRDFColor;
 		Color result;
-		if ( x > 3 && x < screen->GetWidth() - 4 && y > 3 && y < screen->GetHeight() - 4)
-			result = BilateralFilter(id, 9);
+		if ( x > 0 && x < screen->GetWidth() - 1 && y > 0 && y < screen->GetHeight() - 1)
+			result = BilateralFilter(id, 3);
 		else
-			result = pixelData[id].color;
+			result = allColor;
 		screen->GetBuffer()[id] = result.ToPixel( unmoved_frames );
 	}
 
