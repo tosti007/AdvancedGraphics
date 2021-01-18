@@ -34,6 +34,7 @@ struct Color {
 	void operator *= ( const Color& a ) { r *= a.r; g *= a.g; b *= a.b; }
 	void operator /= ( const Color& a ) { r /= a.r; g /= a.g; b /= a.b; }
 	void operator += ( const Color& a ) { r += a.r; g += a.g; b += a.b; }
+	float dot( const Color &operand ) const { return r * operand.r + g * operand.g + b * operand.b; }
 };
 
 Color operator * ( const float& a, const Color& c );

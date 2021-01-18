@@ -422,7 +422,11 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// Save data for filtering
 	if (depth == 0)
 	{
-		pixelData[pixelId].interNormal = interNormal;
+		PixelData &pixel = pixelData[pixelId];
+		pixel.interNormal = interNormal;
+		pixel.FirstIntersect = interPoint;
+		pixel.materialIndex = r.obj->material;
+		pixel.BRDF = BRDF;
 	}
 
 	return result;
@@ -445,7 +449,7 @@ Color Game::Filter( uint pixelId )
 
 Color Game::BilateralFilter( uint pixelId, int size )
 {
-	vec3 &centerNormal = pixelData[pixelId].interNormal;
+	PixelData &centerPixel = pixelData[pixelId];
 	int center = size / 2;
 
 	// Compute weights
@@ -454,9 +458,14 @@ Color Game::BilateralFilter( uint pixelId, int size )
 	for ( int x = -center; x < center + 1; x++ )
 		for ( int y = -center; y < center + 1; y++ )
 		{
-			float weight = centerNormal.dot( pixelData[pixelId + x + y * screen->GetWidth()].interNormal );
-			weights[(x + center) + (y + center) * size] = weight;
-			totalWeight += weight;
+			PixelData &otherPixel = pixelData[pixelId + x + y * screen->GetWidth()];
+			float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
+			float interWeight = centerPixel.FirstIntersect.dot( otherPixel.FirstIntersect );
+			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
+			float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
+
+			weights[( x + center ) + ( y + center ) * size] = normalWeight;
+			totalWeight += normalWeight;
 		}
 	
 	float invTotalWeight = 1 / totalWeight;
