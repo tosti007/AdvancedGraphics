@@ -16,7 +16,7 @@ struct PixelData
 {
 	Color color;
 	vec3 interNormal;
-	vec3 FirstIntersect;
+	vec3 firstIntersect;
 	uint materialIndex;
 	Color BRDF;
 

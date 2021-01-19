@@ -427,7 +427,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	{
 		PixelData &pixel = pixelData[pixelId];
 		pixel.interNormal = interNormal;
-		pixel.FirstIntersect = interPoint;
+		pixel.firstIntersect = interPoint;
 		pixel.materialIndex = r.obj->material;
 		pixel.BRDF = BRDF;
 	}
@@ -462,7 +462,7 @@ Color Game::Filter( uint pixelId )
 
 Color Game::BilateralFilter( uint pixelId )
 {
-	// PixelData &centerPixel = pixelData[pixelId];
+	PixelData &centerPixel = pixelData[pixelId];
 
 	// Compute weights
 	float *weights = new float[kernel_size * kernel_size];
@@ -471,12 +471,17 @@ Color Game::BilateralFilter( uint pixelId )
 		for ( size_t x = 0; x < kernel_size; x++ )
 		{
 			size_t kernel_id = x + y * kernel_size;
-			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
-			float weight = kernel[kernel_id]; 
+			PixelData &otherPixel = pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()];
 
-			// PixelData &otherPixel = pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()];
+			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
+			float weight = kernel[kernel_id];
+
+			// Intersection point distance
+			const float sigma_firstIntersect = 1; // I have no idea
+			float weight_firstIntersect = (otherPixel.firstIntersect - centerPixel.firstIntersect).sqrLentgh();
+			weight *= exp( -weight_firstIntersect / (2 * sigma_firstIntersect * sigma_firstIntersect) );
+
 			// float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
-			// float interWeight = centerPixel.FirstIntersect.dot( otherPixel.FirstIntersect );
 			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
 			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
 
