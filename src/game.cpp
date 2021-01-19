@@ -460,6 +460,30 @@ Color Game::Filter( uint pixelId )
 	return tmp;
 }
 
+float ComputeWeightRaw(const float sigma, const float value)
+{
+	return exp( -value / (2 * sigma * sigma) );
+}
+
+float ComputeWeight(const float sigma, const float a, const float b)
+{
+	const float value = a - b;
+	return ComputeWeightRaw(sigma, value*value);
+}
+
+float ComputeWeight_Distance(const float sigma, const vec3 a, const vec3 b)
+{
+	return ComputeWeightRaw(sigma, (a - b).sqrLentgh());
+}
+
+// a and b are assumed to be normalized.
+float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
+{
+	// A large dot product implies a small difference and vica verse, hence we invert the value
+	const float value = 1 - dot(a, b);
+	return ComputeWeightRaw(sigma, value*value);
+}
+
 Color Game::BilateralFilter( uint pixelId )
 {
 	PixelData &centerPixel = pixelData[pixelId];
@@ -477,12 +501,18 @@ Color Game::BilateralFilter( uint pixelId )
 			float weight = kernel[kernel_id];
 
 			// Intersection point distance
-			const float sigma_firstIntersect = 1; // I have no idea
-			float weight_firstIntersect = (otherPixel.firstIntersect - centerPixel.firstIntersect).sqrLentgh();
-			weight *= exp( -weight_firstIntersect / (2 * sigma_firstIntersect * sigma_firstIntersect) );
+			weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
 
-			// float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
-			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
+			// Intersection normal angle
+			weight *= ComputeWeight_Angle(0.5f, otherPixel.interNormal, centerPixel.interNormal);
+
+			// Material index difference
+			// If the materials are the same the bool will be true, and thus the total value will be 0
+			// If they are not the same the value will evaluate to 1.
+			// We do not need to do a square as the values can only be 0 or 1, thus we can call raw.
+			weight *= ComputeWeightRaw(0.5f, 1 - (otherPixel.materialIndex == centerPixel.materialIndex));
+
+			// I am unsure how to implement this yet.
 			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
 
 			weights[kernel_id] = weight;
