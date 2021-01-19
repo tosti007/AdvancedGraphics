@@ -432,18 +432,25 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	return result;
 }
 
+const size_t kernel_size = 3;
+const float kernel[kernel_size * kernel_size] = {
+	0.05, 0.15, 0.05,
+	0.15, 0.20,	0.15,
+	0.05, 0.15, 0.05,
+};
+
 Color Game::Filter( uint pixelId )
 {
 	Color tmp = Color( 0, 0, 0 );
-	tmp += 0.05 * pixelData[pixelId - 1 - screen->GetWidth()].color;
-	tmp += 0.15 * pixelData[pixelId     - screen->GetWidth()].color;
-	tmp += 0.05 * pixelData[pixelId + 1 - screen->GetWidth()].color;
-	tmp += 0.15 * pixelData[pixelId - 1].color;
-	tmp += 0.20 * pixelData[pixelId    ].color;
-	tmp += 0.15 * pixelData[pixelId + 1].color;
-	tmp += 0.05 * pixelData[pixelId - 1 + screen->GetWidth()].color;
-	tmp += 0.15 * pixelData[pixelId     + screen->GetWidth()].color;
-	tmp += 0.05 * pixelData[pixelId + 1 + screen->GetWidth()].color;
+	tmp += kernel[0] * pixelData[pixelId - 1 - screen->GetWidth()].color;
+	tmp += kernel[1] * pixelData[pixelId     - screen->GetWidth()].color;
+	tmp += kernel[2] * pixelData[pixelId + 1 - screen->GetWidth()].color;
+	tmp += kernel[3] * pixelData[pixelId - 1].color;
+	tmp += kernel[4] * pixelData[pixelId    ].color;
+	tmp += kernel[5] * pixelData[pixelId + 1].color;
+	tmp += kernel[6] * pixelData[pixelId - 1 + screen->GetWidth()].color;
+	tmp += kernel[7] * pixelData[pixelId     + screen->GetWidth()].color;
+	tmp += kernel[8] * pixelData[pixelId + 1 + screen->GetWidth()].color;
 	return tmp;
 }
 
