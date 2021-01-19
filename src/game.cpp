@@ -433,7 +433,9 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 }
 
 // Generated with: http://dev.theomader.com/gaussian-kernel-calculator/
+// kernel_size MUST be an odd number.
 const size_t kernel_size = 3;
+const size_t kernel_center = kernel_size / 2;
 const float kernel[kernel_size * kernel_size] = {
     0.077847, 0.123317, 0.077847,
     0.123317, 0.195346, 0.123317,
@@ -455,36 +457,37 @@ Color Game::Filter( uint pixelId )
 	return tmp;
 }
 
-Color Game::BilateralFilter( uint pixelId, int size )
+Color Game::BilateralFilter( uint pixelId )
 {
-	PixelData &centerPixel = pixelData[pixelId];
-	int center = size / 2;
+	// PixelData &centerPixel = pixelData[pixelId];
 
 	// Compute weights
-	float *weights = new float[size * size];
+	float *weights = new float[kernel_size * kernel_size];
 	float totalWeight = 0;
-	for ( int x = -center; x < center + 1; x++ )
-		for ( int y = -center; y < center + 1; y++ )
+	for ( size_t y = 0; y < kernel_size; y++ )
+		for ( size_t x = 0; x < kernel_size; x++ )
 		{
-			PixelData &otherPixel = pixelData[pixelId + x + y * screen->GetWidth()];
-			float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
-			float interWeight = centerPixel.FirstIntersect.dot( otherPixel.FirstIntersect );
-			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
-			float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
+			size_t kernel_id = x + y * kernel_size;
+			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
+			float totalWeight = kernel[kernel_id]; 
 
-			weights[( x + center ) + ( y + center ) * size] = normalWeight;
-			totalWeight += normalWeight;
+			// PixelData &otherPixel = pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()];
+			// float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
+			// float interWeight = centerPixel.FirstIntersect.dot( otherPixel.FirstIntersect );
+			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
+			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
+
+			weights[kernel_id] = totalWeight;
+			totalWeight += totalWeight;
 		}
 	
-	float invTotalWeight = 1 / totalWeight;
-
 	// Apply kernel
-	Color tmp = Color( 0, 0, 0 );
-	for ( int x = -center; x < center + 1; x++ )
-		for (int y = -center; y < center + 1; y++)
-			tmp += weights[(center + 1) + (center + 1) * size] * invTotalWeight * pixelData[pixelId + x + y * screen->GetWidth()].color;
+	Color result = Color( 0, 0, 0 );
+	for ( size_t y = 0; y < kernel_size; y++ )
+		for ( size_t x = 0; x < kernel_size; x++ )
+			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].color;
 
-	return tmp;
+	return result * (1 / totalWeight);
 }
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
@@ -587,8 +590,8 @@ void Game::Tick()
 		Color BRDFColor = pixelData[id].BRDF;
 		Color illumination = allColor - BRDFColor;
 		Color result;
-		if ( x > 0 && x < screen->GetWidth() - 1 && y > 0 && y < screen->GetHeight() - 1)
-			result = BilateralFilter(id, 3);
+		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
+			result = BilateralFilter(id);
 		else
 			result = allColor;
 		screen->GetBuffer()[id] = result.ToPixel( unmoved_frames );
