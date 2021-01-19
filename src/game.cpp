@@ -472,7 +472,7 @@ Color Game::BilateralFilter( uint pixelId )
 		{
 			size_t kernel_id = x + y * kernel_size;
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
-			float totalWeight = kernel[kernel_id]; 
+			float weight = kernel[kernel_id]; 
 
 			// PixelData &otherPixel = pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()];
 			// float normalWeight = centerPixel.interNormal.dot( otherPixel.interNormal );
@@ -480,10 +480,10 @@ Color Game::BilateralFilter( uint pixelId )
 			//float materialWeight = centerPixel.materialIndex.dot( otherPixel.materialIndex );
 			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
 
-			weights[kernel_id] = totalWeight;
-			totalWeight += totalWeight;
+			weights[kernel_id] = weight;
+			totalWeight += weight;
 		}
-	
+
 	// Apply kernel
 	Color result = Color( 0, 0, 0 );
 	for ( size_t y = 0; y < kernel_size; y++ )
@@ -584,9 +584,9 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 		Color result;
-		// if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
-		// 	result = BilateralFilter(id);
-		// else
+		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
+			result = BilateralFilter(id);
+		else
 			result = pixelData[id].color;
 
 		result.GammaCorrect();
