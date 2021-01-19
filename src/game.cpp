@@ -432,11 +432,12 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	return result;
 }
 
+// Generated with: http://dev.theomader.com/gaussian-kernel-calculator/
 const size_t kernel_size = 3;
 const float kernel[kernel_size * kernel_size] = {
-	0.05, 0.15, 0.05,
-	0.15, 0.20,	0.15,
-	0.05, 0.15, 0.05,
+    0.077847, 0.123317, 0.077847,
+    0.123317, 0.195346, 0.123317,
+    0.077847, 0.123317, 0.077847,
 };
 
 Color Game::Filter( uint pixelId )
