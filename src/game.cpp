@@ -146,6 +146,9 @@ void Game::SetTarget( Surface* surface )
 	if (pixelData != nullptr)
 		free(pixelData);
 	pixelData = new PixelData[screen->GetWidth() * screen->GetHeight()];
+	if (pixelColor != nullptr)
+		free(pixelColor);
+	pixelColor = new Color[screen->GetWidth() * screen->GetHeight()];
 	CameraChanged();
 }
 
@@ -569,14 +572,8 @@ void Game::Tick()
 			//if ( !isinf( r.t ) )
 			//	firstInters[id] = r.origin + r.t * r.direction;
 		#endif
-		color.GammaCorrect();
-		//color.ChromaticAbberation( { u, v } );
 
-		#ifdef USEVIGNETTING
-			color.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
-		#endif
-
-		pixelData[id].color += color;
+		pixelData[id].color = color;
 	}
 
 	// Apply filter technique
@@ -585,16 +582,25 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		uint id = x + y * screen->GetWidth();
-		Color allColor = pixelData[id].color;
-		//Color normalized = normalize( allColor );
-		Color BRDFColor = pixelData[id].BRDF;
-		Color illumination = allColor - BRDFColor;
+
 		Color result;
-		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
-			result = BilateralFilter(id);
-		else
-			result = allColor;
-		screen->GetBuffer()[id] = result.ToPixel( unmoved_frames );
+		// if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
+		// 	result = BilateralFilter(id);
+		// else
+			result = pixelData[id].color;
+
+		result.GammaCorrect();
+		//color.ChromaticAbberation( { u, v } );
+
+		#ifdef USEVIGNETTING
+			result.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
+		#endif
+
+		pixelColor[id] += result;
+		result = pixelColor[id];
+		result *= 1.0f / unmoved_frames;
+
+		screen->GetBuffer()[id] = result.ToPixel();
 	}
 
 	// Write debug output
@@ -623,8 +629,5 @@ void Game::CameraChanged()
 	unmoved_frames = 0;
 	int max = screen->GetWidth() * screen->GetHeight();
 	for ( int i = 0; i < max; i++ )
-	{
-		pixelData[i].color = Color(0.0f, 0.0f, 0.0f);
-		pixelData[i].interNormal = vec3( 0.0f );
-	}
+		pixelColor[i] = Color(0.0f, 0.0f, 0.0f);
 }

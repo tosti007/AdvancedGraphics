@@ -49,6 +49,7 @@ public:
 
   private:
 	PixelData* pixelData = nullptr;
+	Color* pixelColor = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
