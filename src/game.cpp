@@ -16,7 +16,7 @@
 void Game::InitDefaultScene()
 {
 	// materials
-	nr_materials = 6;
+	nr_materials = 7;
 	materials = new Material[nr_materials] {
 		Material(0, 0, 1, Color(1, 1, 1), nullptr), // wall
 		Material(1, 0, 1, Color(1, 1, 1), nullptr), // mirror
@@ -24,6 +24,7 @@ void Game::InitDefaultScene()
 		Material(0, 0, 1, Color(1, 0, 0), nullptr), // red
 		Material(0, 0, 1, Color(0, 1, 0), nullptr), // green
 		Material(0, 0, 1, Color(0, 0, 1), nullptr), // blue
+		Material(0, 0, 1, Color(1, 1, 0), nullptr), // yellow
 	};
 
 	// triangles
@@ -43,8 +44,8 @@ void Game::InitDefaultScene()
 		Triangle(lbv, rba, rbv, 0), // roof 2
 		Triangle(loa, lba, lov, 3), // wall left 1
 		Triangle(lba, lov, lbv, 3), // wall left 2
-		Triangle(roa, rba, rov, 3), // wall right 1
-		Triangle(rba, rov, rbv, 3), // wall right 2
+		Triangle(roa, rba, rov, 6), // wall right 1
+		Triangle(rba, rov, rbv, 6), // wall right 2
 		Triangle(loa, lba, roa, 0), // wall back 1
 		Triangle(lba, roa, rba, 0), // wall back 2
 		Triangle(lov, lbv, rov, 0), // wall front 1
