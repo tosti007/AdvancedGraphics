@@ -19,6 +19,7 @@ struct PixelData
 	vec3 firstIntersect;
 	uint materialIndex;
 	Color BRDF;
+	Color Illumination;
 
 	inline PixelData() = default;
 	inline PixelData(Color c, vec3 N): color(c), interNormal(N) {}

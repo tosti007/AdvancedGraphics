@@ -417,6 +417,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// irradiance
 	Color ei = Sample( randomRay, false, depth + 1, pixelId ) * dot( interNormal, randomRay.direction );
 	Color result = PI * 2.0f * BRDF * ei;
+	Color illumination = result - BRDF;
 
 	#ifdef USENEE
 	result += rLightCol;
@@ -430,6 +431,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		pixel.firstIntersect = interPoint;
 		pixel.materialIndex = r.obj->material;
 		pixel.BRDF = BRDF;
+		pixel.Illumination = illumination;
 	}
 
 	return result;
@@ -534,7 +536,7 @@ Color Game::BilateralFilter( uint pixelId )
 	Color result = Color( 0, 0, 0 );
 	for ( size_t y = 0; y < kernel_size; y++ )
 		for ( size_t x = 0; x < kernel_size; x++ )
-			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].color;
+			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].Illumination;
 
 	return result * (1 / totalWeight);
 }
@@ -631,7 +633,7 @@ void Game::Tick()
 
 		Color result;
 		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
-			result = BilateralFilter(id);
+			result = BilateralFilter( id ) + pixelData[id].BRDF;
 		else
 			result = pixelData[id].color;
 
