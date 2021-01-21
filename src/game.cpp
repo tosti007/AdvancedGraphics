@@ -346,6 +346,19 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	if (r.obj->material >= 0) 
 		mat = &materials[r.obj->material];
 
+	// Save data for filtering
+	if (depth == 0)
+	{
+		PixelData &pixel = pixelData[pixelId];
+		pixel.interNormal = interNormal;
+		pixel.firstIntersect = interPoint;
+		pixel.materialIndex = r.obj->material;
+		pixel.albedo = albedo;
+
+		albedo = Color(1, 1, 1);
+		BRDF = albedo * INVPI;
+	}
+
 	bool reflect = false;
 	bool refract = false;
 
@@ -419,22 +432,10 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// irradiance
 	Color ei = Sample( randomRay, false, depth + 1, pixelId ) * dot( interNormal, randomRay.direction );
 	Color result = PI * 2.0f * BRDF * ei;
-	Color illumination = result - BRDF;
 
 	#ifdef USENEE
 	result += rLightCol;
 	#endif
-
-	// Save data for filtering
-	if (depth == 0)
-	{
-		PixelData &pixel = pixelData[pixelId];
-		pixel.interNormal = interNormal;
-		pixel.firstIntersect = interPoint;
-		pixel.materialIndex = r.obj->material;
-		pixel.BRDF = BRDF;
-		pixel.Illumination = illumination;
-	}
 
 	return result;
 }
@@ -538,7 +539,7 @@ Color Game::BilateralFilter( uint pixelId )
 	Color result = Color( 0, 0, 0 );
 	for ( size_t y = 0; y < kernel_size; y++ )
 		for ( size_t x = 0; x < kernel_size; x++ )
-			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].Illumination;
+			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].color;
 
 	return result * (1 / totalWeight);
 }
@@ -635,10 +636,12 @@ void Game::Tick()
 
 		Color result;
 		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
-			result = BilateralFilter( id ) + pixelData[id].BRDF;
+			result = BilateralFilter( id );
 		else
 			result = pixelData[id].color;
 
+		result *= pixelData[id].albedo;
+		
 		result.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
 
