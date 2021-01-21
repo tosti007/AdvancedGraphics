@@ -130,7 +130,7 @@ vec2 Triangle::TextureAt( vec3 point )
     float v = -normal.dot(qvec);
     if (v < 0 || u + v > 1) return -1;
 
-    return t0 + t1 * u + t2 * v;
+    return t0 * (1-u-v) + t1 * u + t2 * v;
 }
 
 vec3 TinyObjGetVector3(int idx, std::vector<tinyobj::real_t>* values) {
@@ -181,9 +181,5 @@ void Triangle::FromTinyObj( Triangle *tri, tinyobj::attrib_t *attrib, tinyobj::m
             tri->t1 += offset;
             tri->t2 += offset;
         }
-
-        // Let's make these relative to t0
-        tri->t1 -= tri->t0;
-        tri->t2 -= tri->t0;
     }
 }
