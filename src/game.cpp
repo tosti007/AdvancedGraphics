@@ -73,7 +73,7 @@ void Game::InitDefaultScene()
 
 void Game::InitFromTinyObj( const std::string filename )
 {
-	view = new Camera( vec3( -15, -10, -0.1 ), vec3( 1, 0, 0 ) );
+	view = new Camera( vec3( -18, -15, -0.1 ), vec3( 1, 0.25f, 0 ) );
 
 
 	// load skybox
