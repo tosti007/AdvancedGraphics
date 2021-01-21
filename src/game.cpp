@@ -645,17 +645,17 @@ void Game::Tick()
 			result = pixelData[id].color;
 
 		result *= pixelData[id].albedo;
-		
+
+		pixelColor[id] += result;
+		result = pixelColor[id];
+		result *= 1.0f / unmoved_frames;
+
 		result.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
 
 		#ifdef USEVIGNETTING
 			result.Vignetting( ( x - screen->GetWidth() / 2 ), ( y - screen->GetHeight() / 2 ), dist_total_max );
 		#endif
-
-		pixelColor[id] += result;
-		result = pixelColor[id];
-		result *= 1.0f / unmoved_frames;
 
 		screen->GetBuffer()[id] = result.ToPixel();
 	}
