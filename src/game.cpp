@@ -467,7 +467,7 @@ void Game::GenerateGaussianKernel( float sigma )
 
 float ComputeWeightRaw(const float sigma, const float value)
 {
-	return exp( -value / (2 * sigma * sigma) );
+	return expf( -value / (2 * sigma * sigma) );
 }
 
 float ComputeWeight(const float sigma, const float a, const float b)
@@ -597,7 +597,7 @@ void Game::Tick()
 	
 	unmoved_frames++;
 	// uncomment to render just one frame 
-	if (unmoved_frames > 1) return;
+	//if (unmoved_frames > 1) return;
 
 	float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
