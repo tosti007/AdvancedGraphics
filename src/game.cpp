@@ -516,6 +516,10 @@ Color Game::BilateralFilter( uint pixelId )
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
 			float weight = kernel[kernel_id];
 
+			// Illumination difference
+			weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
+			// weight *= ComputeWeight_Distance(25.0f, otherPixel.color.ToVec(), centerPixel.color.ToVec());
+
 			// Intersection point distance
 			weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
 
