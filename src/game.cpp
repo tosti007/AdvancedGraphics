@@ -628,7 +628,8 @@ void Game::Tick()
 			//	firstInters[id] = r.origin + r.t * r.direction;
 		#endif
 
-		pixelData[id].color = color;
+		pixelColor[id] += color;
+		pixelData[id].color = pixelColor[id] * (1.0f / unmoved_frames);
 	}
 
 	// Apply filter technique
@@ -645,10 +646,6 @@ void Game::Tick()
 			result = pixelData[id].color;
 
 		result *= pixelData[id].albedo;
-
-		pixelColor[id] += result;
-		result = pixelColor[id];
-		result *= 1.0f / unmoved_frames;
 
 		result.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );
