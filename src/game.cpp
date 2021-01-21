@@ -174,6 +174,7 @@ void Game::Init(int argc, char **argv)
 	}
 
 	#ifdef USEBVH 
+	std::cout << "Creating BVH" << std::endl;
 	if ( nr_triangles > 0 )
 	{
 		bvh = new BVH();
@@ -186,6 +187,11 @@ void Game::Init(int argc, char **argv)
 			bvh->Print();
 	}
 	#endif
+
+	kernel_size = 65;
+	kernel_center = kernel_size / 2;
+	std::cout << "Generating kernel with size " << kernel_size << 'x' << kernel_size << std::endl;
+	GenerateGaussianKernel( 10.0f );
 }
 
 // -----------------------------------------------------------
@@ -440,6 +446,23 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	return result;
 }
 
+void Game::GenerateGaussianKernel( float sigma )
+{
+	kernel = new float[kernel_size * kernel_size];
+	kernel_center = kernel_size / 2;
+	//float sigma = 10.0;
+	float r, s = 2.0 * sigma * sigma;
+	for ( int x = -kernel_center; x <= kernel_center; x++ )
+	{
+		for ( int y = -kernel_center; y <= kernel_center; y++ )
+		{
+			int kernel_id = ( x + kernel_center ) + ( y + kernel_center ) * kernel_size;
+			r = sqrt( x * x + y * y );
+			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
+		}
+	}
+}
+
 Color Game::Filter( uint pixelId )
 {
 	const float kernel[3 * 3] = {
@@ -459,22 +482,6 @@ Color Game::Filter( uint pixelId )
 	tmp += kernel[8] * pixelData[pixelId + 1 + screen->GetWidth()].color;
 	return tmp;
 }
-
-// Generated with: http://dev.theomader.com/gaussian-kernel-calculator/
-// kernel_size MUST be an odd number.
-const size_t kernel_size = 9;
-const size_t kernel_center = kernel_size / 2;
-const float kernel[kernel_size * kernel_size] = {
-	0, 0.000001, 0.000014, 0.000055, 0.000088, 0.000055, 0.000014, 0.000001, 0,
-	0.000001, 0.000036, 0.000362, 0.001445, 0.002289, 0.001445, 0.000362, 0.000036, 0.000001,
-	0.000014, 0.000362, 0.003672, 0.014648, 0.023205, 0.014648, 0.003672, 0.000362, 0.000014,
-	0.000055, 0.001445, 0.014648, 0.058434, 0.092566, 0.058434, 0.014648, 0.001445, 0.000055,
-	0.000088, 0.002289, 0.023205, 0.092566, 0.146634, 0.092566, 0.023205, 0.002289, 0.000088,
-	0.000055, 0.001445, 0.014648, 0.058434, 0.092566, 0.058434, 0.014648, 0.001445, 0.000055,
-	0.000014, 0.000362, 0.003672, 0.014648, 0.023205, 0.014648, 0.003672, 0.000362, 0.000014,
-	0.000001, 0.000036, 0.000362, 0.001445, 0.002289, 0.001445, 0.000362, 0.000036, 0.000001,
-	0, 0.000001, 0.000014, 0.000055, 0.000088, 0.000055, 0.000014, 0.000001, 0,
-};
 
 float ComputeWeightRaw(const float sigma, const float value)
 {
@@ -603,8 +610,19 @@ void Game::Tick()
 	
 	unmoved_frames++;
 	// uncomment to render just one frame 
-	//if (unmoved_frames > 1) return;
+	if (unmoved_frames > 1) return;
 
+	float sigma = 10.0;
+	float r, s = 2.0 * sigma * sigma;
+	for ( int x = -kernel_center; x <= kernel_center; x++ )
+	{
+		for ( int y = -kernel_center; y <= kernel_center; y++ )
+		{
+			int kernel_id = ( x + kernel_center ) + ( y + kernel_center ) * kernel_size;
+			r = sqrt( x * x + y * y );
+			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
+		}
+	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
