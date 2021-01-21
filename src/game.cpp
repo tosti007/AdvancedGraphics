@@ -332,7 +332,8 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
 
-	Color BRDF = r.obj->ColorAt( materials, interPoint ) * INVPI;
+	Color albedo = r.obj->ColorAt( materials, interPoint );
+	Color BRDF = albedo * INVPI;
 	float angle = -dot( r.direction, interNormal );
 	bool backfacing = angle < 0.0f;
 	if ( backfacing )
@@ -371,7 +372,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			Ray refractiveRay( interPoint, refractDir );
 			refractiveRay.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
-			return r.obj->ColorAt( materials, interPoint ) * Sample( refractiveRay, true, depth + 1, pixelId );
+			return albedo * Sample( refractiveRay, true, depth + 1, pixelId );
 		}
 	}
 
@@ -383,7 +384,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
 		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
-		return r.obj->ColorAt( materials, interPoint ) * reflectCol;
+		return albedo * reflectCol;
 	}
 
 	#ifdef USENEE
