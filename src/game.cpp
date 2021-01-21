@@ -13,6 +13,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
+const int KERNEL_CENTER = KERNEL_SIZE / 2;
+
 void Game::InitDefaultScene()
 {
 	// materials
@@ -188,10 +190,8 @@ void Game::Init(int argc, char **argv)
 	}
 	#endif
 
-	kernel_size = 65;
-	kernel_center = kernel_size / 2;
-	std::cout << "Generating kernel with size " << kernel_size << 'x' << kernel_size << std::endl;
 	GenerateGaussianKernel( 10.0f );
+	std::cout << "Done Game::Init" << std::endl;
 }
 
 // -----------------------------------------------------------
@@ -448,39 +448,21 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 void Game::GenerateGaussianKernel( float sigma )
 {
-	kernel = new float[kernel_size * kernel_size];
-	kernel_center = kernel_size / 2;
+	std::cout << "Generating kernel with size " << KERNEL_SIZE << 'x' << KERNEL_SIZE << std::endl;
+	if (kernel != nullptr)
+		free(kernel);
+	kernel = new float[KERNEL_SIZE * KERNEL_SIZE];
 	//float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
-	for ( int x = -kernel_center; x <= kernel_center; x++ )
+	for ( int x = -KERNEL_CENTER; x <= KERNEL_CENTER; x++ )
 	{
-		for ( int y = -kernel_center; y <= kernel_center; y++ )
+		for ( int y = -KERNEL_CENTER; y <= KERNEL_CENTER; y++ )
 		{
-			int kernel_id = ( x + kernel_center ) + ( y + kernel_center ) * kernel_size;
+			int kernel_id = ( x + KERNEL_CENTER ) + ( y + KERNEL_CENTER ) * KERNEL_SIZE;
 			r = sqrt( x * x + y * y );
 			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
 		}
 	}
-}
-
-Color Game::Filter( uint pixelId )
-{
-	const float kernel[3 * 3] = {
-		0.077847, 0.123317, 0.077847,
-		0.123317, 0.195346, 0.123317,
-		0.077847, 0.123317, 0.077847,
-	};
-	Color tmp = Color( 0, 0, 0 );
-	tmp += kernel[0] * pixelData[pixelId - 1 - screen->GetWidth()].color;
-	tmp += kernel[1] * pixelData[pixelId     - screen->GetWidth()].color;
-	tmp += kernel[2] * pixelData[pixelId + 1 - screen->GetWidth()].color;
-	tmp += kernel[3] * pixelData[pixelId - 1].color;
-	tmp += kernel[4] * pixelData[pixelId    ].color;
-	tmp += kernel[5] * pixelData[pixelId + 1].color;
-	tmp += kernel[6] * pixelData[pixelId - 1 + screen->GetWidth()].color;
-	tmp += kernel[7] * pixelData[pixelId     + screen->GetWidth()].color;
-	tmp += kernel[8] * pixelData[pixelId + 1 + screen->GetWidth()].color;
-	return tmp;
 }
 
 float ComputeWeightRaw(const float sigma, const float value)
@@ -507,18 +489,19 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-Color Game::BilateralFilter( uint pixelId )
+Color Game::Filter( uint pixelId )
 {
 	PixelData &centerPixel = pixelData[pixelId];
+#if KERNEL_SIZE > 0
 
 	// Compute weights
-	float *weights = new float[kernel_size * kernel_size];
+	float weights[KERNEL_SIZE * KERNEL_SIZE];
 	float totalWeight = 0;
-	for ( size_t y = 0; y < kernel_size; y++ )
-		for ( size_t x = 0; x < kernel_size; x++ )
+	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
+		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
 		{
-			size_t kernel_id = x + y * kernel_size;
-			PixelData &otherPixel = pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()];
+			size_t kernel_id = x + y * KERNEL_SIZE;
+			PixelData &otherPixel = pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()];
 
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
 			float weight = kernel[kernel_id];
@@ -548,11 +531,15 @@ Color Game::BilateralFilter( uint pixelId )
 
 	// Apply kernel
 	Color result = Color( 0, 0, 0 );
-	for ( size_t y = 0; y < kernel_size; y++ )
-		for ( size_t x = 0; x < kernel_size; x++ )
-			result += weights[x + y * kernel_size] * pixelData[pixelId + (x - kernel_center) + (y - kernel_center) * screen->GetWidth()].color;
+	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
+		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
+			result += weights[x + y * KERNEL_SIZE] * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].color;
 
 	return result * (1 / totalWeight);
+
+#else
+	return centerPixel.color;
+#endif
 }
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
@@ -614,11 +601,11 @@ void Game::Tick()
 
 	float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
-	for ( int x = -kernel_center; x <= kernel_center; x++ )
+	for ( int x = -KERNEL_CENTER; x <= KERNEL_CENTER; x++ )
 	{
-		for ( int y = -kernel_center; y <= kernel_center; y++ )
+		for ( int y = -KERNEL_CENTER; y <= KERNEL_CENTER; y++ )
 		{
-			int kernel_id = ( x + kernel_center ) + ( y + kernel_center ) * kernel_size;
+			int kernel_id = ( x + KERNEL_CENTER ) + ( y + KERNEL_CENTER ) * KERNEL_SIZE;
 			r = sqrt( x * x + y * y );
 			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
 		}
@@ -658,8 +645,8 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 		Color result;
-		if ( x >= kernel_center && x < screen->GetWidth() - kernel_center && y >= kernel_center && y < screen->GetHeight() - kernel_center )
-			result = BilateralFilter( id );
+		if ( x >= KERNEL_CENTER && x < screen->GetWidth() - KERNEL_CENTER && y >= KERNEL_CENTER && y < screen->GetHeight() - KERNEL_CENTER )
+			result = Filter( id );
 		else
 			result = pixelData[id].color;
 

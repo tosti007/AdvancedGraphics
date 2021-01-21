@@ -45,13 +45,10 @@ public:
 	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
 	Color Filter( uint pixelId );
-	Color BilateralFilter( uint pixelId );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
 	float *kernel = nullptr;
-	int kernel_size;
-	int kernel_center;
 
 	PixelData* pixelData = nullptr;
 	Color* pixelColor = nullptr;

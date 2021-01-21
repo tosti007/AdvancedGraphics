@@ -70,6 +70,10 @@
 //  - For any other amount of bins use n
 #define BVHBINS 8
 
+// Kernel size for filtering
+// If this is 0 then no filter is applied.
+#define KERNEL_SIZE 65
+
 typedef unsigned char uchar;
 typedef unsigned char byte;
 typedef int64_t int64;
