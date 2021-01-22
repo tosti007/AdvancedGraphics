@@ -502,7 +502,7 @@ Color Game::Filter( uint pixelId )
 		{
 			size_t kernel_id = x + y * KERNEL_SIZE;
 			int otherPixelId = pixelId + ( x - KERNEL_CENTER ) + ( y - KERNEL_CENTER ) * screen->GetWidth();
-			// If pixel is out of screen
+			// If pixel is out of screen, TODO: Fix this if statement
 			if ( otherPixelId < 0 || otherPixelId > screen->GetWidth() * screen->GetHeight() )
 			{
 				weights[kernel_id] = 0;
@@ -656,12 +656,7 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 
-		Color result;
-		//if ( x >= KERNEL_CENTER && x < screen->GetWidth() - KERNEL_CENTER && y >= KERNEL_CENTER && y < screen->GetHeight() - KERNEL_CENTER )
-		//	result = Filter( id );
-		//else
-		//	result = pixelData[id].color;
-		result = Filter( id );
+		Color result = Filter( id );
 
 		result *= pixelData[id].albedo;
 
