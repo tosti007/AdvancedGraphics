@@ -191,7 +191,7 @@ void Game::Init(int argc, char **argv)
 	#endif
 
 	GenerateGaussianKernel( 10.0f );
-	std::cout << "Done Game::Init" << std::endl;
+	std::cout << "Done initializing" << std::endl;
 }
 
 // -----------------------------------------------------------
@@ -448,7 +448,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 void Game::GenerateGaussianKernel( float sigma )
 {
-	std::cout << "Generating kernel with size " << KERNEL_SIZE << 'x' << KERNEL_SIZE << std::endl;
+	std::cout << "Generating kernel with size " << KERNEL_SIZE << 'x' << KERNEL_SIZE << "..." << std::endl;
 	if (kernel != nullptr)
 		free(kernel);
 	kernel = new float[KERNEL_SIZE * KERNEL_SIZE];
@@ -501,7 +501,15 @@ Color Game::Filter( uint pixelId )
 		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
 		{
 			size_t kernel_id = x + y * KERNEL_SIZE;
-			PixelData &otherPixel = pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()];
+			int otherPixelId = pixelId + ( x - KERNEL_CENTER ) + ( y - KERNEL_CENTER ) * screen->GetWidth();
+			// If pixel is out of screen
+			if ( otherPixelId < 0 || otherPixelId > screen->GetWidth() * screen->GetHeight() )
+			{
+				weights[kernel_id] = 0;
+				continue;
+			}
+
+			PixelData &otherPixel = pixelData[otherPixelId];
 
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
 			float weight = kernel[kernel_id];
@@ -532,8 +540,12 @@ Color Game::Filter( uint pixelId )
 	// Apply kernel
 	Color result = Color( 0, 0, 0 );
 	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
-		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
+		for (size_t x = 0; x < KERNEL_SIZE; x++)
+		{
+			if ( weights[x + y * KERNEL_SIZE] == 0 ) continue;
+
 			result += weights[x + y * KERNEL_SIZE] * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].color;
+		}
 
 	return result * (1 / totalWeight);
 
@@ -645,10 +657,11 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 		Color result;
-		if ( x >= KERNEL_CENTER && x < screen->GetWidth() - KERNEL_CENTER && y >= KERNEL_CENTER && y < screen->GetHeight() - KERNEL_CENTER )
-			result = Filter( id );
-		else
-			result = pixelData[id].color;
+		//if ( x >= KERNEL_CENTER && x < screen->GetWidth() - KERNEL_CENTER && y >= KERNEL_CENTER && y < screen->GetHeight() - KERNEL_CENTER )
+		//	result = Filter( id );
+		//else
+		//	result = pixelData[id].color;
+		result = Filter( id );
 
 		result *= pixelData[id].albedo;
 
