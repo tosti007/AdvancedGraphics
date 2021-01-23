@@ -496,7 +496,6 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 
 	// Compute weights
 	float weights[KERNEL_SIZE * KERNEL_SIZE];
-	float totalWeight = 0;
 	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
 		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
 		{
@@ -513,7 +512,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 			PixelData &otherPixel = pixelData[otherPixelId];
 
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
-			float weight = kernel[kernel_id];
+			float weight = 1.0f;
 
 			// Illumination difference
 			weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
@@ -535,17 +534,19 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
 
 			weights[kernel_id] = weight;
-			totalWeight += weight;
 		}
 
 	// Apply kernel
+	float totalWeight = 0;
 	Color result = Color( 0, 0, 0 );
 	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
 		for (size_t x = 0; x < KERNEL_SIZE; x++)
 		{
-			if ( weights[x + y * KERNEL_SIZE] == 0 ) continue;
-
-			result += weights[x + y * KERNEL_SIZE] * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].color;
+			size_t kernel_id = x + y * KERNEL_SIZE;
+			if ( weights[kernel_id] == 0 ) continue;
+			float weight = kernel[kernel_id] * weights[kernel_id];
+			totalWeight += weight;
+			result += weight * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].color;
 		}
 
 	return result * (1 / totalWeight);
