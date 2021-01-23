@@ -44,7 +44,7 @@ public:
 	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
-	Color Filter( uint pixelId );
+	Color Filter( uint pixelId, int pixelX, int pixelY );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:

@@ -460,7 +460,7 @@ void Game::GenerateGaussianKernel( float sigma )
 		{
 			int kernel_id = ( x + KERNEL_CENTER ) + ( y + KERNEL_CENTER ) * KERNEL_SIZE;
 			r = sqrt( x * x + y * y );
-			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
+			kernel[kernel_id] = ( expf( -( r * r ) / s ) ) / ( PI * s );
 		}
 	}
 }
@@ -489,7 +489,7 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-Color Game::Filter( uint pixelId )
+Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 {
 	PixelData &centerPixel = pixelData[pixelId];
 #if KERNEL_SIZE > 0
@@ -501,14 +501,15 @@ Color Game::Filter( uint pixelId )
 		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
 		{
 			size_t kernel_id = x + y * KERNEL_SIZE;
-			int otherPixelId = pixelId + ( x - KERNEL_CENTER ) + ( y - KERNEL_CENTER ) * screen->GetWidth();
-			// If pixel is out of screen, TODO: Fix this if statement
-			if ( otherPixelId < 0 || otherPixelId > screen->GetWidth() * screen->GetHeight() )
+			int x2 = x - KERNEL_CENTER;
+			int y2 = y - KERNEL_CENTER;
+			// If pixel is out of screen
+			if ((pixelX + x2) < 0 || (pixelY + y2) < 0 || (pixelX + x2) >= screen->GetWidth() || (pixelY + y2) >= screen->GetHeight())
 			{
-				weights[kernel_id] = 0;
+				weights[kernel_id] = 0.0f;
 				continue;
 			}
-
+			size_t otherPixelId = pixelId + x2 + y2 * screen->GetWidth();
 			PixelData &otherPixel = pixelData[otherPixelId];
 
 			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
@@ -656,7 +657,7 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 
-		Color result = Filter( id );
+		Color result = Filter( id, x, y );
 
 		result *= pixelData[id].albedo;
 
