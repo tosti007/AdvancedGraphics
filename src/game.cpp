@@ -433,7 +433,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 	// Random bounce
 	//Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
-	Ray randomRay = Ray( interPoint, CosineWeightedDiffuseReflection());
+	Ray randomRay = Ray( interPoint, CosineWeightedDiffuseReflection(interNormal));
 	randomRay.Offset( 1e-3 );
 
 	// irradiance

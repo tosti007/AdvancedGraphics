@@ -92,19 +92,35 @@ inline vec3 RandomPointOnHemisphere(float radius, vec3 interNormal)
 	return point;
 }
 
-inline vec3 CosineWeightedDiffuseReflection()
+// Copied and modified from https://github.com/jbikker/lighthouse2/blob/master/lib/RenderSystem/common_functions.h
+inline vec3 TangentToWorld( const vec3 N, const float x, const float y, const float z )
+{
+	const float sign = copysignf( 1.0f, N.z );
+	const float a = -1.0f / (sign + N.z);
+	const float b = N.x * N.y * a;
+	vec3 B( 1.0f + sign * N.x * N.x * a, sign * b, -sign * N.x );
+	vec3 T( b, sign + N.y * N.y * a, -N.y );
+	return x * T + y * B + z * N;
+}
+
+inline vec3 TangentToWorld( const vec3 N, const vec3 V )
+{
+	return TangentToWorld(N, V.x, V.y, V.z);
+}
+
+inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 {
 	float r0 = Rand(1);
 	float r1 = Rand(1);
 	float r = sqrtf( r0 );
 	float theta = 2 * PI * r1;
 	float x = r * cosf( theta );
-	float z = r * sinf( theta );
 	// The function is defined with z = "up", so let's just flip these two points
-	return vec3( x, sqrtf(1 - r0), z );
+	float z = r * sinf( theta );
+	return TangentToWorld( N, x, sqrtf(1 - r0), z );
 }
 
-inline vec3 CosineWeightedDiffuseReflectionv2()
+inline vec3 CosineWeightedDiffuseReflectionv2( const vec3 N )
 {
 	float x, y, l;
 	do {
@@ -112,7 +128,7 @@ inline vec3 CosineWeightedDiffuseReflectionv2()
 		y = Rand(2) - 1;
 		l = x * x + y * y;
 	} while(l > 1);
-	return vec3( x, y, sqrtf(1 - l) );
+	return TangentToWorld( N, x, y, sqrtf(1 - l) );
 }
 
 }; // namespace AdvancedGraphics
