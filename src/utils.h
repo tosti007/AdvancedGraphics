@@ -104,4 +104,15 @@ inline vec3 CosineWeightedDiffuseReflection()
 	return vec3( x, sqrtf(1 - r0), z );
 }
 
+inline vec3 CosineWeightedDiffuseReflectionv2()
+{
+	float x, y, l;
+	do {
+		x = Rand(2) - 1;
+		y = Rand(2) - 1;
+		l = x * x + y * y;
+	} while(l > 1);
+	return vec3( x, y, sqrtf(1 - l) );
+}
+
 }; // namespace AdvancedGraphics
