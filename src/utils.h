@@ -92,4 +92,16 @@ inline vec3 RandomPointOnHemisphere(float radius, vec3 interNormal)
 	return point;
 }
 
+inline vec3 CosineWeightedDiffuseReflection()
+{
+	float r0 = Rand(1);
+	float r1 = Rand(1);
+	float r = sqrt( r0 );
+	float theta = 2 * PI * r1;
+	float x = r * cosf( theta );
+	float y = r * sinf( theta );
+	r0 = 1 - r0;
+	return vec3( x, y, sqrt(r0) );
+}
+
 }; // namespace AdvancedGraphics

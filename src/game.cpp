@@ -432,12 +432,14 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	#endif
 
 	// Random bounce
-	Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
-	randomRay.Offset(1e-3);
+	//Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
+	Ray randomRay = Ray( interPoint, CosineWeightedDiffuseReflection());
+	randomRay.Offset( 1e-3 );
 
 	// irradiance
-	float hemiPdf = 1 / (2 * PI);
-	Color ei = dot( interNormal, randomRay.direction ) / hemiPdf * BRDF * Sample( randomRay, false, depth + 1, pixelId );
+	//float hemiPDF = 1 / ( 2 * PI );
+	float cosinePDF = interNormal.dot(randomRay.direction) * INVPI;
+	Color ei = dot( interNormal, randomRay.direction ) / cosinePDF * BRDF * Sample( randomRay, false, depth + 1, pixelId );
 	Color result = ei;
 
 	#ifdef USENEE
@@ -612,7 +614,7 @@ void Game::Tick()
 	
 	unmoved_frames++;
 	// uncomment to render just one frame 
-	//if (unmoved_frames > 1) return;
+	//if (unmoved_frames > 10) return;
 
 	float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
