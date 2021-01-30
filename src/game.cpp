@@ -368,7 +368,6 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		BRDF = albedo * INVPI;
 	}
 
-	/*
 	bool reflect = false;
 	bool refract = false;
 
@@ -391,23 +390,25 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		} else {
 			// Calculate the refractive ray, and its color
 			vec3 refractDir = n * -r.direction + interNormal * ( n * angle - sqrtf( k ) );
-			Ray refractiveRay( interPoint, refractDir.normalized() );
-			refractiveRay.Offset( 1e-3 );
+			r = Ray( interPoint, refractDir.normalized() );
+			r.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
-			return albedo * Sample( refractiveRay, true, depth + 1, pixelId );
+			// TODO: specular bool
+			T *= albedo;
+			continue;
 		}
 	}
 
 	if (reflect)
 	{
 		// Total Internal Reflection
-		Ray reflectRay = Ray( interPoint, -r.direction );
-		reflectRay.Reflect( interPoint, interNormal, angle );
-		reflectRay.Offset( 1e-3 );
-		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
-		return albedo * reflectCol;
+		r = Ray( interPoint, -r.direction );
+		r.Reflect( interPoint, interNormal, angle );
+		r.Offset( 1e-3 );
+		T *= albedo;
+		// TODO: specular bool
+		continue;
 	}
-	*/
 
 	#ifdef USENEE
 	// Direct light for NEE
