@@ -416,6 +416,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	rLightDir *= 1 / rLightDist;
 
 	Color rLightCol = Color(0, 0, 0);
+	float rLightPdf = 0;
 	float cos_i = interNormal.dot(rLightDir);
 	float cos_o = rLightNormal.dot(-rLightDir);
 	if (cos_i > 0 && cos_o > 0)
@@ -426,7 +427,8 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		{
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
-			rLightCol = rLight->color * solidAngle * BRDF * cos_i;
+			rLightPdf = 1 / solidAngle;
+			rLightCol = cos_i / rLightPdf * BRDF * rLight->color;
 		}
 	}
 	#endif
@@ -436,8 +438,9 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	randomRay.Offset(1e-3);
 
 	// irradiance
-	Color ei = Sample( randomRay, false, depth + 1, pixelId ) * dot( interNormal, randomRay.direction );
-	Color result = PI * 2.0f * BRDF * ei;
+	float hemiPdf = 1 / (2 * PI);
+	Color ei = dot( interNormal, randomRay.direction ) / hemiPdf * BRDF * Sample( randomRay, false, depth + 1, pixelId );
+	Color result = ei;
 
 	#ifdef USENEE
 	result += rLightCol;
