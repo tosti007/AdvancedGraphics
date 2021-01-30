@@ -299,8 +299,10 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 
 Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 {
-	if (depth > MAX_NR_ITERATIONS)
-		return Color(0, 0, 0);
+	Color T(1.0f, 1.0f, 1.0f);
+	Color E(0.0f, 0.0f, 0.0f);
+	for (; depth < MAX_NR_ITERATIONS; depth++)
+	{
 
 	Light* light = IntersectLights( &r );
 
@@ -314,6 +316,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// No intersection point found
 	if ( !found )
 	{
+		break;
 		if ( light != nullptr )
 		#ifdef USENEE
 			if (specularRay)
@@ -365,6 +368,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		BRDF = albedo * INVPI;
 	}
 
+	/*
 	bool reflect = false;
 	bool refract = false;
 
@@ -403,6 +407,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
 		return albedo * reflectCol;
 	}
+	*/
 
 	#ifdef USENEE
 	// Direct light for NEE
@@ -413,7 +418,6 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	float rLightDist = rLightDir.length();
 	rLightDir *= 1 / rLightDist;
 
-	Color rLightCol = Color(0, 0, 0);
 	float rLightPdf = 0;
 	float cos_i = interNormal.dot(rLightDir);
 	float cos_o = rLightNormal.dot(-rLightDir);
@@ -426,27 +430,23 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
 			rLightPdf = 1 / solidAngle;
-			rLightCol = cos_i / rLightPdf * BRDF * rLight->color;
+			E += T * (cos_i / rLightPdf) * BRDF * rLight->color;
 		}
 	}
 	#endif
 
 	// Random bounce
-	//Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
-	Ray randomRay = Ray( interPoint, CosineWeightedDiffuseReflection(interNormal));
-	randomRay.Offset( 1e-3 );
+	r = Ray( interPoint, CosineWeightedDiffuseReflection( 1, interNormal ) );
+	r.Offset(1e-3);
 
 	// irradiance
-	//float hemiPDF = 1 / ( 2 * PI );
+	//float hemiPdf = 1 / (2 * PI);
 	float cosinePDF = interNormal.dot(randomRay.direction) * INVPI;
-	Color ei = dot( interNormal, randomRay.direction ) / cosinePDF * BRDF * Sample( randomRay, false, depth + 1, pixelId );
-	Color result = ei;
+	T *= dot( interNormal, r.direction ) / cosinePDF * BRDF;
 
-	#ifdef USENEE
-	result += rLightCol;
-	#endif
+	}
 
-	return result;
+	return E;
 }
 
 void Game::GenerateGaussianKernel( float sigma )
