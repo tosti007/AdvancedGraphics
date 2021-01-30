@@ -59,7 +59,7 @@ void Game::InitDefaultScene()
 
 	nr_spheres = 3;
 	spheres = new Sphere[nr_spheres] {
-		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 4),
+		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 2),
 		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 5),
 		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 4),
 	};
@@ -386,9 +386,8 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			reflect = true;
 		} else {
 			// Calculate the refractive ray, and its color
-			vec3 refractDir = n * r.direction + interNormal * ( n * angle - sqrtf( k ) );
-			refractDir.normalize();
-			Ray refractiveRay( interPoint, refractDir );
+			vec3 refractDir = n * -r.direction + interNormal * ( n * angle - sqrtf( k ) );
+			Ray refractiveRay( interPoint, refractDir.normalized() );
 			refractiveRay.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
 			return albedo * Sample( refractiveRay, true, depth + 1, pixelId );
@@ -398,8 +397,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	if (reflect)
 	{
 		// Total Internal Reflection
-		angle *= -1; // TODO: why does inverting the angle fix it?
-		Ray reflectRay = Ray( interPoint, r.direction );
+		Ray reflectRay = Ray( interPoint, -r.direction );
 		reflectRay.Reflect( interPoint, interNormal, angle );
 		reflectRay.Offset( 1e-3 );
 		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
