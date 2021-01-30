@@ -96,12 +96,12 @@ inline vec3 CosineWeightedDiffuseReflection()
 {
 	float r0 = Rand(1);
 	float r1 = Rand(1);
-	float r = sqrt( r0 );
+	float r = sqrtf( r0 );
 	float theta = 2 * PI * r1;
 	float x = r * cosf( theta );
-	float y = r * sinf( theta );
-	r0 = 1 - r0;
-	return vec3( x, y, sqrt(r0) );
+	float z = r * sinf( theta );
+	// The function is defined with z = "up", so let's just flip these two points
+	return vec3( x, sqrtf(1 - r0), z );
 }
 
 }; // namespace AdvancedGraphics
