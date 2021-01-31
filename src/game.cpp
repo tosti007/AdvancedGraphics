@@ -301,7 +301,11 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 {
 	Color T(1.0f, 1.0f, 1.0f);
 	Color E(0.0f, 0.0f, 0.0f);
+	#ifdef USERUSSIANROULETTE
+	for (; true; depth++)
+	#else
 	for (; depth < MAX_NR_ITERATIONS; depth++)
+	#endif
 	{
 
 	Light* light = IntersectLights( &r );
@@ -439,6 +443,18 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			E += T * (cos_i / rLightPdf) * BRDF * rLight->color;
 		}
 	}
+	#endif
+
+	#ifdef USERUSSIANROULETTE
+	// Russian Roulette
+	float surivival = albedo.Max();
+	if (surivival > 1.0f)
+		surivival = 1.0f;
+	if (surivival < 0.1f)
+		surivival = 0.1f;
+	if (RandomFloat() > surivival)
+		break;
+	T *= 1 / surivival;
 	#endif
 
 	// Random bounce

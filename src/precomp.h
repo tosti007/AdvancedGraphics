@@ -61,6 +61,7 @@
 //#define SSAA
 //#define USESTRATIFICATION
 #define USENEE
+#define USERUSSIANROULETTE
 //#define USEVIGNETTING
 #define USEBVH
 //#define VISUALIZEBVH
