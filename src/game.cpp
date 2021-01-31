@@ -299,8 +299,10 @@ Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
 
 Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 {
-	if (depth > MAX_NR_ITERATIONS)
-		return Color(0, 0, 0);
+	Color T(1.0f, 1.0f, 1.0f);
+	Color E(0.0f, 0.0f, 0.0f);
+	for (; depth < MAX_NR_ITERATIONS; depth++)
+	{
 
 	Light* light = IntersectLights( &r );
 
@@ -314,19 +316,25 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// No intersection point found
 	if ( !found )
 	{
+		Color nohitcolor;
 		if ( light != nullptr )
 		#ifdef USENEE
 			if (specularRay)
-				return light->color;
+				nohitcolor = light->color;
 			else
-				return Color(0, 0, 0);
+				nohitcolor = Color(0, 0, 0);
 		#else
-			return light->color;
+			nohitcolor = rLight->color;
 		#endif
-		if (sky != nullptr)
-			return sky->FindColor(r.direction);
-		return SKYDOME_DEFAULT_COLOR;
+		else if (sky != nullptr)
+			nohitcolor = sky->FindColor(r.direction);
+		else
+			nohitcolor = SKYDOME_DEFAULT_COLOR;
+		E += T * nohitcolor;
+		break;
 	}
+	// We have handled that case, so we can set it to false.
+	specularRay = false;
 
 	// As al our debuging objects are close, 1000 is a safe value.
 	// assert(r.t <= 1000);
@@ -387,21 +395,24 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		} else {
 			// Calculate the refractive ray, and its color
 			vec3 refractDir = n * -r.direction + interNormal * ( n * angle - sqrtf( k ) );
-			Ray refractiveRay( interPoint, refractDir.normalized() );
-			refractiveRay.Offset( 1e-3 );
+			r = Ray( interPoint, refractDir.normalized() );
+			r.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
-			return albedo * Sample( refractiveRay, true, depth + 1, pixelId );
+			specularRay = true;
+			T *= albedo;
+			continue;
 		}
 	}
 
 	if (reflect)
 	{
 		// Total Internal Reflection
-		Ray reflectRay = Ray( interPoint, -r.direction );
-		reflectRay.Reflect( interPoint, interNormal, angle );
-		reflectRay.Offset( 1e-3 );
-		Color reflectCol = Sample( reflectRay, true, depth + 1, pixelId );
-		return albedo * reflectCol;
+		r = Ray( interPoint, -r.direction );
+		r.Reflect( interPoint, interNormal, angle );
+		r.Offset( 1e-3 );
+		specularRay = true;
+		T *= albedo;
+		continue;
 	}
 
 	#ifdef USENEE
@@ -413,7 +424,6 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	float rLightDist = rLightDir.length();
 	rLightDir *= 1 / rLightDist;
 
-	Color rLightCol = Color(0, 0, 0);
 	float rLightPdf = 0;
 	float cos_i = interNormal.dot(rLightDir);
 	float cos_o = rLightNormal.dot(-rLightDir);
@@ -426,27 +436,23 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
 			rLightPdf = 1 / solidAngle;
-			rLightCol = cos_i / rLightPdf * BRDF * rLight->color;
+			E += T * (cos_i / rLightPdf) * BRDF * rLight->color;
 		}
 	}
 	#endif
 
 	// Random bounce
-	//Ray randomRay = Ray( interPoint, RandomPointOnHemisphere( 1, interNormal ) );
-	Ray randomRay = Ray( interPoint, CosineWeightedDiffuseReflection(interNormal));
-	randomRay.Offset( 1e-3 );
+	r = Ray( interPoint, CosineWeightedDiffuseReflection( interNormal ) );
+	r.Offset(1e-3);
 
 	// irradiance
-	//float hemiPDF = 1 / ( 2 * PI );
-	float cosinePDF = interNormal.dot(randomRay.direction) * INVPI;
-	Color ei = dot( interNormal, randomRay.direction ) / cosinePDF * BRDF * Sample( randomRay, false, depth + 1, pixelId );
-	Color result = ei;
+	//float hemiPdf = 1 / (2 * PI);
+	float cosinePDF = interNormal.dot(r.direction) * INVPI;
+	T *= dot( interNormal, r.direction ) / cosinePDF * BRDF;
 
-	#ifdef USENEE
-	result += rLightCol;
-	#endif
+	}
 
-	return result;
+	return E;
 }
 
 void Game::GenerateGaussianKernel( float sigma )
