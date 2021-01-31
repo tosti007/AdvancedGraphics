@@ -114,9 +114,7 @@ inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 	float r1 = RandomFloat();
 	float r = sqrtf( r0 );
 	float theta = 2 * PI * r1;
-	float x, z;
-	sincosf( theta, &z, &x );
-	return TangentToWorld( N, x * r, sqrtf(1 - r0), z * r );
+	return TangentToWorld( N, cosf( theta ) * r, sqrtf( 1 - r0 ), sinf( theta ) * r );
 }
 
 inline vec3 CosineWeightedDiffuseReflectionv2( const vec3 N )
