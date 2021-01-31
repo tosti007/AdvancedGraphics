@@ -252,51 +252,6 @@ Light* Game::IntersectLights( Ray* r )
 	return found;
 }
 
-Color Game::DirectIllumination( vec3 interPoint, vec3 normal )
-{
-	// accumulated color
-	Color total( 0 );
-	Ray shadowRay(interPoint, vec3(0));
-	float fac;
-	// send shadow ray to each light and add its color
-	for ( size_t l = 0; l < NR_LIGHT_SAMPLES; l++ )
-	{
-		// TODO: take size of light into account -> higher chance for lights that are closer or bigger
-		size_t i = RandomIndex(nr_lights);
-		// compute origin and direction of shadow ray
-		shadowRay.direction = lights[i]->PointOnLight() - shadowRay.origin;
-		shadowRay.t = shadowRay.direction.length();
-		shadowRay.direction *= (1 / shadowRay.t);
-
-		fac = dot( shadowRay.direction, normal );
-
-		// This would mean no additional color so let's early out.
-		// TODO: use epsilon?
-		if (fac <= 0)
-			continue;
-
-		// TODO: Check the normal of the light and the shadowray direction, their dot should also be >0
-		// fac_light = ???
-		float fac_light = 1;
-
-		if (fac_light <= 0)
-			continue;
-
-		// find intersection of shadow ray, check if it is between the light and object
-		if ( CheckOcclusion( &shadowRay ) )
-			continue;
-
-		// TODO: Find some way of getting the Scene.LIGHTAREA.
-		float light_area = 1;
-
-		// angle * distance attenuation * color
-		Color thislight = (fac / ( shadowRay.t * shadowRay.t )) * lights[i]->color;
-		thislight *= INVPI * nr_lights * fac_light * light_area;
-		total += thislight;
-	}
-	return (1 / NR_LIGHT_SAMPLES) * total;
-}
-
 Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 {
 	Color T(1.0f, 1.0f, 1.0f);

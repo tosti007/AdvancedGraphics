@@ -41,7 +41,6 @@ public:
 	bool CheckOcclusion( Ray *r );
 	bool Intersect( Ray* r, uint &depth );
 	Light* IntersectLights( Ray* r );
-	Color DirectIllumination( vec3 interPoint, vec3 normal );
 	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
 	Color Filter( uint pixelId, int pixelX, int pixelY );
