@@ -458,7 +458,7 @@ float ComputeWeight(const float sigma, const float a, const float b)
 
 float ComputeWeight_Distance(const float sigma, const vec3 a, const vec3 b)
 {
-	return ComputeWeightRaw(sigma, (a - b).sqrLentgh());
+	return ComputeWeightRaw(sigma, (a - b).sqrLength());
 }
 
 // a and b are assumed to be normalized.
