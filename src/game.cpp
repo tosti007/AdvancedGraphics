@@ -544,29 +544,15 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	screen->Print(buf, 2, 2 + yline * 7, 0xffff00);
 }
 
-// floats for anti aliasing
-float randArray[8] = {
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat(),
-	RandomFloat() };
-
-Ray ComputePrimaryRay(Surface* screen, Camera* view, int x, int y, size_t i, size_t j)
+Ray ComputePrimaryRay(Surface* screen, Camera* view, int x, int y, float offset, float pixel_size)
 {
 	float u = x, v = y;
+	u += offset;
+	y += offset;
 
-#ifdef SSAA
-	u += randArray[i];
-	v += randArray[i + j];
-#else
-#ifdef USESTRATIFICATION
-	u += RandomFloat();
-	v += RandomFloat();
-#endif
+#if defined(SSAA) || defined(USESTRATIFICATION)
+	u += Rand(pixel_size);
+	v += Rand(pixel_size);
 #endif
 
 	u /= screen->GetWidth();
@@ -615,16 +601,14 @@ void Game::Tick()
 			Color color(0, 0, 0);
 			for ( size_t i = 0; i < 4; i++ )
 			{
-				Ray r = ComputePrimaryRay(screen, view, x, y, i, i + 4);
-				Color rayColor = Sample( r, true, 0 );
+				Ray r = ComputePrimaryRay(screen, view, x, y, i * 0.25f, 0.25f);
+				Color rayColor = Sample( r, true, 0, id );
 				color += rayColor;
 			}
 			color *= 0.25;
 		#else
-			Ray r = ComputePrimaryRay(screen, view, x, y, 0, 0);
+			Ray r = ComputePrimaryRay(screen, view, x, y, 0.0f, 1.0f);
 			Color color = Sample( r, true, 0, id );
-			//if ( !isinf( r.t ) )
-			//	firstInters[id] = r.origin + r.t * r.direction;
 		#endif
 
 		pixelColor[id] += color;
