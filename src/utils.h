@@ -110,8 +110,8 @@ inline vec3 TangentToWorld( const vec3 N, const vec3 V )
 
 inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 {
-	float r0 = Rand(1);
-	float r1 = Rand(1);
+	float r0 = RandomFloat();
+	float r1 = RandomFloat();
 	float r = sqrtf( r0 );
 	float theta = 2 * PI * r1;
 	float x, z;

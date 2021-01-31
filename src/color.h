@@ -32,11 +32,13 @@ struct Color {
 	inline vec3 ToVec() { return vec3(r, g, b); }
 
 	inline float Max() {
-		float max = 0.0f;
-		if (r > max) max = r;
-		if (g > max) max = g;
-		if (b > max) max = b;
-		return max;
+		if (r > g)
+		{
+			if(r > b)
+				return r;
+		} else if (g > b)
+			return g;
+		return b;
 	}
 
 	void operator *= ( const float& a ) { r *= a; g *= a; b *= a; }

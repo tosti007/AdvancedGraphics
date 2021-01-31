@@ -575,14 +575,14 @@ void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 
 // floats for anti aliasing
 float randArray[8] = {
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ),
-	Rand( 1 ) };
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat(),
+	RandomFloat() };
 
 Ray ComputePrimaryRay(Surface* screen, Camera* view, int x, int y, size_t i, size_t j)
 {
