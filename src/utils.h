@@ -117,15 +117,4 @@ inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 	return TangentToWorld( N, cosf( theta ) * r, sqrtf( 1 - r0 ), sinf( theta ) * r );
 }
 
-inline vec3 CosineWeightedDiffuseReflectionv2( const vec3 N )
-{
-	float x, y, l;
-	do {
-		x = Rand(2) - 1;
-		y = Rand(2) - 1;
-		l = x * x + y * y;
-	} while(l > 1);
-	return TangentToWorld( N, x, y, sqrtf(1 - l) );
-}
-
 }; // namespace AdvancedGraphics
