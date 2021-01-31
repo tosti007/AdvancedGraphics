@@ -442,7 +442,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	#endif
 
 	// Random bounce
-	r = Ray( interPoint, CosineWeightedDiffuseReflection( 1, interNormal ) );
+	r = Ray( interPoint, CosineWeightedDiffuseReflection( interNormal ) );
 	r.Offset(1e-3);
 
 	// irradiance
