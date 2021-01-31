@@ -495,8 +495,8 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 			float weight = 1.0f;
 
 			// Illumination difference
-			weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
-			// weight *= ComputeWeight_Distance(25.0f, otherPixel.color.ToVec(), centerPixel.color.ToVec());
+			// weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
+			weight *= ComputeWeight_Distance(2.0f, otherPixel.color.ToVec(), centerPixel.color.ToVec());
 
 			// Intersection point distance
 			weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);

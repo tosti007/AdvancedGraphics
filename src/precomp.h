@@ -73,7 +73,7 @@
 
 // Kernel size for filtering
 // If this is 0 then no filter is applied.
-#define KERNEL_SIZE 0
+#define KERNEL_SIZE 3
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
