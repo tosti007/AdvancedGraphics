@@ -316,19 +316,22 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	// No intersection point found
 	if ( !found )
 	{
-		break;
+		Color nohitcolor;
 		if ( light != nullptr )
 		#ifdef USENEE
 			if (specularRay)
-				return light->color;
+				nohitcolor = light->color;
 			else
-				return Color(0, 0, 0);
+				nohitcolor = Color(0, 0, 0);
 		#else
-			return light->color;
+			nohitcolor = rLight->color;
 		#endif
-		if (sky != nullptr)
-			return sky->FindColor(r.direction);
-		return SKYDOME_DEFAULT_COLOR;
+		else if (sky != nullptr)
+			nohitcolor = sky->FindColor(r.direction);
+		else
+			nohitcolor = SKYDOME_DEFAULT_COLOR;
+		E += T * nohitcolor;
+		break;
 	}
 
 	// As al our debuging objects are close, 1000 is a safe value.
