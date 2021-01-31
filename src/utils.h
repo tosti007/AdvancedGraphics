@@ -114,10 +114,9 @@ inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 	float r1 = Rand(1);
 	float r = sqrtf( r0 );
 	float theta = 2 * PI * r1;
-	float x = r * cosf( theta );
-	// The function is defined with z = "up", so let's just flip these two points
-	float z = r * sinf( theta );
-	return TangentToWorld( N, x, sqrtf(1 - r0), z );
+	float x, z;
+	sincosf( theta, &z, &x );
+	return TangentToWorld( N, x * r, sqrtf(1 - r0), z * r );
 }
 
 inline vec3 CosineWeightedDiffuseReflectionv2( const vec3 N )
