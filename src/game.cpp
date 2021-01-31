@@ -447,7 +447,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 	// irradiance
 	//float hemiPdf = 1 / (2 * PI);
-	float cosinePDF = interNormal.dot(randomRay.direction) * INVPI;
+	float cosinePDF = interNormal.dot(r.direction) * INVPI;
 	T *= dot( interNormal, r.direction ) / cosinePDF * BRDF;
 
 	}
