@@ -333,6 +333,8 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		E += T * nohitcolor;
 		break;
 	}
+	// We have handled that case, so we can set it to false.
+	specularRay = false;
 
 	// As al our debuging objects are close, 1000 is a safe value.
 	// assert(r.t <= 1000);
@@ -396,7 +398,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 			r = Ray( interPoint, refractDir.normalized() );
 			r.Offset( 1e-3 );
 			// Does the specular bool need to be here true?
-			// TODO: specular bool
+			specularRay = true;
 			T *= albedo;
 			continue;
 		}
@@ -408,8 +410,8 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 		r = Ray( interPoint, -r.direction );
 		r.Reflect( interPoint, interNormal, angle );
 		r.Offset( 1e-3 );
+		specularRay = true;
 		T *= albedo;
-		// TODO: specular bool
 		continue;
 	}
 
