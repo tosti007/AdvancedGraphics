@@ -479,12 +479,12 @@ void Game::GenerateGaussianKernel( float sigma )
 	std::cout << "Generating 1D kernel with size " << KERNEL_SIZE << "..." << std::endl;
 	if (kernel != nullptr)
 		free(kernel);
-	kernel = new float[KERNEL_SIZE];
+	kernel = new float[KERNEL_CENTER + 1];
 	//float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
-	for ( int i = 0; i < KERNEL_SIZE; i++ )
+	for ( int i = 0; i < KERNEL_CENTER + 1; i++ )
 	{
-		r = abs( i - KERNEL_CENTER );
+		r = i;
 		kernel[i] = ( expf( -( r * r ) / s ) ) / ( PI * s );
 	}
 }
@@ -563,7 +563,7 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 		else
 		{
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			weights[i] = kernel[i + KERNEL_CENTER] * ComputeWeight_Total(centerPixel, otherPixel);
+			weights[i] = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel);
 			centerPixel.totalWeight += weights[i];
 			otherPixel.totalWeight += weights[i];
 		}
