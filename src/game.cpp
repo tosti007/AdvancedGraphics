@@ -469,7 +469,6 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 {
 	PixelData &centerPixel = pixelData[pixelId];
-#if KERNEL_SIZE > 0
 	const float sigma_firefly = 2.0f;
 
 	// Compute weights
@@ -535,10 +534,6 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 		}
 
 	return result * (1 / totalWeight);
-
-#else
-	return centerPixel.color;
-#endif
 }
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
@@ -627,7 +622,11 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 
+#if KERNEL_SIZE > 0
 		Color result = Filter( id, x, y );
+#else
+		Color result = pixelData[id].color;
+#endif
 
 		result *= pixelData[id].albedo;
 
