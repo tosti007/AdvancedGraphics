@@ -667,6 +667,14 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
 	}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
+		Filter( x, y, false );
+		uint id = x + y * screen->GetWidth();
+		pixelData[id].illumination *= (1 / pixelData[id].totalWeight);
+	}
 #endif
 
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
@@ -675,10 +683,6 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 
-#if KERNEL_SIZE > 0
-		Filter( x, y, false );
-		pixelData[id].illumination *= (1 / pixelData[id].totalWeight);
-#endif
 		Color result = pixelData[id].illumination * pixelData[id].albedo;
 
 		result.GammaCorrect();
