@@ -406,7 +406,7 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	clamp( survival, 0.1f, 1.0f );
 	if (RandomFloat() > survival)
 		break;
-	T /= survival;
+	T *= (1 / survival);
 	#endif
 
 	// Random bounce
