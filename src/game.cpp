@@ -543,6 +543,13 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 void Game::Filter( int pixelX, int pixelY, bool firstPass )
 {
 	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
+	if (pixelX > screen->GetWidth() - KERNEL_SIZE)
+	{
+		centerPixel.filtered = Color(0, 0, 0);
+		centerPixel.illumination = Color(0, 0, 0);
+		centerPixel.totalWeight = 1.0f;
+		return;
+	}
 
 	// Compute weights
 	float weights[KERNEL_SIZE];
