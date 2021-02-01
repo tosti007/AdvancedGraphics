@@ -466,7 +466,7 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-const float sigma_firefly = 2.0f;
+const float sigma_firefly = 25.0f;
 
 float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 {
