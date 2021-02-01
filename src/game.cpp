@@ -57,11 +57,14 @@ void Game::InitDefaultScene()
 	// spheres
 	float radius = 0.5f;
 
-	nr_spheres = 3;
+	nr_spheres = 6;
 	spheres = new Sphere[nr_spheres] {
-		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 2),
+		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 3),
 		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 5),
 		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 4),
+		Sphere(vec3(2 + 0, radius - 0.8f, 2.5f + 0), radius, 0),
+		Sphere(vec3(2 + 1, radius - 0.8f, 2.5f + 1), radius, 0),
+		Sphere(vec3(2 + 2, radius - 0.8f, 2.5f + 2), radius, 0),
 	};
 
 	view = new Camera(vec3(room_size/2, 1, 0.3f), vec3(0, 0, 1));
@@ -487,7 +490,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 
 	return weight;
 }
-
+#if KERNEL_SIZE > 0
 Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 {
 	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
@@ -530,6 +533,7 @@ Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 
 	return result * (1 / totalWeight);
 }
+#endif
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
 	char buf[128];
 	va_list va;
