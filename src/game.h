@@ -17,6 +17,7 @@ struct PixelData
 	vec3 interNormal;
 	vec3 firstIntersect;
 	uint materialIndex;
+	Color accumulated;
 	Color albedo;
 	Color illumination;
 
@@ -49,7 +50,6 @@ public:
 	float *kernel = nullptr;
 
 	PixelData* pixelData = nullptr;
-	Color* pixelColorAccumulated = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;

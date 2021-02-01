@@ -149,9 +149,6 @@ void Game::SetTarget( Surface* surface )
 	if (pixelData != nullptr)
 		free(pixelData);
 	pixelData = new PixelData[screen->GetWidth() * screen->GetHeight()];
-	if (pixelColorAccumulated != nullptr)
-		free(pixelColorAccumulated);
-	pixelColorAccumulated = new Color[screen->GetWidth() * screen->GetHeight()];
 	CameraChanged();
 }
 
@@ -604,8 +601,8 @@ void Game::Tick()
 			Color color = Sample( r, true, 0, id );
 		#endif
 
-		pixelColorAccumulated[id] += color;
-		pixelData[id].illumination = pixelColorAccumulated[id] * (1.0f / unmoved_frames);
+		pixelData[id].accumulated += color;
+		pixelData[id].illumination = pixelData[id].accumulated * (1.0f / unmoved_frames);
 	}
 
 	// Apply filter technique
@@ -659,5 +656,5 @@ void Game::CameraChanged()
 	unmoved_frames = 0;
 	int max = screen->GetWidth() * screen->GetHeight();
 	for ( int i = 0; i < max; i++ )
-		pixelColorAccumulated[i] = Color(0.0f, 0.0f, 0.0f);
+		pixelData[i].accumulated = Color(0.0f, 0.0f, 0.0f);
 }
