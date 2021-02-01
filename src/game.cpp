@@ -402,14 +402,11 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 	#ifdef USERUSSIANROULETTE
 	// Russian Roulette
-	float surivival = albedo.Max();
-	if (surivival > 1.0f)
-		surivival = 1.0f;
-	if (surivival < 0.1f)
-		surivival = 0.1f;
-	if (RandomFloat() > surivival)
+	float survival = albedo.Max();
+	clamp( survival, 0.1f, 1.0f );
+	if (RandomFloat() > survival)
 		break;
-	T *= 1 / surivival;
+	T /= survival;
 	#endif
 
 	// Random bounce
