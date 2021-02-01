@@ -22,6 +22,7 @@ struct PixelData
 	Color illumination;
 #if KERNEL_SIZE > 0
 	Color filtered;
+	float totalWeight;
 #endif
 
 	inline PixelData() = default;
