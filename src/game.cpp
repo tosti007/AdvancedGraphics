@@ -697,6 +697,10 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		Filter( x, y, false );
+		// To only horizontal blur, comment the line above and uncomment below
+		// uint id = x + y * screen->GetWidth();
+		// pixelData[id].illumination = pixelData[id].filtered;
+		// pixelData[id].totalWeight = 1.0f;
 	}
 #endif
 
