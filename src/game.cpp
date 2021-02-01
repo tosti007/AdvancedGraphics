@@ -540,7 +540,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 	return weight;
 }
 #if KERNEL_SIZE > 0
-Color Game::Filter( int pixelX, int pixelY, bool firstPass )
+void Game::Filter( int pixelX, int pixelY, bool firstPass )
 {
 	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
 
@@ -579,8 +579,12 @@ Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 		x += (int)firstPass;
 		y += (int)!firstPass;
 	}
-
-	return result * (1 / totalWeight);
+	result *= (1 / totalWeight);
+	
+	if (firstPass)
+		centerPixel.filtered = result;
+	else
+		centerPixel.illumination = result;
 }
 #endif
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
@@ -658,8 +662,7 @@ void Game::Tick()
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		uint id = x + y * screen->GetWidth();
-		pixelData[id].filtered = Filter( x, y, true );
+		Filter( x, y, true );
 	}
 #endif
 
@@ -670,12 +673,9 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 #if KERNEL_SIZE > 0
-		Color result = Filter( x, y, false );
-#else
-		Color result = pixelData[id].illumination;
+		Filter( x, y, false );
 #endif
-
-		result *= pixelData[id].albedo;
+		Color result = pixelData[id].illumination * pixelData[id].albedo;
 
 		result.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );

@@ -46,7 +46,7 @@ public:
 	Light* IntersectLights( Ray* r );
 	Color Sample( Ray r, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
-	Color Filter( int pixelX, int pixelY, bool firstPass );
+	void Filter( int pixelX, int pixelY, bool firstPass );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
