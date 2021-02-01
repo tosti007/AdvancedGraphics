@@ -525,7 +525,8 @@ Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 		{
 			float weight = kernel[i] * weights[i];
 			totalWeight += weight;
-			result += weight * pixelData[x + y * screen->GetWidth()].illumination;
+			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
+			result += weight * otherPixel.illumination;
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
@@ -603,6 +604,16 @@ void Game::Tick()
 	}
 
 	// Apply filter technique
+#if KERNEL_SIZE > 0
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
+		uint id = x + y * screen->GetWidth();
+		pixelData[id].filtered = Filter( x, y, true );
+	}
+#endif
+
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
@@ -610,7 +621,7 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 #if KERNEL_SIZE > 0
-		Color result = Filter( x, y, true );
+		Color result = pixelData[id].filtered;
 #else
 		Color result = pixelData[id].illumination;
 #endif

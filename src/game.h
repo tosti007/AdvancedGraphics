@@ -20,6 +20,9 @@ struct PixelData
 	Color accumulated;
 	Color albedo;
 	Color illumination;
+#if KERNEL_SIZE > 0
+	Color filtered;
+#endif
 
 	inline PixelData() = default;
 };
