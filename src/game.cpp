@@ -526,7 +526,10 @@ Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 			float weight = kernel[i] * weights[i];
 			totalWeight += weight;
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			result += weight * otherPixel.illumination;
+			if (firstPass)
+				result += weight * otherPixel.illumination;
+			else
+				result += weight * otherPixel.filtered;
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
@@ -621,7 +624,7 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 #if KERNEL_SIZE > 0
-		Color result = pixelData[id].filtered;
+		Color result = Filter( x, y, false );
 #else
 		Color result = pixelData[id].illumination;
 #endif
