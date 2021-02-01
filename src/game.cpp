@@ -149,9 +149,9 @@ void Game::SetTarget( Surface* surface )
 	if (pixelData != nullptr)
 		free(pixelData);
 	pixelData = new PixelData[screen->GetWidth() * screen->GetHeight()];
-	if (pixelColor != nullptr)
-		free(pixelColor);
-	pixelColor = new Color[screen->GetWidth() * screen->GetHeight()];
+	if (pixelColorAccumulated != nullptr)
+		free(pixelColorAccumulated);
+	pixelColorAccumulated = new Color[screen->GetWidth() * screen->GetHeight()];
 	CameraChanged();
 }
 
@@ -474,8 +474,8 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 	float weight = 1.0f;
 
 	// Illumination difference
-	// weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
-	weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.color.ToVec(), centerPixel.color.ToVec());
+	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
+	weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
 	// Intersection point distance
 	weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
@@ -520,7 +520,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 	#ifdef FILTER_FIREFLY_SUPRESS
 	// If we are at a pixel that has a high value (defined as: vec3(sigma, sigma, sigma).sqrLength() == sigma * sigma * 3)
 	// then we just ignore the actual center value and only take neighbour values.
-	if (centerPixel.color.ToVec().sqrLength() > sigma_firefly * sigma_firefly * 3)
+	if (centerPixel.illumination.ToVec().sqrLength() > sigma_firefly * sigma_firefly * 3)
 		weights[KERNEL_CENTER + KERNEL_CENTER * KERNEL_SIZE] = 0.0f;
 	#endif
 
@@ -534,7 +534,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 			if ( weights[kernel_id] == 0 ) continue;
 			float weight = kernel[kernel_id] * weights[kernel_id];
 			totalWeight += weight;
-			result += weight * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].color;
+			result += weight * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].illumination;
 		}
 
 	return result * (1 / totalWeight);
@@ -615,8 +615,8 @@ void Game::Tick()
 			Color color = Sample( r, true, 0, id );
 		#endif
 
-		pixelColor[id] += color;
-		pixelData[id].color = pixelColor[id] * (1.0f / unmoved_frames);
+		pixelColorAccumulated[id] += color;
+		pixelData[id].illumination = pixelColorAccumulated[id] * (1.0f / unmoved_frames);
 	}
 
 	// Apply filter technique
@@ -629,7 +629,7 @@ void Game::Tick()
 #if KERNEL_SIZE > 0
 		Color result = Filter( id, x, y );
 #else
-		Color result = pixelData[id].color;
+		Color result = pixelData[id].illumination;
 #endif
 
 		result *= pixelData[id].albedo;
@@ -670,5 +670,5 @@ void Game::CameraChanged()
 	unmoved_frames = 0;
 	int max = screen->GetWidth() * screen->GetHeight();
 	for ( int i = 0; i < max; i++ )
-		pixelColor[i] = Color(0.0f, 0.0f, 0.0f);
+		pixelColorAccumulated[i] = Color(0.0f, 0.0f, 0.0f);
 }

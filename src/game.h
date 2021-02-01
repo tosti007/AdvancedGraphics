@@ -14,14 +14,13 @@ namespace AdvancedGraphics {
 
 struct PixelData
 {
-	Color color;
 	vec3 interNormal;
 	vec3 firstIntersect;
 	uint materialIndex;
 	Color albedo;
+	Color illumination;
 
 	inline PixelData() = default;
-	inline PixelData(Color c, vec3 N): color(c), interNormal(N) {}
 };
 
 class Game
@@ -50,7 +49,7 @@ public:
 	float *kernel = nullptr;
 
 	PixelData* pixelData = nullptr;
-	Color* pixelColor = nullptr;
+	Color* pixelColorAccumulated = nullptr;
 	Surface* screen;
 	Camera* view;
 	SkyDome* sky;
