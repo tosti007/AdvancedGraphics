@@ -550,8 +550,6 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 		centerPixel.totalWeight = 1.0f;
 		return;
 	}
-	// Reset the total weight;
-	centerPixel.totalWeight = 0.0f;
 
 	// Compute weights
 	float weights[KERNEL_SIZE];
@@ -666,6 +664,7 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		uint id = x + y * screen->GetWidth();
+		pixelData[id].totalWeight = 0.0f;
 		pixelData[id].filtered = Color(0, 0, 0);
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
@@ -680,6 +679,7 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
+		pixelData[id].totalWeight = 0.0f;
 		pixelData[id].illumination = Color(0, 0, 0);
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
