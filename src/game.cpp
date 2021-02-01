@@ -583,17 +583,6 @@ void Game::Tick()
 	// uncomment to render just one frame 
 	//if (unmoved_frames > 10) return;
 
-	float sigma = 10.0;
-	float r, s = 2.0 * sigma * sigma;
-	for ( int x = -KERNEL_CENTER; x <= KERNEL_CENTER; x++ )
-	{
-		for ( int y = -KERNEL_CENTER; y <= KERNEL_CENTER; y++ )
-		{
-			int kernel_id = ( x + KERNEL_CENTER ) + ( y + KERNEL_CENTER ) * KERNEL_SIZE;
-			r = sqrt( x * x + y * y );
-			kernel[kernel_id] = ( exp( -( r * r ) / s ) ) / ( PI * s );
-		}
-	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
