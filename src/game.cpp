@@ -683,6 +683,9 @@ void Game::Tick()
 		for (int x = 0; x < screen->GetWidth(); x++)
 		{
 			Filter( x, y, true );
+
+			// Since we are going towards the right only we know that pixel[x,y] will never be touched.
+			// Hence we can safely compute and reset the data for the vertical filtering.
 			uint id = x + y * screen->GetWidth();
 			pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
 			pixelData[id].totalWeight = 0.0f;
