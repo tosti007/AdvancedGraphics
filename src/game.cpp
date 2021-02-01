@@ -586,7 +586,6 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 		x += (int)firstPass;
 		y += (int)!firstPass;
 	}
-	*result = (*result) * (1 / centerPixel.totalWeight);
 }
 #endif
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
@@ -665,6 +664,8 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		Filter( x, y, true );
+		uint id = x + y * screen->GetWidth();
+		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
 	}
 #endif
 
@@ -676,6 +677,7 @@ void Game::Tick()
 
 #if KERNEL_SIZE > 0
 		Filter( x, y, false );
+		pixelData[id].illumination *= (1 / pixelData[id].totalWeight);
 #endif
 		Color result = pixelData[id].illumination * pixelData[id].albedo;
 
