@@ -664,6 +664,11 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		Filter( x, y, true );
+	}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
 		uint id = x + y * screen->GetWidth();
 		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
 	}
@@ -672,6 +677,11 @@ void Game::Tick()
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
 		Filter( x, y, false );
+	}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
 		uint id = x + y * screen->GetWidth();
 		pixelData[id].illumination *= (1 / pixelData[id].totalWeight);
 	}
