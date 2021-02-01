@@ -561,7 +561,14 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 
 	// Apply kernel
 	float totalWeight = 0;
-	Color result = Color( 0, 0, 0 );
+	Color *result;
+	
+	if (firstPass)
+		result = &centerPixel.filtered;
+	else
+		result = &centerPixel.illumination;
+
+	*result = Color(0, 0, 0);
 	x = pixelX - KERNEL_CENTER * (int)firstPass;
 	y = pixelY - KERNEL_CENTER * (int)!firstPass;
 	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
@@ -572,19 +579,14 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 			totalWeight += weight;
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
 			if (firstPass)
-				result += weight * otherPixel.illumination;
+				*result = (*result) + weight * otherPixel.illumination;
 			else
-				result += weight * otherPixel.filtered;
+				*result = (*result) + weight * otherPixel.filtered;
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
 	}
-	result *= (1 / totalWeight);
-	
-	if (firstPass)
-		centerPixel.filtered = result;
-	else
-		centerPixel.illumination = result;
+	*result = (*result) * (1 / totalWeight);
 }
 #endif
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
