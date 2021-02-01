@@ -568,11 +568,6 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 
 	// Apply kernel
 	centerPixel.totalWeight = 0;
-	
-	if (firstPass)
-		centerPixel.filtered = Color(0, 0, 0);
-	else
-		centerPixel.illumination = Color(0, 0, 0);
 
 	x = pixelX - KERNEL_CENTER * (int)firstPass;
 	y = pixelY - KERNEL_CENTER * (int)!firstPass;
@@ -668,6 +663,13 @@ void Game::Tick()
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
+		uint id = x + y * screen->GetWidth();
+		pixelData[id].filtered = Color(0, 0, 0);
+	}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
 		Filter( x, y, true );
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
@@ -676,6 +678,7 @@ void Game::Tick()
 	{
 		uint id = x + y * screen->GetWidth();
 		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
+		pixelData[id].illumination = Color(0, 0, 0);
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
