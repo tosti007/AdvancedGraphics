@@ -466,10 +466,38 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
+const float sigma_firefly = 2.0f;
+
+float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
+{
+	// This is the first part of the formula, i.e. the part that uses P_i and P_j.
+	float weight = 1.0f;
+
+	// Illumination difference
+	// weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
+	weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.color.ToVec(), centerPixel.color.ToVec());
+
+	// Intersection point distance
+	weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
+
+	// Intersection normal angle
+	weight *= ComputeWeight_Angle(0.5f, otherPixel.interNormal, centerPixel.interNormal);
+
+	// Material index difference
+	// If the materials are the same the bool will be true, and thus the total value will be 0
+	// If they are not the same the value will evaluate to 1.
+	// We do not need to do a square as the values can only be 0 or 1, thus we can call raw.
+	weight *= ComputeWeightRaw(0.5f, 1 - (otherPixel.materialIndex == centerPixel.materialIndex));
+
+	// I am unsure how to implement this yet.
+	// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
+
+	return weight;
+}
+
 Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 {
 	PixelData &centerPixel = pixelData[pixelId];
-	const float sigma_firefly = 2.0f;
 
 	// Compute weights
 	float weights[KERNEL_SIZE * KERNEL_SIZE];
@@ -486,31 +514,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 				continue;
 			}
 			size_t otherPixelId = pixelId + x2 + y2 * screen->GetWidth();
-			PixelData &otherPixel = pixelData[otherPixelId];
-
-			// This is the first part of the formula, i.e. the part that uses P_i and P_j.
-			float weight = 1.0f;
-
-			// Illumination difference
-			// weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
-			weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.color.ToVec(), centerPixel.color.ToVec());
-
-			// Intersection point distance
-			weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
-
-			// Intersection normal angle
-			weight *= ComputeWeight_Angle(0.5f, otherPixel.interNormal, centerPixel.interNormal);
-
-			// Material index difference
-			// If the materials are the same the bool will be true, and thus the total value will be 0
-			// If they are not the same the value will evaluate to 1.
-			// We do not need to do a square as the values can only be 0 or 1, thus we can call raw.
-			weight *= ComputeWeightRaw(0.5f, 1 - (otherPixel.materialIndex == centerPixel.materialIndex));
-
-			// I am unsure how to implement this yet.
-			// float BRDFWeight = centerPixel.BRDF.dot( otherPixel.BRDF );
-
-			weights[kernel_id] = weight;
+			weights[kernel_id] = ComputeWeight_Total(centerPixel, pixelData[otherPixelId]);
 		}
 
 	#ifdef FILTER_FIREFLY_SUPRESS
