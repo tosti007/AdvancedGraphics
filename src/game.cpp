@@ -673,26 +673,21 @@ void Game::Tick()
 #if KERNEL_SIZE > 0
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
-	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		uint id = x + y * screen->GetWidth();
-		pixelData[id].totalWeight = 0.0f;
-		pixelData[id].filtered = Color(0, 0, 0);
-	}
-	#pragma omp parallel for schedule( dynamic ) num_threads(8)
-	for (int y = 0; y < screen->GetHeight(); y++)
-	for (int x = 0; x < screen->GetWidth(); x++)
-	{
-		Filter( x, y, true );
-	}
-	#pragma omp parallel for schedule( dynamic ) num_threads(8)
-	for (int y = 0; y < screen->GetHeight(); y++)
-	for (int x = 0; x < screen->GetWidth(); x++)
-	{
-		uint id = x + y * screen->GetWidth();
-		pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
-		pixelData[id].totalWeight = 0.0f;
-		pixelData[id].illumination = Color(0, 0, 0);
+		for (int x = 0; x < screen->GetWidth(); x++)
+		{
+			uint id = x + y * screen->GetWidth();
+			pixelData[id].totalWeight = 0.0f;
+			pixelData[id].filtered = Color(0, 0, 0);
+		}
+		for (int x = 0; x < screen->GetWidth(); x++)
+		{
+			Filter( x, y, true );
+			uint id = x + y * screen->GetWidth();
+			pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
+			pixelData[id].totalWeight = 0.0f;
+			pixelData[id].illumination = Color(0, 0, 0);
+		}
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
