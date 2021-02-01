@@ -507,13 +507,6 @@ Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 		y += (int)!firstPass;
 	}
 
-	#ifdef FILTER_FIREFLY_SUPRESS
-	// If we are at a pixel that has a high value (defined as: vec3(sigma, sigma, sigma).sqrLength() == sigma * sigma * 3)
-	// then we just ignore the actual center value and only take neighbour values.
-	if (centerPixel.illumination.ToVec().sqrLength() > sigma_firefly * sigma_firefly * 3)
-		weights[KERNEL_CENTER + KERNEL_CENTER * KERNEL_SIZE] = 0.0f;
-	#endif
-
 	// Apply kernel
 	float totalWeight = 0;
 	Color result = Color( 0, 0, 0 );
