@@ -20,6 +20,9 @@ struct PixelData
 	Color accumulated;
 	Color albedo;
 	Color illumination;
+#if KERNEL_SIZE > 0
+	Color filtered;
+#endif
 
 	inline PixelData() = default;
 };
@@ -43,7 +46,7 @@ public:
 	Light* IntersectLights( Ray* r );
 	Color Sample( Ray r, bool specularRay, uint depth, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
-	Color Filter( uint pixelId, int pixelX, int pixelY );
+	Color Filter( int pixelX, int pixelY, bool firstPass );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:

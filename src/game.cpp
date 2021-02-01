@@ -422,20 +422,16 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 
 void Game::GenerateGaussianKernel( float sigma )
 {
-	std::cout << "Generating kernel with size " << KERNEL_SIZE << 'x' << KERNEL_SIZE << "..." << std::endl;
+	std::cout << "Generating 1D kernel with size " << KERNEL_SIZE << "..." << std::endl;
 	if (kernel != nullptr)
 		free(kernel);
-	kernel = new float[KERNEL_SIZE * KERNEL_SIZE];
+	kernel = new float[KERNEL_SIZE];
 	//float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
-	for ( int x = -KERNEL_CENTER; x <= KERNEL_CENTER; x++ )
+	for ( int i = 0; i < KERNEL_SIZE; i++ )
 	{
-		for ( int y = -KERNEL_CENTER; y <= KERNEL_CENTER; y++ )
-		{
-			int kernel_id = ( x + KERNEL_CENTER ) + ( y + KERNEL_CENTER ) * KERNEL_SIZE;
-			r = sqrt( x * x + y * y );
-			kernel[kernel_id] = ( expf( -( r * r ) / s ) ) / ( PI * s );
-		}
+		r = abs( i - KERNEL_CENTER );
+		kernel[i] = ( expf( -( r * r ) / s ) ) / ( PI * s );
 	}
 }
 
@@ -492,27 +488,24 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 	return weight;
 }
 
-Color Game::Filter( uint pixelId, int pixelX, int pixelY )
+Color Game::Filter( int pixelX, int pixelY, bool firstPass )
 {
-	PixelData &centerPixel = pixelData[pixelId];
+	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
 
 	// Compute weights
-	float weights[KERNEL_SIZE * KERNEL_SIZE];
-	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
-		for ( size_t x = 0; x < KERNEL_SIZE; x++ )
-		{
-			size_t kernel_id = x + y * KERNEL_SIZE;
-			int x2 = x - KERNEL_CENTER;
-			int y2 = y - KERNEL_CENTER;
-			// If pixel is out of screen
-			if ((pixelX + x2) < 0 || (pixelY + y2) < 0 || (pixelX + x2) >= screen->GetWidth() || (pixelY + y2) >= screen->GetHeight())
-			{
-				weights[kernel_id] = 0.0f;
-				continue;
-			}
-			size_t otherPixelId = pixelId + x2 + y2 * screen->GetWidth();
-			weights[kernel_id] = ComputeWeight_Total(centerPixel, pixelData[otherPixelId]);
-		}
+	float weights[KERNEL_SIZE];
+	int x = pixelX - KERNEL_CENTER * (int)firstPass;
+	int y = pixelY - KERNEL_CENTER * (int)!firstPass;
+	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	{
+		// If pixel is out of screen
+		if (x < 0 || x >= screen->GetWidth() || y < 0 || y >= screen->GetHeight())
+			weights[i] = 0.0f;
+		else
+			weights[i] = ComputeWeight_Total(centerPixel, pixelData[x + y * screen->GetWidth()]);
+		x += (int)firstPass;
+		y += (int)!firstPass;
+	}
 
 	#ifdef FILTER_FIREFLY_SUPRESS
 	// If we are at a pixel that has a high value (defined as: vec3(sigma, sigma, sigma).sqrLength() == sigma * sigma * 3)
@@ -524,15 +517,23 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 	// Apply kernel
 	float totalWeight = 0;
 	Color result = Color( 0, 0, 0 );
-	for ( size_t y = 0; y < KERNEL_SIZE; y++ )
-		for (size_t x = 0; x < KERNEL_SIZE; x++)
+	x = pixelX - KERNEL_CENTER * (int)firstPass;
+	y = pixelY - KERNEL_CENTER * (int)!firstPass;
+	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	{
+		if ( weights[i] != 0.0f )
 		{
-			size_t kernel_id = x + y * KERNEL_SIZE;
-			if ( weights[kernel_id] == 0 ) continue;
-			float weight = kernel[kernel_id] * weights[kernel_id];
+			float weight = kernel[i] * weights[i];
 			totalWeight += weight;
-			result += weight * pixelData[pixelId + (x - KERNEL_CENTER) + (y - KERNEL_CENTER) * screen->GetWidth()].illumination;
+			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
+			if (firstPass)
+				result += weight * otherPixel.illumination;
+			else
+				result += weight * otherPixel.filtered;
 		}
+		x += (int)firstPass;
+		y += (int)!firstPass;
+	}
 
 	return result * (1 / totalWeight);
 }
@@ -606,6 +607,16 @@ void Game::Tick()
 	}
 
 	// Apply filter technique
+#if KERNEL_SIZE > 0
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
+	for (int x = 0; x < screen->GetWidth(); x++)
+	{
+		uint id = x + y * screen->GetWidth();
+		pixelData[id].filtered = Filter( x, y, true );
+	}
+#endif
+
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
@@ -613,7 +624,7 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 #if KERNEL_SIZE > 0
-		Color result = Filter( id, x, y );
+		Color result = Filter( x, y, false );
 #else
 		Color result = pixelData[id].illumination;
 #endif
