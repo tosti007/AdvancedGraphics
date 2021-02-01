@@ -470,6 +470,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 {
 	PixelData &centerPixel = pixelData[pixelId];
 #if KERNEL_SIZE > 0
+	const float sigma_firefly = 2.0f;
 
 	// Compute weights
 	float weights[KERNEL_SIZE * KERNEL_SIZE];
@@ -493,7 +494,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 
 			// Illumination difference
 			// weight *= ComputeWeight(25.0f, otherPixel.color.Max(), centerPixel.color.Max());
-			weight *= ComputeWeight_Distance(2.0f, otherPixel.color.ToVec(), centerPixel.color.ToVec());
+			weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.color.ToVec(), centerPixel.color.ToVec());
 
 			// Intersection point distance
 			weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
@@ -516,7 +517,7 @@ Color Game::Filter( uint pixelId, int pixelX, int pixelY )
 	#ifdef FILTER_FIREFLY_SUPRESS
 	// If we are at a pixel that has a high value (defined as: vec3(sigma, sigma, sigma).sqrLength() == sigma * sigma * 3)
 	// then we just ignore the actual center value and only take neighbour values.
-	if (centerPixel.color.ToVec().sqrLength() > 2.0f * 2.0f * 3)
+	if (centerPixel.color.ToVec().sqrLength() > sigma_firefly * sigma_firefly * 3)
 		weights[KERNEL_CENTER + KERNEL_CENTER * KERNEL_SIZE] = 0.0f;
 	#endif
 
