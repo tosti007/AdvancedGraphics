@@ -552,36 +552,55 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 	}
 
 	// Compute weights
-	float weights[KERNEL_SIZE];
-	int x = pixelX - KERNEL_CENTER * (int)firstPass;
-	int y = pixelY - KERNEL_CENTER * (int)!firstPass;
-	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	float weights[KERNEL_CENTER + 1];
+	int x = pixelX;
+	int y = pixelY;
+	for ( size_t i = 0; i < KERNEL_CENTER + 1; i++ )
 	{
 		// If pixel is out of screen
 		if (x < 0 || x >= screen->GetWidth() || y < 0 || y >= screen->GetHeight())
 			weights[i] = 0.0f;
 		else
 		{
-			weights[i] = kernel[i] * ComputeWeight_Total(centerPixel, pixelData[x + y * screen->GetWidth()]);
+			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
+			weights[i] = kernel[i + KERNEL_CENTER] * ComputeWeight_Total(centerPixel, otherPixel);
 			centerPixel.totalWeight += weights[i];
+			otherPixel.totalWeight += weights[i];
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
 	}
 
 	// Apply kernel
-	x = pixelX - KERNEL_CENTER * (int)firstPass;
-	y = pixelY - KERNEL_CENTER * (int)!firstPass;
-	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	x = pixelX + (int)firstPass;
+	y = pixelY + (int)!firstPass;
+
+	// We do the center pixel separate, since we don't want to count it double.
+	float weight = weights[0];
+	if ( weight != 0.0f )
 	{
-		float weight = weights[i];
+		if (firstPass)
+			centerPixel.filtered += weight * centerPixel.illumination;
+		else
+			centerPixel.illumination += weight * centerPixel.filtered;
+	}
+
+	for ( size_t i = 1; i < KERNEL_CENTER + 1; i++ )
+	{
+		weight = weights[i];
 		if ( weight != 0.0f )
 		{
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
 			if (firstPass)
+			{
 				centerPixel.filtered += weight * otherPixel.illumination;
+				otherPixel.filtered += weight * centerPixel.illumination;
+			}
 			else
+			{
 				centerPixel.illumination += weight * otherPixel.filtered;
+				otherPixel.illumination += weight * centerPixel.filtered;
+			}
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
