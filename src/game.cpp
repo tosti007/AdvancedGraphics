@@ -549,7 +549,8 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 	int y = pixelY + (int)!firstPass;
 
 	// We do the center pixel separate, since we don't want to count it double.
-	float weight = kernel[0] * ComputeWeight_Total(centerPixel, centerPixel);
+	// The computed weight with itself is 1, thus we do not need to compute the totalweight for it.
+	float weight = kernel[0]; 
 	if ( weight != 0.0f )
 	{
 		centerPixel.totalWeight += weight;
