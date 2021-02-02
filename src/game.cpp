@@ -693,7 +693,7 @@ void Game::Tick()
 			color[2] = fullColor.b;
 		}
 	cv::Mat outputImage = cv::Mat( screen->GetWidth(), screen->GetHeight(), CV_32FC3 );
-	cv::bilateralFilter( inputImage, outputImage, 32, 32, 32 );
+	cv::bilateralFilter( inputImage, outputImage, 65, 25, 1 );
 
 	for ( int y = 0; y < screen->GetHeight(); y++ )
 		for ( int x = 0; x < screen->GetWidth(); x++ )
