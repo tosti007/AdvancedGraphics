@@ -258,6 +258,9 @@ Color Game::Sample(Ray r, uint pixelId)
 	uint depth = 0;
 	Color T(1.0f, 1.0f, 1.0f);
 	Color E(0.0f, 0.0f, 0.0f);
+	float pdf_light = 0.0f;
+	float pdf_brdf = 0.0f;
+	float pdf_mis = 0.0f;
 	#ifdef USERUSSIANROULETTE
 	for (; true; depth++)
 	#else
@@ -410,7 +413,6 @@ Color Game::Sample(Ray r, uint pixelId)
 	float rLightDist = rLightDir.length();
 	rLightDir *= 1 / rLightDist;
 
-	float rLightPdf = 0;
 	float cos_i = interNormal.dot(rLightDir);
 	float cos_o = rLightNormal.dot(-rLightDir);
 	if (cos_i > 0 && cos_o > 0)
@@ -421,8 +423,8 @@ Color Game::Sample(Ray r, uint pixelId)
 		{
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
-			rLightPdf = 1 / solidAngle;
-			E += T * (cos_i / rLightPdf) * BRDF * rLight->color;
+			pdf_light = 1 / solidAngle;
+			E += T * (cos_i / pdf_light) * BRDF * rLight->color;
 		}
 	}
 	#endif
@@ -441,9 +443,9 @@ Color Game::Sample(Ray r, uint pixelId)
 	r.Offset(1e-3);
 
 	// irradiance
-	//float hemiPdf = 1 / (2 * PI);
-	float cosinePDF = interNormal.dot(r.direction) * INVPI;
-	T *= dot( interNormal, r.direction ) / cosinePDF * BRDF;
+	//pdf_brdf = 1 / (2 * PI);
+	pdf_brdf = interNormal.dot(r.direction) * INVPI;
+	T *= dot( interNormal, r.direction ) / pdf_brdf * BRDF;
 
 	}
 
