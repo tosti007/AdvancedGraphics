@@ -689,8 +689,8 @@ void Game::Tick()
 		}
 	}
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
-	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
+	for (int y = 0; y < screen->GetHeight(); y++)
 	{
 		Filter( x, y, false );
 		// To only horizontal blur, comment the line above and uncomment below
