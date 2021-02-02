@@ -421,6 +421,7 @@ Color Game::Sample(Ray r, uint pixelId)
 	// irradiance
 	//pdf_brdf = 1 / (2 * PI);
 	pdf_brdf = interNormal.dot(r.direction) * INVPI;
+	float pdf_mis = pdf_brdf;
 
 	#ifdef USENEE
 	// Direct light for NEE
@@ -442,7 +443,8 @@ Color Game::Sample(Ray r, uint pixelId)
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
 			float pdf_light = 1 / solidAngle;
-			E += T * (cos_i / pdf_light) * BRDF * rLight->color;
+			pdf_mis += pdf_light;
+			E += T * (cos_i / pdf_mis) * BRDF * rLight->color;
 		}
 	}
 	#endif
@@ -457,7 +459,7 @@ Color Game::Sample(Ray r, uint pixelId)
 	#endif
 
 	pdf_angle = dot(interNormal, r.direction);
-	T *= pdf_angle / pdf_brdf * BRDF;
+	T *= pdf_angle / pdf_mis * BRDF;
 
 	}
 
