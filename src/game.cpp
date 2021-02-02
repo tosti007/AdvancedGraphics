@@ -9,6 +9,12 @@
 #include "utils.h"
 #include "timer.h"
 
+// For opencv2 bilateral filter
+#ifdef OPENCV2
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#endif
+
 // .obj loader
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
@@ -672,6 +678,34 @@ void Game::Tick()
 
 		screen->GetBuffer()[id] = result.ToPixel();
 	}
+
+	#ifdef OPENCV2
+	cv::Mat inputImage = cv::Mat( screen->GetWidth(), screen->GetHeight(), CV_32FC3 );
+	//#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for ( int y = 0; y < screen->GetHeight(); y++ )
+		for ( int x = 0; x < screen->GetWidth(); x++ )
+		{
+			cv::Vec3f &color = inputImage.at<cv::Vec3f>( y, x );
+			uint id = x + y * screen->GetWidth();
+			Color fullColor = pixelData[id].illumination * pixelData[id].albedo;
+			color[0] = fullColor.r;
+			color[1] = fullColor.g;
+			color[2] = fullColor.b;
+		}
+	cv::Mat outputImage = cv::Mat( screen->GetWidth(), screen->GetHeight(), CV_32FC3 );
+	cv::bilateralFilter( inputImage, outputImage, 32, 32, 32 );
+
+	for ( int y = 0; y < screen->GetHeight(); y++ )
+		for ( int x = 0; x < screen->GetWidth(); x++ )
+		{
+			cv::Vec3f color = outputImage.at<cv::Vec3f>( y, x );
+			Color result;
+			result.r = color[0];
+			result.g = color[1];
+			result.b = color[2];
+			screen->GetBuffer()[x + y * screen->GetWidth()] = result.ToPixel();
+		}
+	#endif
 
 	// Write debug output
 	Print(32, 0, "Pos: %f %f %f", view->position.x, view->position.y, view->position.z);
