@@ -276,19 +276,44 @@ Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
 	if ( !found )
 	{
 		Color nohitcolor;
+		vec3 interPoint, interNormal;
+
 		if ( light != nullptr )
-		#ifdef USENEE
-			if (specularRay)
-				nohitcolor = light->color;
-			else
-				nohitcolor = Color(0, 0, 0);
-		#else
-			nohitcolor = rLight->color;
-		#endif
+		{
+			interPoint = r.origin + r.t * r.direction;
+			interNormal = light->NormalAt( interPoint );
+			#ifdef USENEE
+				if (specularRay)
+					nohitcolor = light->color;
+				else
+					nohitcolor = Color(0, 0, 0);
+			#else
+				nohitcolor = rLight->color;
+			#endif
+		}
 		else if (sky != nullptr)
+		{
+			interPoint = vec3(INFINITY, INFINITY, INFINITY);
+			interNormal = -r.direction;
 			nohitcolor = sky->FindColor(r.direction);
+		}
 		else
+		{
+			interPoint = vec3(INFINITY, INFINITY, INFINITY);
+			interNormal = -r.direction;
 			nohitcolor = SKYDOME_DEFAULT_COLOR;
+		}
+
+		if (depth == 0)
+		{
+			// intersection point found
+			PixelData &pixel = pixelData[pixelId];
+			pixel.interNormal = interNormal;
+			pixel.firstIntersect = interPoint;
+			pixel.materialIndex = -2147483647;
+			pixel.albedo = nohitcolor;
+			nohitcolor = Color(1, 1, 1);
+		}
 		E += T * nohitcolor;
 		break;
 	}
