@@ -258,9 +258,7 @@ Color Game::Sample(Ray r, uint pixelId)
 	uint depth = 0;
 	Color T(1.0f, 1.0f, 1.0f);
 	Color E(0.0f, 0.0f, 0.0f);
-	float pdf_light = 0.0f;
-	float pdf_brdf = 0.0f;
-	float pdf_mis = 0.0f;
+	float pdf_light = 0.0f, pdf_brdf = 0.0f, pdf_mis = 0.0f;
 	#ifdef USERUSSIANROULETTE
 	for (; true; depth++)
 	#else
@@ -291,9 +289,15 @@ Color Game::Sample(Ray r, uint pixelId)
 				if (specularRay)
 					nohitcolor = light->color;
 				else
-					nohitcolor = Color(0, 0, 0);
+				{
+					float cos_o = -dot(interNormal, r.direction);
+					float solidAngle = (cos_o * light->Area()) / (r.t * r.t);
+					pdf_light = 1 / solidAngle;
+					pdf_mis = pdf_brdf + pdf_light;
+					nohitcolor = light->color * (1.0f / pdf_mis);
+				}
 			#else
-				nohitcolor = rLight->color;
+				nohitcolor = light->color;
 			#endif
 		}
 		else if (sky != nullptr)
