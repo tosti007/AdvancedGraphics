@@ -404,6 +404,14 @@ Color Game::Sample(Ray r, uint pixelId)
 		continue;
 	}
 
+	// Random bounce
+	r = Ray( interPoint, CosineWeightedDiffuseReflection( interNormal ) );
+	r.Offset(1e-3);
+
+	// irradiance
+	//pdf_brdf = 1 / (2 * PI);
+	pdf_brdf = interNormal.dot(r.direction) * INVPI;
+
 	#ifdef USENEE
 	// Direct light for NEE
 	Light *rLight = lights[RandomIndex( nr_lights )];
@@ -438,13 +446,6 @@ Color Game::Sample(Ray r, uint pixelId)
 	T *= (1 / survival);
 	#endif
 
-	// Random bounce
-	r = Ray( interPoint, CosineWeightedDiffuseReflection( interNormal ) );
-	r.Offset(1e-3);
-
-	// irradiance
-	//pdf_brdf = 1 / (2 * PI);
-	pdf_brdf = interNormal.dot(r.direction) * INVPI;
 	T *= dot( interNormal, r.direction ) / pdf_brdf * BRDF;
 
 	}
