@@ -297,10 +297,14 @@ Color Game::Sample(Ray r, uint pixelId)
 					nohitcolor = light->color;
 				else
 				{
+					#ifdef USEMIS
 					float solidAngle = (pdf_angle * light->Area()) / (r.t * r.t);
 					float pdf_light = 1 / solidAngle;
 					float pdf_mis = pdf_brdf + pdf_light;
 					nohitcolor = light->color * (1.0f / pdf_mis);
+					#else
+					nohitcolor = Color(0, 0, 0);
+					#endif
 				}
 			#else
 				nohitcolor = light->color;
@@ -452,8 +456,11 @@ Color Game::Sample(Ray r, uint pixelId)
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
 			float pdf_light = 1 / solidAngle;
+			#ifdef USEMIS
 			pdf_mis += pdf_light;
-			E += T * (cos_i / pdf_mis) * BRDF * rLight->color;
+			pdf_light = pdf_mis;
+			#endif
+			E += T * (cos_i / pdf_light) * BRDF * rLight->color;
 		}
 	}
 	#endif
@@ -479,12 +486,12 @@ void Game::GenerateGaussianKernel( float sigma )
 	std::cout << "Generating 1D kernel with size " << KERNEL_SIZE << "..." << std::endl;
 	if (kernel != nullptr)
 		free(kernel);
-	kernel = new float[KERNEL_SIZE];
+	kernel = new float[KERNEL_CENTER + 1];
 	//float sigma = 10.0;
 	float r, s = 2.0 * sigma * sigma;
-	for ( int i = 0; i < KERNEL_SIZE; i++ )
+	for ( int i = 0; i < KERNEL_CENTER + 1; i++ )
 	{
-		r = abs( i - KERNEL_CENTER );
+		r = i;
 		kernel[i] = ( expf( -( r * r ) / s ) ) / ( PI * s );
 	}
 }
@@ -513,14 +520,15 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
+float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool firstPass)
 {
 	// This is the first part of the formula, i.e. the part that uses P_i and P_j.
 	float weight = 1.0f;
 
 	// Illumination difference
+	float sigma_illumination = firstPass ? 25.0f : 3.0f;
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
-	weight *= ComputeWeight_Distance(25.0f, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
+	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
 	// Intersection point distance
 	weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
@@ -540,47 +548,52 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 	return weight;
 }
 #if KERNEL_SIZE > 0
-Color Game::Filter( int pixelX, int pixelY, bool firstPass )
+void Game::Filter( int pixelX, int pixelY, bool firstPass )
 {
 	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
 
 	// Compute weights
-	float weights[KERNEL_SIZE];
-	int x = pixelX - KERNEL_CENTER * (int)firstPass;
-	int y = pixelY - KERNEL_CENTER * (int)!firstPass;
-	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	int x = pixelX + (int)firstPass;
+	int y = pixelY + (int)!firstPass;
+
+	// We do the center pixel separate, since we don't want to count it double.
+	// The computed weight with itself is 1, thus we do not need to compute the totalweight for it.
+	float weight = kernel[0]; 
+	if ( weight != 0.0f )
 	{
-		// If pixel is out of screen
-		if (x < 0 || x >= screen->GetWidth() || y < 0 || y >= screen->GetHeight())
-			weights[i] = 0.0f;
+		centerPixel.totalWeight += weight;
+		if (firstPass)
+			centerPixel.filtered += weight * centerPixel.illumination;
 		else
-			weights[i] = ComputeWeight_Total(centerPixel, pixelData[x + y * screen->GetWidth()]);
-		x += (int)firstPass;
-		y += (int)!firstPass;
+			centerPixel.illumination += weight * centerPixel.filtered;
 	}
 
-	// Apply kernel
-	float totalWeight = 0;
-	Color result = Color( 0, 0, 0 );
-	x = pixelX - KERNEL_CENTER * (int)firstPass;
-	y = pixelY - KERNEL_CENTER * (int)!firstPass;
-	for ( size_t i = 0; i < KERNEL_SIZE; i++ )
+	for ( size_t i = 1; i < KERNEL_CENTER + 1; i++ )
 	{
-		if ( weights[i] != 0.0f )
+		// If pixel is out of screen
+		if (x >= 0 && x < screen->GetWidth() && y >= 0 && y < screen->GetHeight())
 		{
-			float weight = kernel[i] * weights[i];
-			totalWeight += weight;
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			if (firstPass)
-				result += weight * otherPixel.illumination;
-			else
-				result += weight * otherPixel.filtered;
+			weight = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel, firstPass);
+			if ( weight != 0.0f )
+			{
+				centerPixel.totalWeight += weight;
+				otherPixel.totalWeight += weight;
+				if (firstPass)
+				{
+					centerPixel.filtered += weight * otherPixel.illumination;
+					otherPixel.filtered += weight * centerPixel.illumination;
+				}
+				else
+				{
+					centerPixel.illumination += weight * otherPixel.filtered;
+					otherPixel.illumination += weight * centerPixel.filtered;
+				}
+			}
 		}
 		x += (int)firstPass;
 		y += (int)!firstPass;
 	}
-
-	return result * (1 / totalWeight);
 }
 #endif
 void Game::Print(size_t buflen, uint yline, const char *fmt, ...) {
@@ -656,10 +669,34 @@ void Game::Tick()
 #if KERNEL_SIZE > 0
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
+	{
+		for (int x = 0; x < screen->GetWidth(); x++)
+		{
+			uint id = x + y * screen->GetWidth();
+			pixelData[id].totalWeight = 0.0f;
+			pixelData[id].filtered = Color(0, 0, 0);
+		}
+		for (int x = 0; x < screen->GetWidth(); x++)
+		{
+			Filter( x, y, true );
+
+			// Since we are going towards the right only we know that pixel[x,y] will never be touched.
+			// Hence we can safely compute and reset the data for the vertical filtering.
+			uint id = x + y * screen->GetWidth();
+			pixelData[id].filtered *= (1 / pixelData[id].totalWeight);
+			pixelData[id].totalWeight = 0.0f;
+			pixelData[id].illumination = Color(0, 0, 0);
+		}
+	}
+	#pragma omp parallel for schedule( dynamic ) num_threads(8)
+	for (int y = 0; y < screen->GetHeight(); y++)
 	for (int x = 0; x < screen->GetWidth(); x++)
 	{
-		uint id = x + y * screen->GetWidth();
-		pixelData[id].filtered = Filter( x, y, true );
+		Filter( x, y, false );
+		// To only horizontal blur, comment the line above and uncomment below
+		// uint id = x + y * screen->GetWidth();
+		// pixelData[id].illumination = pixelData[id].filtered;
+		// pixelData[id].totalWeight = 1.0f;
 	}
 #endif
 
@@ -670,12 +707,10 @@ void Game::Tick()
 		uint id = x + y * screen->GetWidth();
 
 #if KERNEL_SIZE > 0
-		Color result = Filter( x, y, false );
-#else
-		Color result = pixelData[id].illumination;
+		pixelData[id].illumination *= (1 / pixelData[id].totalWeight);
 #endif
 
-		result *= pixelData[id].albedo;
+		Color result = pixelData[id].illumination * pixelData[id].albedo;
 
 		result.GammaCorrect();
 		//color.ChromaticAbberation( { u, v } );

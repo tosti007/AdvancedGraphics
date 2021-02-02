@@ -22,6 +22,7 @@ struct PixelData
 	Color illumination;
 #if KERNEL_SIZE > 0
 	Color filtered;
+	float totalWeight;
 #endif
 
 	inline PixelData() = default;
@@ -46,7 +47,7 @@ public:
 	Light* IntersectLights( Ray* r );
 	Color Sample( Ray r, uint pixelId );
 	void GenerateGaussianKernel( float sigma );
-	Color Filter( int pixelX, int pixelY, bool firstPass );
+	void Filter( int pixelX, int pixelY, bool firstPass );
 	void Print(size_t buflen, uint yline, const char *fmt, ...);
 
   private:
