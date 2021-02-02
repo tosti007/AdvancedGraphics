@@ -505,8 +505,6 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-const float sigma_firefly = 25.0f;
-
 float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 {
 	// This is the first part of the formula, i.e. the part that uses P_i and P_j.
@@ -514,7 +512,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
 
 	// Illumination difference
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
-	weight *= ComputeWeight_Distance(sigma_firefly, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
+	weight *= ComputeWeight_Distance(25.0f, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
 	// Intersection point distance
 	weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
