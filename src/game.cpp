@@ -297,10 +297,14 @@ Color Game::Sample(Ray r, uint pixelId)
 					nohitcolor = light->color;
 				else
 				{
+					#ifdef USEMIS
 					float solidAngle = (pdf_angle * light->Area()) / (r.t * r.t);
 					float pdf_light = 1 / solidAngle;
 					float pdf_mis = pdf_brdf + pdf_light;
 					nohitcolor = light->color * (1.0f / pdf_mis);
+					#else
+					nohitcolor = Color(0, 0, 0);
+					#endif
 				}
 			#else
 				nohitcolor = light->color;
@@ -452,8 +456,11 @@ Color Game::Sample(Ray r, uint pixelId)
 			float rLightArea = rLight->Area();
 			float solidAngle = (cos_o * rLightArea) / (rLightDist * rLightDist);
 			float pdf_light = 1 / solidAngle;
+			#ifdef USEMIS
 			pdf_mis += pdf_light;
-			E += T * (cos_i / pdf_mis) * BRDF * rLight->color;
+			pdf_light = pdf_mis;
+			#endif
+			E += T * (cos_i / pdf_light) * BRDF * rLight->color;
 		}
 	}
 	#endif

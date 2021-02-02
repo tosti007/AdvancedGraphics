@@ -62,6 +62,7 @@
 //#define USESTRATIFICATION
 #define USENEE
 #define USERUSSIANROULETTE
+//#define USEMIS
 //#define USEVIGNETTING
 #define USEBVH
 //#define VISUALIZEBVH
