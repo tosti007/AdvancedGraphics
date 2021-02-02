@@ -252,8 +252,10 @@ Light* Game::IntersectLights( Ray* r )
 	return found;
 }
 
-Color Game::Sample(Ray r, bool specularRay, uint depth, uint pixelId)
+Color Game::Sample(Ray r, uint pixelId)
 {
+	bool specularRay = true;
+	uint depth = 0;
 	Color T(1.0f, 1.0f, 1.0f);
 	Color E(0.0f, 0.0f, 0.0f);
 	#ifdef USERUSSIANROULETTE
@@ -615,13 +617,13 @@ void Game::Tick()
 			for ( size_t i = 0; i < 4; i++ )
 			{
 				Ray r = ComputePrimaryRay(screen, view, x, y, i * 0.25f, 0.25f);
-				Color rayColor = Sample( r, true, 0, id );
+				Color rayColor = Sample( r, id );
 				color += rayColor;
 			}
 			color *= 0.25;
 		#else
 			Ray r = ComputePrimaryRay(screen, view, x, y, 0.0f, 1.0f);
-			Color color = Sample( r, true, 0, id );
+			Color color = Sample( r, id );
 		#endif
 
 		pixelData[id].accumulated += color;
