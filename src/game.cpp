@@ -425,9 +425,8 @@ Color Game::Sample(Ray r, uint pixelId)
 	// but nothing works. So let's take the easy route and flip it.
 	if (pdf_angle < 0.0f){
 		pdf_angle = -pdf_angle;
-		r.direction = -r.direction;
 	}
-	assert(pdf_angle >= 0.0f);
+	// assert(pdf_angle >= 0.0f);
 	
 	// pdf_brdf = 1 / (2 * PI);
 	pdf_brdf = pdf_angle * INVPI;
