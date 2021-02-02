@@ -520,14 +520,15 @@ float ComputeWeight_Angle(const float sigma, const vec3 a, const vec3 b)
 	return ComputeWeightRaw(sigma, value*value);
 }
 
-float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel)
+float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool firstPass)
 {
 	// This is the first part of the formula, i.e. the part that uses P_i and P_j.
 	float weight = 1.0f;
 
 	// Illumination difference
+	float sigma_illumination = firstPass ? 25.0f : 3.0f;
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
-	weight *= ComputeWeight_Distance(25.0f, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
+	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
 	// Intersection point distance
 	weight *= ComputeWeight_Distance(2.0f, otherPixel.firstIntersect, centerPixel.firstIntersect);
@@ -573,7 +574,7 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 		if (x >= 0 && x < screen->GetWidth() && y >= 0 && y < screen->GetHeight())
 		{
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			weight = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel);
+			weight = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel, firstPass);
 			if ( weight != 0.0f )
 			{
 				centerPixel.totalWeight += weight;
