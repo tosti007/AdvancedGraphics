@@ -65,10 +65,6 @@ newmtl pod
 	Kd 0.734118 0.709412 0.674118
 	Ks 0.000000 0.000000 0.000000
 	Ke 0.000000 0.000000 0.000000
-	map_Ka mramor6x6.png
-	map_Kd mramor6x6.png
-	map_bump mramor6x6-bump.png
-	bump mramor6x6-bump.png
 
 newmtl pod_tepih
 	Ns 8.000000

@@ -63,14 +63,11 @@ void Game::InitDefaultScene()
 	// spheres
 	float radius = 0.5f;
 
-	nr_spheres = 6;
+	nr_spheres = 3;
 	spheres = new Sphere[nr_spheres] {
 		Sphere(vec3(2 + 0, radius + 0.2f, 2.5f + 0), radius, 3),
 		Sphere(vec3(2 + 1, radius + 0.2f, 2.5f + 1), radius, 5),
 		Sphere(vec3(2 + 2, radius + 0.2f, 2.5f + 2), radius, 4),
-		Sphere(vec3(2 + 0, radius - 0.8f, 2.5f + 0), radius, 0),
-		Sphere(vec3(2 + 1, radius - 0.8f, 2.5f + 1), radius, 0),
-		Sphere(vec3(2 + 2, radius - 0.8f, 2.5f + 2), radius, 0),
 	};
 
 	view = new Camera(vec3(room_size/2, 1, 0.3f), vec3(0, 0, 1));
@@ -638,7 +635,7 @@ void Game::Tick()
 	
 	unmoved_frames++;
 	// uncomment to render just one frame 
-	//if (unmoved_frames > 10) return;
+	if (unmoved_frames > 10) return;
 
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
