@@ -419,8 +419,18 @@ Color Game::Sample(Ray r, uint pixelId)
 	r.Offset(1e-3);
 
 	// irradiance
-	//pdf_brdf = 1 / (2 * PI);
-	pdf_brdf = interNormal.dot(r.direction) * INVPI;
+	pdf_angle = dot(interNormal, r.direction);
+	// Fuck this shit, with Cosine Weighted Diffuse Reflection the pdf_angle
+	// can be negative. We have tried multiple ways of implementing it and TangentToWorld,
+	// but nothing works. So let's take the easy route and flip it.
+	if (pdf_angle < 0.0f){
+		pdf_angle = -pdf_angle;
+		r.direction = -r.direction;
+	}
+	assert(pdf_angle >= 0.0f);
+	
+	// pdf_brdf = 1 / (2 * PI);
+	pdf_brdf = pdf_angle * INVPI;
 	float pdf_mis = pdf_brdf;
 
 	#ifdef USENEE
@@ -458,7 +468,6 @@ Color Game::Sample(Ray r, uint pixelId)
 	T *= (1 / survival);
 	#endif
 
-	pdf_angle = dot(interNormal, r.direction);
 	T *= pdf_angle / pdf_mis * BRDF;
 
 	}
