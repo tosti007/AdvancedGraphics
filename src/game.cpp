@@ -545,33 +545,14 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 	PixelData &centerPixel = pixelData[pixelX + pixelY * screen->GetWidth()];
 
 	// Compute weights
-	float weights[KERNEL_CENTER + 1];
-	int x = pixelX;
-	int y = pixelY;
-	for ( size_t i = 0; i < KERNEL_CENTER + 1; i++ )
-	{
-		// If pixel is out of screen
-		if (x < 0 || x >= screen->GetWidth() || y < 0 || y >= screen->GetHeight())
-			weights[i] = 0.0f;
-		else
-		{
-			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			weights[i] = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel);
-			centerPixel.totalWeight += weights[i];
-			otherPixel.totalWeight += weights[i];
-		}
-		x += (int)firstPass;
-		y += (int)!firstPass;
-	}
-
-	// Apply kernel
-	x = pixelX + (int)firstPass;
-	y = pixelY + (int)!firstPass;
+	int x = pixelX + (int)firstPass;
+	int y = pixelY + (int)!firstPass;
 
 	// We do the center pixel separate, since we don't want to count it double.
-	float weight = weights[0];
+	float weight = kernel[0] * ComputeWeight_Total(centerPixel, centerPixel);
 	if ( weight != 0.0f )
 	{
+		centerPixel.totalWeight += weight;
 		if (firstPass)
 			centerPixel.filtered += weight * centerPixel.illumination;
 		else
@@ -580,19 +561,25 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 
 	for ( size_t i = 1; i < KERNEL_CENTER + 1; i++ )
 	{
-		weight = weights[i];
-		if ( weight != 0.0f )
+		// If pixel is out of screen
+		if (x >= 0 && x < screen->GetWidth() && y >= 0 && y < screen->GetHeight())
 		{
 			PixelData &otherPixel = pixelData[x + y * screen->GetWidth()];
-			if (firstPass)
+			weight = kernel[i] * ComputeWeight_Total(centerPixel, otherPixel);
+			if ( weight != 0.0f )
 			{
-				centerPixel.filtered += weight * otherPixel.illumination;
-				otherPixel.filtered += weight * centerPixel.illumination;
-			}
-			else
-			{
-				centerPixel.illumination += weight * otherPixel.filtered;
-				otherPixel.illumination += weight * centerPixel.filtered;
+				centerPixel.totalWeight += weight;
+				otherPixel.totalWeight += weight;
+				if (firstPass)
+				{
+					centerPixel.filtered += weight * otherPixel.illumination;
+					otherPixel.filtered += weight * centerPixel.illumination;
+				}
+				else
+				{
+					centerPixel.illumination += weight * otherPixel.filtered;
+					otherPixel.illumination += weight * centerPixel.filtered;
+				}
 			}
 		}
 		x += (int)firstPass;
