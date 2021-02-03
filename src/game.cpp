@@ -502,7 +502,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool fi
 	float weight = 1.0f;
 
 	// Illumination difference
-	float sigma_illumination = firstPass ? SIGMA_ILLUMINATION : SIGMA_ILLUMINATION / 2;
+	float sigma_illumination = firstPass ? SIGMA_ILLUMINATION * 2.5f : SIGMA_ILLUMINATION;
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
 	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
