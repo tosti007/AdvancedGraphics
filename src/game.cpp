@@ -336,12 +336,6 @@ Color Game::Sample(Ray r, uint pixelId)
 	// We have handled that case, so we can set it to false.
 	specularRay = false;
 
-	// As al our debuging objects are close, 1000 is a safe value.
-	// assert(r.t <= 1000);
-	assert(r.obj != nullptr);
-	assert(r.obj->material >= -1);
-	assert(r.obj->material < (int)nr_materials);
-
 	// intersection point found
 	vec3 interPoint = r.origin + r.t * r.direction;
 	vec3 interNormal = r.obj->NormalAt( interPoint );
@@ -377,12 +371,9 @@ Color Game::Sample(Ray r, uint pixelId)
 	bool refract = false;
 
 	if (mat->HasRefraction())
-	{
 		refract = RandomFloat() < mat->GetRefraction();
-	} else if (mat->HasReflection())
-	{
+	else if (mat->HasReflection())
 		reflect = RandomFloat() < mat->GetReflection();
-	}
 
 	if (refract) {
 		float n = mat->GetIoR();
@@ -390,9 +381,8 @@ Color Game::Sample(Ray r, uint pixelId)
 		float k = 1 - ( n * n * ( 1 - angle * angle ) );
 
 		if (k < 0)
-		{
 			reflect = true;
-		} else {
+		else {
 			// Calculate the refractive ray, and its color
 			vec3 refractDir = n * -r.direction + interNormal * ( n * angle - sqrtf( k ) );
 			r = Ray( interPoint, refractDir.normalized() );
@@ -421,15 +411,12 @@ Color Game::Sample(Ray r, uint pixelId)
 
 	// irradiance
 	pdf_angle = dot(interNormal, r.direction);
-	// Fuck this shit, with Cosine Weighted Diffuse Reflection the pdf_angle
-	// can be negative. We have tried multiple ways of implementing it and TangentToWorld,
+	// Cosine Weighted Diffuse Reflection can make the pdf_angle be negative.
+	// We have tried multiple ways of implementing it and TangentToWorld,
 	// but nothing works. So let's take the easy route and flip it.
-	if (pdf_angle < 0.0f){
+	if (pdf_angle < 0.0f)
 		pdf_angle = -pdf_angle;
-	}
-	// assert(pdf_angle >= 0.0f);
-	
-	// pdf_brdf = 1 / (2 * PI);
+
 	pdf_brdf = pdf_angle * INVPI;
 	float pdf_mis = pdf_brdf;
 
@@ -472,9 +459,7 @@ Color Game::Sample(Ray r, uint pixelId)
 	#endif
 
 	T *= pdf_angle / pdf_mis * BRDF;
-
 	}
-
 	return E;
 }
 
@@ -635,7 +620,7 @@ void Game::Tick()
 	
 	unmoved_frames++;
 	// uncomment to render just one frame 
-	if (unmoved_frames > 10) return;
+	//if (unmoved_frames > 10) return;
 
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
