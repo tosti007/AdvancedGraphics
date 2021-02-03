@@ -653,7 +653,7 @@ void Game::Tick()
 			// If the illumination is a firefly, then let's normalize it, so we still have a color to work with.
 			float len = pixelData[id].illumination.ToVec().sqrLength();
 			if (len > SIGMA_FIREFLY * SIGMA_FIREFLY * 3.0f)
-				pixelData[id].illumination *= (1 / sqrtf(len));
+				pixelData[id].illumination *= (2.0f / sqrtf(len) );
 #endif
 		}
 		for (int x = 0; x < screen->GetWidth(); x++)

@@ -76,7 +76,7 @@
 // If this is 0 then no filter is applied.
 #define KERNEL_SIZE 65
 #define SIGMA_ILLUMINATION 25.0f
-//#define SIGMA_FIREFLY 51.0f
+#define SIGMA_FIREFLY 25.0f
 //#define OPENCV2
 
 typedef unsigned char uchar;
