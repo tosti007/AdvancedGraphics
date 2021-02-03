@@ -1,4 +1,4 @@
-# AdvancedGraphics-A1
+# Advanced Graphics
 Advanced Graphics Assignments, being a pathtracer using:
  - Bounding Volume Hierarchy
  - Next Even Estimation
