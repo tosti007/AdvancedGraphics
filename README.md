@@ -1,5 +1,12 @@
 # AdvancedGraphics-A1
-Advanced Graphics Assignment 1
+Advanced Graphics Assignments, being a pathtracer using:
+ - Bounding Volume Hierarchy
+ - Next Even Estimation
+ - Multiple Importance sampling
+ - Russian Roulette
+ - Cross-bilateral filtering
+
+![Sibenik](Sibenik_100spp.png "Sibenik Cathedral with 100 SPP")
 
 # BRIEF INFO ON THE 2019-01 TEMPLATE
 
