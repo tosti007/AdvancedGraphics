@@ -502,7 +502,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool fi
 	float weight = 1.0f;
 
 	// Illumination difference
-	float sigma_illumination = firstPass ? 5.0f : 3.0f;
+	float sigma_illumination = firstPass ? SIGMA_ILLUMINATION : SIGMA_ILLUMINATION / 2;
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
 	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
@@ -535,14 +535,11 @@ void Game::Filter( int pixelX, int pixelY, bool firstPass )
 	// We do the center pixel separate, since we don't want to count it double.
 	// The computed weight with itself is 1, thus we do not need to compute the totalweight for it.
 	float weight = kernel[0]; 
-	if ( weight != 0.0f )
-	{
-		centerPixel.totalWeight += weight;
-		if (firstPass)
-			centerPixel.filtered += weight * centerPixel.illumination;
-		else
-			centerPixel.illumination += weight * centerPixel.filtered;
-	}
+	centerPixel.totalWeight += weight;
+	if (firstPass)
+		centerPixel.filtered += weight * centerPixel.illumination;
+	else
+		centerPixel.illumination += weight * centerPixel.filtered;
 
 	for ( size_t i = 1; i < KERNEL_CENTER + 1; i++ )
 	{
@@ -651,6 +648,11 @@ void Game::Tick()
 			uint id = x + y * screen->GetWidth();
 			pixelData[id].totalWeight = 0.0f;
 			pixelData[id].filtered = Color(0, 0, 0);
+
+			// If the illumination is a firefly, then let's normalize it, so we still have a color to work with.
+			float len = pixelData[id].illumination.ToVec().sqrLength();
+			if (len > SIGMA_ILLUMINATION * SIGMA_ILLUMINATION * 3.0f)
+				pixelData[id].illumination *= (1 / sqrtf(len));
 		}
 		for (int x = 0; x < screen->GetWidth(); x++)
 		{
