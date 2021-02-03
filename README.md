@@ -6,7 +6,10 @@ Advanced Graphics Assignments, being a pathtracer using:
  - Russian Roulette
  - Cross-bilateral filtering
 
-![Sibenik](Sibenik_100spp.png "Sibenik Cathedral with 100 SPP")
+<p align="center">
+   ![Sibenik](Sibenik_100spp.png?raw=true "Sibenik Cathedral with 100 SPP")
+</p>
+
 
 # BRIEF INFO ON THE 2019-01 TEMPLATE
 
