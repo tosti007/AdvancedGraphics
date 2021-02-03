@@ -7,7 +7,7 @@ Advanced Graphics Assignments, being a pathtracer using:
  - Cross-bilateral filtering
 
 <p align="center">
-   ![Sibenik](Sibenik_100spp.png?raw=true "Sibenik Cathedral with 100 SPP")
+   <img width="514" height="477" alt="Sibenik Cathedral with 100 SPP" src="Sibenik_100spp.png?raw=true">
 </p>
 
 
