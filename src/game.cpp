@@ -502,8 +502,8 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool fi
 	float weight = 1.0f;
 
 	// Illumination difference
-	float sigma_illumination = firstPass ? SIGMA_ILLUMINATION * 2.5f : SIGMA_ILLUMINATION;
-	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
+	float sigma_illumination = firstPass ? SIGMA_ILLUMINATION : SIGMA_ILLUMINATION / 3.0f;
+	//weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
 	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 
 	// Intersection point distance
@@ -649,10 +649,12 @@ void Game::Tick()
 			pixelData[id].totalWeight = 0.0f;
 			pixelData[id].filtered = Color(0, 0, 0);
 
+#ifdef SIGMA_FIREFLY
 			// If the illumination is a firefly, then let's normalize it, so we still have a color to work with.
 			float len = pixelData[id].illumination.ToVec().sqrLength();
-			if (len > SIGMA_ILLUMINATION * SIGMA_ILLUMINATION * 3.0f)
+			if (len > SIGMA_FIREFLY * SIGMA_FIREFLY * 3.0f)
 				pixelData[id].illumination *= (1 / sqrtf(len));
+#endif
 		}
 		for (int x = 0; x < screen->GetWidth(); x++)
 		{
