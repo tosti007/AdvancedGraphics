@@ -26,7 +26,7 @@ void Game::InitDefaultScene()
 	// materials
 	nr_materials = 7;
 	materials = new Material[nr_materials] {
-		Material(0, 0, 1, Color(1, 1, 1), nullptr), // wall
+		Material(0, 0, 1, Color(0.5f, 0.5f, 0.5f), nullptr), // wall
 		Material(1, 0, 1, Color(1, 1, 1), nullptr), // mirror
 		Material(0.5f, 0.5f, 1.5f, Color(1, 1, 1), nullptr), // glass
 		Material(0, 0, 1, Color(1, 0, 0), nullptr), // red
@@ -411,12 +411,6 @@ Color Game::Sample(Ray r, uint pixelId)
 
 	// irradiance
 	pdf_angle = dot(interNormal, r.direction);
-	// Cosine Weighted Diffuse Reflection can make the pdf_angle be negative.
-	// We have tried multiple ways of implementing it and TangentToWorld,
-	// but nothing works. So let's take the easy route and flip it.
-	if (pdf_angle < 0.0f)
-		pdf_angle = -pdf_angle;
-
 	pdf_brdf = pdf_angle * INVPI;
 	float pdf_mis = pdf_brdf;
 
@@ -508,7 +502,7 @@ float ComputeWeight_Total(PixelData &centerPixel, PixelData &otherPixel, bool fi
 	float weight = 1.0f;
 
 	// Illumination difference
-	float sigma_illumination = firstPass ? 25.0f : 3.0f;
+	float sigma_illumination = firstPass ? 5.0f : 3.0f;
 	// weight *= ComputeWeight(25.0f, otherPixel.illumination.Max(), centerPixel.illumination.Max());
 	weight *= ComputeWeight_Distance(sigma_illumination, otherPixel.illumination.ToVec(), centerPixel.illumination.ToVec());
 

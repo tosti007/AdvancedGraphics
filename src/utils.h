@@ -103,18 +103,19 @@ inline vec3 TangentToWorld( const vec3 N, const float x, const float y, const fl
 	return x * T + y * B + z * N;
 }
 
-inline vec3 TangentToWorld( const vec3 N, const vec3 V )
+inline vec3 FlipYZ(const vec3 v)
 {
-	return TangentToWorld(N, V.x, V.y, V.z);
+	return vec3(v.x, v.z, v.y);
 }
 
 inline vec3 CosineWeightedDiffuseReflection( const vec3 N )
 {
-	float r0 = RandomFloat();
 	float r1 = RandomFloat();
-	float r = sqrtf( r0 );
+	float r2 = RandomFloat();
 	float theta = 2 * PI * r1;
-	return TangentToWorld( N, cosf( theta ) * r, sqrtf( 1 - r0 ), sinf( theta ) * r );
+	float r = sqrtf( 1 - r2 );
+	vec3 p = TangentToWorld( FlipYZ(N), cosf( theta ) * r, sinf( theta ) * r, sqrtf( r2 ) );
+	return FlipYZ(p);
 }
 
 }; // namespace AdvancedGraphics
