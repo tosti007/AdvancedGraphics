@@ -91,7 +91,7 @@ void Game::InitFromTinyObj( const std::string filename )
 	// All lights should have atleast one color value != 0
 	nr_lights = 1;
 	lights = new Light *[nr_lights] {
-		new SphereLight( vec3( -5, 10, 0 ), 8, Color( 50, 50, 50 ) )
+		new SphereLight( vec3( -5, 10, 0 ), 8, Color( 20, 20, 20 ) )
 	};
 
 	tinyobj::attrib_t attrib;
@@ -610,8 +610,8 @@ void Game::Tick()
 	#endif
 	
 	unmoved_frames++;
-	// uncomment to render just one frame 
-	//if (unmoved_frames > 10) return;
+	// uncomment to limit amount of max frames rendered 
+	//if (unmoved_frames > 1) return;
 
 	#pragma omp parallel for schedule( dynamic ) num_threads(8)
 	for (int y = 0; y < screen->GetHeight(); y++)
